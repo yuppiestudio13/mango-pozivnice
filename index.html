@@ -8,26 +8,36 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Great+Vibes&family=Parisienne&family=Italianno&family=Allura&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="stil.css">
+<link rel="stylesheet" href="stil.css?v=4">
 </head>
 <body>
 
-<div class="topbar"><a href="editor.html"><b>Novo:</b> Mango Atelje, napravite svoju pozivnicu online <span aria-hidden="true">→</span></a><span class="tb-rest"> · Elektronska pozivnica gratis · Dostava u celoj Srbiji</span></div>
+<div class="topbar" role="region" aria-label="Obaveštenja"><div class="tb-track">
+  <a class="tb-msg on" href="editor.html"><b>Novo:</b> Mango Atelje, napravite svoju pozivnicu online <span aria-hidden="true">→</span></a>
+  <a class="tb-msg" href="pozivnice-boarding-pass.html"><b>Bestseler:</b> boarding pass i pasoš pozivnice <span aria-hidden="true">→</span></a>
+  <span class="tb-msg">Elektronska pozivnica gratis uz štampane</span>
+  <span class="tb-msg">Izrada do 14 radnih dana od uplate avansa</span>
+  <span class="tb-msg">Dostava Post Expressom u celoj Srbiji</span>
+</div></div>
 
 <header>
   <div class="wrap">
     <button class="burger" aria-label="Meni" onclick="drawer.classList.add('open')"><span></span><span></span><span></span></button>
-    <nav><a href="#kolekcije">Kolekcije</a><a href="#boarding">Boarding pass</a><a href="pecati.html">Pečati</a><a href="koverte.html">Koverte</a></nav>
+    <nav><div class="dd"><a href="pozivnice.html" aria-haspopup="true">Pozivnice</a><div class="dd-menu"><a href="pozivnice-vencanja.html">Venčanja</a><a href="pozivnice-boarding-pass.html">Boarding pass i pasoš</a><a href="pozivnice-krstenja.html">Krštenja</a><a href="pozivnice-rodjendani.html">Dečiji rođendani</a><a href="pozivnice-punoletstva.html">Punoletstva</a><a class="dd-all" href="pozivnice.html">Sve pozivnice</a></div></div><a href="pecati.html">Pečati</a><a href="koverte.html">Koverte</a></nav>
     <a class="brand" href="#"><svg class="logo" viewBox="0 0 330 74" fill="none" stroke="currentColor" stroke-width="7" stroke-miterlimit="2" aria-label="Mango"><path d="M8 66V16l27 38 27-38v50"/><path d="M76 66l25-52 25 52"/><path d="M140 66V16l38 50V16"/><path d="M240 26a25 25 0 1 0 3 22V41h-18"/><path d="M282 16c14 0 23 12 23 26s-10 24-23 24-23-10-23-24 9-26 23-26z"/><path d="M296 14c1-8 7-12 15-12-1 8-7 12-15 12z" fill="currentColor" stroke="none"/><path d="M299 16c6-5 13-5 19 0-6 5-13 5-19 0z" fill="currentColor" stroke="none"/></svg><small>Pozivnice</small></a>
-    <nav class="right"><a class="nav-cta" href="editor.html">Napravi pozivnicu</a><a href="stampa.html">Vaš dizajn</a><a href="kalkulator.html">Kalkulator</a><a href="kalkulator.html#porudzbina">Poruči</a></nav>
+    <nav class="right"><a class="nav-cta" href="editor.html">Napravi pozivnicu</a><a href="kalkulator.html">Kalkulator</a><a href="kalkulator.html#porudzbina">Poruči</a></nav>
   </div>
 </header>
 
 <div class="drawer" id="drawer">
   <button class="x" aria-label="Zatvori" onclick="drawer.classList.remove('open')">×</button>
   <a class="d-cta" href="editor.html">Napravi svoju pozivnicu ✦</a>
-  <a href="#kolekcije" onclick="drawer.classList.remove('open')">Kolekcije</a>
-  <a href="#boarding" onclick="drawer.classList.remove('open')">Boarding pass</a>
+  <a href="pozivnice.html">Pozivnice</a>
+  <a class="d-sub" href="pozivnice-vencanja.html">Venčanja</a>
+  <a class="d-sub" href="pozivnice-boarding-pass.html">Boarding pass i pasoš</a>
+  <a class="d-sub" href="pozivnice-krstenja.html">Krštenja</a>
+  <a class="d-sub" href="pozivnice-rodjendani.html">Dečiji rođendani</a>
+  <a class="d-sub" href="pozivnice-punoletstva.html">Punoletstva</a>
   <a href="pecati.html">Pečati</a>
   <a href="koverte.html">Koverte</a>
   <a href="stampa.html">Štampa vašeg dizajna</a>
@@ -49,7 +59,7 @@
       <a class="btn" href="editor.html">Napravi svoju pozivnicu</a>
       <a class="link" href="#kolekcije">Pogledaj kolekcije <span>→</span></a>
     </div>
-    <div class="facts"><div><b>1000+</b><span>izrađenih pozivnica</span></div><div><b>4</b><span>godine sa vama</span></div><div><b>1–2</b><span>dana dostava</span></div></div>
+    <div class="facts"><div><b>1000+</b><span>izrađenih pozivnica</span></div><div><b>4</b><span>godine sa vama</span></div><div><b>14</b><span>radnih dana izrade</span></div></div>
   </div>
   <div class="stage-wrap" id="hero-slides" aria-roledescription="karusel" aria-label="Izdvojene pozivnice">
     <div class="slide on" data-cap="Wedding passport · naš najprodavaniji model"><img src="slike/hero-1.jpg" alt="Mint venčana pasoš pozivnica sa zlatnim aviončićem i boarding kartom, na bordo pasošima" fetchpriority="high"></div>
@@ -144,24 +154,24 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <div><div class="eyebrow">Za svaku priliku</div><h2 class="h-lg">Izaberite <em>povod</em></h2></div>
-      <a class="link" href="kalkulator.html#sabloni">Svi šabloni <span>→</span></a>
+      <a class="link" href="pozivnice.html">Sve pozivnice <span>→</span></a>
     </div>
     <div class="cats">
-      <a class="cat reveal" href="kalkulator.html#sabloni">
+      <a class="cat reveal" href="pozivnice-vencanja.html">
         <div class="ph tile"><img src="slike/cat-vencanja.jpg" alt="Lučna pozivnica za venčanje, Ana i Jovan" loading="lazy"></div>
-        <h3>Venčanja</h3><p>Pogledaj kolekciju</p>
+        <h3>Venčanja</h3><p>Pogledaj pozivnice</p>
       </a>
-      <a class="cat reveal" href="kalkulator.html#sabloni">
+      <a class="cat reveal" href="pozivnice-krstenja.html">
         <div class="ph tile"><img src="slike/cat-krstenja.jpg" alt="Pozivnice za krštenje sa zlatotiskom na zelenoj podlozi" loading="lazy"></div>
-        <h3>Krštenja</h3><p>Pogledaj kolekciju</p>
+        <h3>Krštenja</h3><p>Pogledaj pozivnice</p>
       </a>
-      <a class="cat reveal" href="kalkulator.html#sabloni">
+      <a class="cat reveal" href="pozivnice-rodjendani.html">
         <div class="ph tile"><img src="slike/cat-rodjendani.jpg" alt="Dečija rođendanska pozivnica sa svemirskim motivom" loading="lazy"></div>
-        <h3>Dečiji rođendani</h3><p>Pogledaj kolekciju</p>
+        <h3>Dečiji rođendani</h3><p>Pogledaj pozivnice</p>
       </a>
-      <a class="cat reveal" href="kalkulator.html#sabloni">
+      <a class="cat reveal" href="pozivnice-punoletstva.html">
         <div class="ph tile"><img src="slike/cat-punoletstva.jpg" alt="Pozivnica za punoletstvo sa zlatotiskom, u ruci" loading="lazy"></div>
-        <h3>Punoletstva</h3><p>Pogledaj kolekciju</p>
+        <h3>Punoletstva</h3><p>Pogledaj pozivnice</p>
       </a>
     </div>
   </div>
@@ -186,10 +196,10 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <div><div class="eyebrow">Izdvajamo</div><h2 class="h-lg">Kolekcija <em>sezone</em></h2></div>
-      <a class="link" href="kalkulator.html#sabloni">Pogledaj sve <span>→</span></a>
+      <a class="link" href="pozivnice.html">Pogledaj sve <span>→</span></a>
     </div>
     <div class="coll">
-      <a class="prod reveal" href="kalkulator.html#sabloni">
+      <a class="prod reveal" href="pozivnice.html">
         <div class="ph img"><img src="slike/kol-sage.jpg" alt="Pozivnica sa bakarnim voštanim pečatom na zelenim kovertama" loading="lazy"></div>
         <div class="meta"><h3>Sage i bakar</h3><span>Venčanje</span></div>
       </a>
@@ -197,11 +207,11 @@
         <div class="ph img"><img src="slike/kol-pasos.jpg" alt="Pozivnice u obliku pasoša sa zlatnim avionom" loading="lazy"></div>
         <div class="meta"><h3>Pasoš</h3><span>Rođendan</span></div>
       </a>
-      <a class="prod reveal" href="kalkulator.html#sabloni">
+      <a class="prod reveal" href="pozivnice.html">
         <div class="ph img"><img src="slike/kol-floral.jpg" alt="Pozivnice sa akvarel cvećem" loading="lazy"></div>
         <div class="meta"><h3>Jesenji buket</h3><span>Venčanje</span></div>
       </a>
-      <a class="prod reveal" href="kalkulator.html#sabloni">
+      <a class="prod reveal" href="pozivnice.html">
         <div class="ph img"><img src="slike/kol-monogram.jpg" alt="Pozivnice sa crnim monogramom i zaobljenim uglovima" loading="lazy"></div>
         <div class="meta"><h3>Monogram</h3><span>Venčanje</span></div>
       </a>
@@ -209,7 +219,7 @@
         <div class="ph img"><img src="slike/kol-boarding.jpg" alt="Pozivnica u obliku boarding karte, teget sa zlatotiskom" loading="lazy"></div>
         <div class="meta"><h3>Boarding karta</h3><span>Venčanje</span></div>
       </a>
-      <a class="prod reveal" href="kalkulator.html#sabloni">
+      <a class="prod reveal" href="pozivnice.html">
         <div class="ph img"><img src="slike/kol-datum.jpg" alt="Pozivnice sa krupnim datumom i zlatnim ivicama" loading="lazy"></div>
         <div class="meta"><h3>Veliki datum</h3><span>Venčanje</span></div>
       </a>
@@ -273,7 +283,7 @@
       <div class="steps">
         <div class="step"><b>01</b><div><h4>Pošaljete nam ideju</h4><p>Dizajn koji ste izabrali, tekst za pozivnicu i izbor koverti ili pečata. Možemo štampati i vaš dizajn.</p></div></div>
         <div class="step"><b>02</b><div><h4>Šaljemo vam pripremu na uvid</h4><p>Usklađujemo detalje dok ne budete zadovoljni, a zatim uplaćujete avans od 50%.</p></div></div>
-        <div class="step"><b>03</b><div><h4>Izrada do 14 radnih dana</h4><p>Vikendi se ne računaju, a uglavnom bude i brže.</p></div></div>
+        <div class="step"><b>03</b><div><h4>Izrada do 14 radnih dana</h4><p>Vikendi se ne računaju, a uglavnom bude i brže. Ako vam trebaju ranije, pošaljite upit sa datumom.</p></div></div>
         <div class="step"><b>04</b><div><h4>Dostava Post Expressom</h4><p>Paket stiže za 1–2 dana, a ostatak plaćate pouzećem.</p></div></div>
       </div>
     </div>
@@ -294,7 +304,7 @@
     <div class="ig-head reveal"><div class="eyebrow">Pitajte Manga</div><h2 class="h-lg">Česta <em>pitanja</em></h2></div>
     <div class="faq reveal">
       <details><summary>Kako da poručim pozivnice?</summary><p>Pošaljite nam poruku na Instagramu sa dizajnom koji ste izabrali, tekstom koji želite na pozivnici i izborom koverti i pečata (nije obavezno). Nakon toga radimo pripremu i šaljemo vam je na uvid.</p></details>
-      <details><summary>Koliki je rok izrade?</summary><p>Rok za izradu je 14 dana od uplate avansa (vikendi se ne broje). Uglavnom bude i brže.</p></details>
+      <details><summary>Koliki je rok izrade?</summary><p>Rok za izradu je 14 radnih dana od uplate avansa (vikendi se ne broje). Uglavnom bude i brže. Ako su vam pozivnice potrebne ranije, pošaljite nam upit i napišite do kog datuma vam trebaju.</p></details>
       <details><summary>Kako se plaća?</summary><p>Avans od 50% uplaćujete na račun koji dobijete kada se završi izmena dizajna. Druga polovina plaća se pouzećem.</p></details>
       <details><summary>Kako šaljete i koliko košta dostava?</summary><p>Pakete šaljemo Post Expressom na teritoriji cele Srbije, a isporuka traje 1–2 dana. Cena poštarine zavisi od težine paketa i nije uključena u cenu.</p></details>
       <details><summary>Koja je minimalna količina?</summary><p>Minimalna porudžbina je 30 komada, a za pasoš pozivnice 40 komada. Za naše dizajne priprema za štampu se plaća jednom, 1000 din, bez obzira na količinu. Ako šaljete svoj gotov dizajn, priprema se ne plaća.</p></details>
@@ -334,7 +344,7 @@
           <button>Prijava</button>
         </form>
       </div>
-      <div><h5>Kolekcije</h5><ul><li><a href="#boarding">Boarding pass i pasoš</a></li><li><a href="#kolekcije">Venčanja</a></li><li><a href="#kolekcije">Krštenja</a></li><li><a href="#kolekcije">Dečiji rođendani</a></li><li><a href="#kolekcije">Punoletstva</a></li></ul></div>
+      <div><h5>Pozivnice</h5><ul><li><a href="pozivnice-boarding-pass.html">Boarding pass i pasoš</a></li><li><a href="pozivnice-vencanja.html">Venčanja</a></li><li><a href="pozivnice-krstenja.html">Krštenja</a></li><li><a href="pozivnice-rodjendani.html">Dečiji rođendani</a></li><li><a href="pozivnice-punoletstva.html">Punoletstva</a></li></ul></div>
       <div><h5>Informacije</h5><ul><li><a href="editor.html">Mango Atelje: napravite pozivnicu</a></li><li><a href="pecati.html">Voštani pečati</a></li><li><a href="koverte.html">Koverte</a></li><li><a href="stampa.html">Štampa vašeg dizajna</a></li><li><a href="#papir">Vrste papira</a></li><li><a href="#cene">Cenovnik</a></li><li><a href="kalkulator.html">Kalkulator cena</a></li><li><a href="#prica">Kako poručiti</a></li><li><a href="#pitanja">Česta pitanja</a></li></ul></div>
       <div><h5>Kontakt</h5><ul><li><a href="https://www.instagram.com/mango.pozivnice/" target="_blank" rel="noopener">Instagram @mango.pozivnice</a></li><li><a href="https://www.facebook.com/people/mangopozivnice/100089547316737" target="_blank" rel="noopener">Facebook</a></li><li>Novi Sad</li><li>Dostava u celoj Srbiji</li></ul></div>
     </div>
@@ -403,5 +413,6 @@ document.querySelectorAll('[role=tablist]').forEach(list=>{
   })();
 })();
 </script>
+<script src="js/sajt.js?v=1"></script>
 </body>
 </html>

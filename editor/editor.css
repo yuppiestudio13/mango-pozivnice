@@ -1,25 +1,23 @@
 /* ================= EDITOR POZIVNICA ================= */
-/* ---- uvod: tamnozelena traka ---- */
-.ed-intro{background:var(--green) var(--noise);color:#cfd8d0;padding:56px 0 0;position:relative;overflow:hidden}
-.ed-intro::before{content:"";position:absolute;right:-120px;top:-180px;width:520px;height:520px;border:1px solid rgba(201,171,114,.22);border-radius:50%}
-.ed-intro::after{content:"";position:absolute;right:-60px;top:-120px;width:400px;height:400px;border:1px solid rgba(201,171,114,.14);border-radius:50%}
-.ed-intro-in{display:grid;grid-template-columns:1.25fr 1fr;gap:60px;align-items:end;position:relative;z-index:1}
-.ed-intro .eyebrow{color:var(--gold-2)}
-.ed-intro .h-lg{color:var(--ivory);margin:16px 0 16px}
-.ed-intro .h-lg em{color:var(--gold-2)}
-.ed-intro .lead{color:#b4c2b8;max-width:32em}
-.ed-intro .beta{display:inline-block;margin-left:10px;padding:3px 10px;border:1px solid rgba(201,171,114,.5);color:var(--gold-3);font-size:.6rem;letter-spacing:.24em;vertical-align:middle}
-.ed-steps{list-style:none;display:grid;gap:0;border-top:1px solid rgba(201,171,114,.25)}
-.ed-steps li{display:flex;align-items:baseline;gap:18px;padding:15px 0;border-bottom:1px solid rgba(201,171,114,.25);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:#e9e2d0}
-.ed-steps span{font-family:var(--serif);font-size:1.5rem;letter-spacing:0;color:var(--gold-2);min-width:34px}
-.ed-own{display:inline-flex;margin:26px 0 30px;font-size:.64rem;color:var(--gold-3);position:relative;z-index:1}
-.ed-own:hover{color:var(--ivory)}
+/* ---- uvod: svetao, centriran ---- */
+.ed-intro{background:var(--ivory);padding:58px 0 34px;text-align:center}
+.ed-intro-in{display:block}
+.ed-intro .eyebrow{color:var(--gold)}
+.ed-intro .h-lg{color:var(--green);margin:16px 0 14px}
+.ed-intro .lead{margin:0 auto;max-width:34em}
+.ed-intro .beta{display:inline-block;margin-left:10px;padding:3px 10px;border:1px solid var(--gold-2);color:var(--gold);font-size:.6rem;letter-spacing:.24em;vertical-align:middle}
+.ed-steps{list-style:none;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:14px 0;margin-top:28px}
+.ed-steps li{display:flex;align-items:baseline;gap:10px;font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink)}
+.ed-steps li+li::before{content:"";width:46px;height:1px;background:var(--gold-2);margin:0 20px;align-self:center}
+.ed-steps span{font-family:var(--serif);font-size:1.15rem;letter-spacing:0;color:var(--gold)}
+.ed-own{display:inline-flex;margin-top:22px;font-size:.62rem;color:var(--stone)}
+.ed-own:hover{color:var(--gold)}
 
-/* ---- radni sto ---- */
-.ed-app{display:grid;grid-template-columns:240px minmax(0,1fr) 340px;gap:22px;padding:22px max(22px,calc((100% - 1560px)/2));min-height:78vh;
-  background:radial-gradient(ellipse 60% 55% at 50% 42%,rgba(77,120,98,.55),transparent 70%),var(--green-2);
-  border-top:1px solid rgba(201,171,114,.3)}
-.ed-app>aside{padding:24px 20px;background:var(--ivory);box-shadow:0 20px 50px -24px rgba(0,0,0,.55);align-self:start}
+/* ---- radni sto: svetao, pozivnica u centru pažnje ---- */
+.ed-app{display:grid;grid-template-columns:230px minmax(0,1fr) 320px;gap:22px;padding:22px max(22px,calc((100% - 1560px)/2));min-height:78vh;
+  background:radial-gradient(ellipse 50% 60% at 50% 45%,#fbf8f1 0,rgba(251,248,241,0) 70%),var(--sand);
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.ed-app>aside{padding:24px 20px;background:var(--paper);border:1px solid var(--line);align-self:start}
 .ed-tpl{position:sticky;top:114px;max-height:calc(100vh - 136px);overflow:auto}
 .ed-props{overflow:auto;max-height:calc(100vh - 136px);position:sticky;top:114px}
 .ed-app h3{font-size:.66rem;font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:12px}
@@ -28,10 +26,10 @@
 /* ---- šabloni ---- */
 .tpl-list{display:grid;gap:20px}
 .tpl{display:block;width:100%;text-align:left;background:none;border:0;cursor:pointer;font:inherit;color:inherit;padding:0}
-.tpl .thumb{position:relative;overflow:hidden;background:var(--sand);outline:1px solid var(--line);outline-offset:4px;box-shadow:0 10px 22px -12px rgba(28,54,39,.45);transition:outline-color .25s,outline-offset .25s,transform .35s}
+.tpl .thumb{position:relative;overflow:hidden;background:var(--sand);outline:1px solid var(--line);outline-offset:4px;box-shadow:0 8px 18px -12px rgba(28,54,39,.35);transition:outline-color .25s,outline-offset .25s,transform .35s}
 .tpl:hover .thumb{outline-color:var(--gold-2);transform:translateY(-2px)}
 .tpl[aria-current=true] .thumb{outline:1.5px solid var(--gold);outline-offset:5px}
-.tpl[aria-current=true] .thumb::after{content:"Izabrano";position:absolute;right:0;top:0;z-index:3;padding:4px 8px 3px;background:var(--gold);color:var(--ivory);font:500 .52rem var(--sans);letter-spacing:.2em;text-transform:uppercase}
+.tpl[aria-current=true] .thumb::after{content:"Izabrano";position:absolute;right:0;top:0;z-index:3;padding:4px 8px 3px;background:var(--green);color:var(--ivory);font:500 .52rem var(--sans);letter-spacing:.2em;text-transform:uppercase}
 .tpl .thumb .stage{pointer-events:none}
 .tpl b{display:block;font-family:var(--serif);font-weight:400;font-size:1.12rem;margin-top:13px;line-height:1.2;color:var(--green)}
 .tpl small{font-size:.68rem;color:var(--stone);letter-spacing:.04em}
@@ -39,31 +37,31 @@
 
 /* ---- centar ---- */
 .ed-center{display:flex;flex-direction:column;min-width:0;padding:0}
-.ed-tools{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:8px 8px 8px 12px;background:var(--ivory);box-shadow:0 16px 40px -22px rgba(0,0,0,.6);position:relative;z-index:2}
+.ed-tools{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:8px 8px 8px 12px;background:var(--paper);border:1px solid var(--line)}
 .tb{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 12px;background:none;border:1px solid transparent;color:var(--ink);font:400 .72rem var(--sans);letter-spacing:.08em;cursor:pointer;white-space:nowrap;transition:background .2s,border-color .2s,color .2s}
-.tb:hover:not(:disabled){border-color:var(--line);background:var(--paper)}
+.tb:hover:not(:disabled){border-color:var(--line);background:var(--ivory)}
 .tb:disabled{opacity:.35;cursor:default}
 .tb svg{width:16px;height:16px;flex:none}
 .tb[aria-pressed=true]{background:var(--sage)}
-.tb.primary{background:linear-gradient(135deg,var(--gold-3),var(--gold-2) 45%,var(--gold));color:var(--green);font-weight:600;letter-spacing:.2em;text-transform:uppercase;padding:0 20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
-.tb.primary:hover:not(:disabled){filter:brightness(1.06);border-color:transparent;background:linear-gradient(135deg,var(--gold-3),var(--gold-2) 45%,var(--gold))}
+.tb.primary{background:var(--green);color:var(--ivory);letter-spacing:.2em;text-transform:uppercase;padding:0 20px}
+.tb.primary:hover:not(:disabled){background:var(--green-3);border-color:transparent}
 .tb.ghost{border-color:var(--green);color:var(--green);letter-spacing:.16em;text-transform:uppercase}
 .tb.ghost:hover{background:var(--green)!important;color:var(--ivory)}
 .ed-tools .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
 .ed-tools .grow{flex:1}
 
 .ed-stagebox{flex:1;display:flex;align-items:center;justify-content:center;padding:48px 28px 40px;overflow:hidden;min-height:440px}
-.stage-frame{position:relative;box-shadow:0 2px 3px rgba(0,0,0,.18),0 40px 70px -26px rgba(0,0,0,.7)}
+.stage-frame{position:relative;box-shadow:0 1px 2px rgba(0,0,0,.08),0 30px 60px -24px rgba(28,54,39,.4)}
 /* zlatne oznake za sečenje oko pozivnice */
-.stage-frame::before{content:"";position:absolute;inset:-22px;pointer-events:none;--c:rgba(228,207,159,.75);
+.stage-frame::before{content:"";position:absolute;inset:-22px;pointer-events:none;--c:rgba(168,134,75,.7);
   background:
     linear-gradient(var(--c),var(--c)) 0 22px/14px 1px no-repeat,linear-gradient(var(--c),var(--c)) 22px 0/1px 14px no-repeat,
     linear-gradient(var(--c),var(--c)) 100% 22px/14px 1px no-repeat,linear-gradient(var(--c),var(--c)) calc(100% - 22px) 0/1px 14px no-repeat,
     linear-gradient(var(--c),var(--c)) 0 calc(100% - 22px)/14px 1px no-repeat,linear-gradient(var(--c),var(--c)) 22px 100%/1px 14px no-repeat,
     linear-gradient(var(--c),var(--c)) 100% calc(100% - 22px)/14px 1px no-repeat,linear-gradient(var(--c),var(--c)) calc(100% - 22px) 100%/1px 14px no-repeat}
-.ed-hint{padding:4px 18px 6px;font-size:.72rem;letter-spacing:.04em;color:#b4c2b8;text-align:center}
-.ed-hint kbd{font:inherit;font-size:.66rem;padding:1px 6px;border:1px solid rgba(201,171,114,.45);color:var(--gold-3)}
-.warn{color:#f0b09c}
+.ed-hint{padding:4px 18px 6px;font-size:.72rem;letter-spacing:.04em;color:var(--stone);text-align:center}
+.ed-hint kbd{font:inherit;font-size:.66rem;padding:1px 6px;border:1px solid var(--line);background:var(--paper)}
+.warn{color:#a2442f}
 
 /* ---- stage (radna površina u jedinicama 0,1 mm) ---- */
 .stage{position:absolute;left:0;top:0;transform-origin:0 0;overflow:hidden;background:#fff;--k:1}
@@ -191,6 +189,7 @@ dialog.ed-order::backdrop{background:rgba(16,32,23,.55);backdrop-filter:blur(3px
 
 /* ---- responsive ---- */
 .ed-tools .tb[data-act=undo] .lbl,.ed-tools .tb[data-act=redo] .lbl,.ed-tools .tb[data-act=guides] .lbl{display:none}
+@media(max-width:1560px){.ed-tools .tb[data-act=reset] .lbl,.ed-tools .tb[data-act=png] .lbl{display:none}}
 @media(max-width:1180px){
   .ed-app{grid-template-columns:200px minmax(0,1fr) 300px;gap:16px;padding:16px}
   .ed-tools .tb[data-act=reset] .lbl,.ed-tools .tb[data-act=png] .lbl{display:none}
@@ -200,7 +199,6 @@ dialog.ed-order::backdrop{background:rgba(16,32,23,.55);backdrop-filter:blur(3px
   .ed-center{order:1}
   .ed-props{order:2;position:static;max-height:none}
   .ed-tpl{order:3;position:static;max-height:none}
-  .ed-intro-in{grid-template-columns:1fr;gap:30px}
   .tpl-list{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
   .ed-stagebox{padding:22px 16px;min-height:0}
   .ed-tools{padding:10px 12px;gap:4px}
@@ -208,7 +206,8 @@ dialog.ed-order::backdrop{background:rgba(16,32,23,.55);backdrop-filter:blur(3px
   .tb.primary .lbl,.tb.ghost .lbl{display:inline}
   .ed-tools .grow{flex-basis:100%;height:0}
   .ed-tools .tb.primary,.ed-tools .tb.ghost{flex:1;justify-content:center}
-  .ed-intro{padding:40px 0 0}
+  .ed-intro{padding:40px 0 26px}
+  .ed-steps li+li::before{width:22px;margin:0 10px}
   .ed-stagebox{padding:34px 16px 28px}
 }
 @media(max-width:560px){
@@ -218,9 +217,9 @@ dialog.ed-order::backdrop{background:rgba(16,32,23,.55);backdrop-filter:blur(3px
 }
 
 /* ---- krem traka ispod editora ---- */
-.ed-promise{background:var(--ivory);border-bottom:1px solid var(--line)}
+.ed-promise{background:var(--ivory);padding:0}
 .ed-promise .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;padding-top:54px;padding-bottom:54px}
-.ed-promise div{border-top:1px solid var(--gold-2);padding-top:18px}
+.ed-promise .wrap>div{border-top:1px solid var(--gold-2);padding-top:18px}
 .ed-promise b{display:block;font-family:var(--serif);font-weight:400;font-size:1.3rem;color:var(--green);margin-bottom:6px}
 .ed-promise p{font-size:.88rem;color:var(--stone);line-height:1.6}
 @media(max-width:800px){.ed-promise .wrap{grid-template-columns:1fr;gap:26px}}

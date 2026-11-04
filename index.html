@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Great+Vibes&family=Parisienne&family=Italianno&family=Allura&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="stil.css?v=4">
+<link rel="stylesheet" href="stil.css?v=5">
 </head>
 <body>
 
 <div class="topbar" role="region" aria-label="Obaveštenja"><div class="tb-track">
-  <a class="tb-msg on" href="editor.html"><b>Novo:</b> Mango Atelje, napravite svoju pozivnicu online <span aria-hidden="true">→</span></a>
+  <a class="tb-msg on" href="editor.html"><b>Novo:</b> Mango Radionica, napravite svoju pozivnicu online <span aria-hidden="true">→</span></a>
   <a class="tb-msg" href="pozivnice-boarding-pass.html"><b>Bestseler:</b> boarding pass i pasoš pozivnice <span aria-hidden="true">→</span></a>
   <span class="tb-msg">Elektronska pozivnica gratis uz štampane</span>
   <span class="tb-msg">Izrada do 14 radnih dana od uplate avansa</span>
@@ -81,7 +81,7 @@
 <section class="atelje" id="atelje">
   <div class="wrap atelje-grid">
     <div class="atelje-copy reveal">
-      <div class="eyebrow">Novo · Mango Atelje</div>
+      <div class="eyebrow">Novo · Mango Radionica</div>
       <h2 class="h-lg">Vaša pozivnica,<br><em>vašim rukopisom</em></h2>
       <p class="lead">Izaberite šablon i upišite imena, datum i mesto. Izaberite jedan od 210 fontova i rasporedite tekst kako vam se dopada. Pripremu vidite odmah, a mi je štampamo na papiru koji izaberete.</p>
       <ol class="steps">
@@ -94,7 +94,7 @@
         <a class="link" href="editor.html?s=boarding-pass">Probaj boarding pass <span>→</span></a>
       </div>
     </div>
-    <a class="atelje-demo reveal" href="editor.html" aria-label="Otvori Mango Atelje">
+    <a class="atelje-demo reveal" href="editor.html" aria-label="Otvori Mango Radionica">
       <div class="demo-card">
         <img src="sabloni/zelenilo.svg" alt="" width="1270" height="1780" loading="lazy">
         <div class="dt d1">Zajedno sa porodicama</div>
@@ -345,7 +345,7 @@
         </form>
       </div>
       <div><h5>Pozivnice</h5><ul><li><a href="pozivnice-boarding-pass.html">Boarding pass i pasoš</a></li><li><a href="pozivnice-vencanja.html">Venčanja</a></li><li><a href="pozivnice-krstenja.html">Krštenja</a></li><li><a href="pozivnice-rodjendani.html">Dečiji rođendani</a></li><li><a href="pozivnice-punoletstva.html">Punoletstva</a></li></ul></div>
-      <div><h5>Informacije</h5><ul><li><a href="editor.html">Mango Atelje: napravite pozivnicu</a></li><li><a href="pecati.html">Voštani pečati</a></li><li><a href="koverte.html">Koverte</a></li><li><a href="stampa.html">Štampa vašeg dizajna</a></li><li><a href="#papir">Vrste papira</a></li><li><a href="#cene">Cenovnik</a></li><li><a href="kalkulator.html">Kalkulator cena</a></li><li><a href="#prica">Kako poručiti</a></li><li><a href="#pitanja">Česta pitanja</a></li></ul></div>
+      <div><h5>Informacije</h5><ul><li><a href="editor.html">Mango Radionica: napravite pozivnicu</a></li><li><a href="pecati.html">Voštani pečati</a></li><li><a href="koverte.html">Koverte</a></li><li><a href="stampa.html">Štampa vašeg dizajna</a></li><li><a href="#papir">Vrste papira</a></li><li><a href="#cene">Cenovnik</a></li><li><a href="kalkulator.html">Kalkulator cena</a></li><li><a href="#prica">Kako poručiti</a></li><li><a href="#pitanja">Česta pitanja</a></li></ul></div>
       <div><h5>Kontakt</h5><ul><li><a href="https://www.instagram.com/mango.pozivnice/" target="_blank" rel="noopener">Instagram @mango.pozivnice</a></li><li><a href="https://www.facebook.com/people/mangopozivnice/100089547316737" target="_blank" rel="noopener">Facebook</a></li><li>Novi Sad</li><li>Dostava u celoj Srbiji</li></ul></div>
     </div>
     <div class="f-bot"><span>© 2026 Mango Pozivnice</span><span>Ana i Jovan · Novi Sad</span></div>
@@ -386,7 +386,7 @@ document.querySelectorAll('[role=tablist]').forEach(list=>{
   tabs.forEach((b,i)=>{b.onclick=()=>pick(b);b.onkeydown=e=>{const d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(d){const n=tabs[(i+d+tabs.length)%tabs.length];pick(n);n.focus()}}});
 });
 
-// ---- Mango Atelje: živi primer ----
+// ---- Mango Radionica: živi primer ----
 (function(){
   const card=document.querySelector('.demo-card'); if(!card) return;
   const n1=document.getElementById('dn1'), n2=document.getElementById('dn2'), names=card.querySelector('.dnames');

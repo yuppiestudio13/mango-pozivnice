@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mango Atelje · Napravite svoju pozivnicu</title>
+<meta name="description" content="Izaberite šablon, upišite svoj tekst, izaberite font i rasporedite tekst. Pogledajte pripremu i poručite štampu ili elektronsku pozivnicu.">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="stil.css">
+<link rel="stylesheet" href="editor/editor.css">
+</head>
+<body>
+
+<div class="topbar"><a href="editor.html"><b>Novo:</b> Mango Atelje, napravite svoju pozivnicu online <span aria-hidden="true">→</span></a><span class="tb-rest"> · Elektronska pozivnica gratis · Dostava u celoj Srbiji</span></div>
+
+<header>
+  <div class="wrap">
+    <button class="burger" aria-label="Meni" onclick="drawer.classList.add('open')"><span></span><span></span><span></span></button>
+    <nav><a href="index.html#kolekcije">Kolekcije</a><a href="index.html#boarding">Boarding pass</a><a href="pecati.html">Pečati</a><a href="koverte.html">Koverte</a></nav>
+    <a class="brand" href="index.html"><svg class="logo" viewBox="0 0 330 74" fill="none" stroke="currentColor" stroke-width="7" stroke-miterlimit="2" aria-label="Mango"><path d="M8 66V16l27 38 27-38v50"/><path d="M76 66l25-52 25 52"/><path d="M140 66V16l38 50V16"/><path d="M240 26a25 25 0 1 0 3 22V41h-18"/><path d="M282 16c14 0 23 12 23 26s-10 24-23 24-23-10-23-24 9-26 23-26z"/><path d="M296 14c1-8 7-12 15-12-1 8-7 12-15 12z" fill="currentColor" stroke="none"/><path d="M299 16c6-5 13-5 19 0-6 5-13 5-19 0z" fill="currentColor" stroke="none"/></svg><small>Pozivnice</small></a>
+    <nav class="right"><a class="nav-cta" href="editor.html" aria-current="page">Napravi pozivnicu</a><a href="stampa.html">Vaš dizajn</a><a href="kalkulator.html">Kalkulator</a><a href="kalkulator.html#porudzbina">Poruči</a></nav>
+  </div>
+</header>
+
+<div class="drawer" id="drawer">
+  <button class="x" aria-label="Zatvori" onclick="drawer.classList.remove('open')">×</button>
+  <a class="d-cta" href="editor.html">Napravi svoju pozivnicu ✦</a>
+  <a href="index.html#kolekcije">Kolekcije</a>
+  <a href="index.html#boarding">Boarding pass</a>
+  <a href="pecati.html">Pečati</a>
+  <a href="koverte.html">Koverte</a>
+  <a href="stampa.html">Štampa vašeg dizajna</a>
+  <a href="index.html#cene">Cene</a>
+  <a href="kalkulator.html">Kalkulator</a>
+  <a href="https://www.instagram.com/mango.pozivnice/">Instagram</a>
+</div>
+
+<main>
+  <div class="wrap ed-intro">
+    <div class="eyebrow">Mango Atelje <span class="beta">Proba</span></div>
+    <h1 class="h-lg">Napravite <em>svoju</em> pozivnicu</h1>
+    <p class="lead">Izaberite šablon, upišite svoj tekst, izaberite font i rasporedite tekst kako vam se dopada. Dizajn šablona ostaje isti. Kad završite, pošaljite nam pripremu za štampu ili poručite elektronsku pozivnicu.</p>
+  </div>
+
+  <div class="ed-app" id="app">
+    <aside class="ed-tpl" aria-label="Šabloni">
+      <h3>Šabloni</h3>
+      <div class="tpl-list" id="tplList"></div>
+      <p class="tpl-soon">Uskoro još šablona: venčanja, krštenja, rođendani i pasoš.</p>
+    </aside>
+
+    <section class="ed-center" aria-label="Pozivnica">
+      <div class="admin-bar" id="adminBar">
+        <span>Režim za štampu (samo za Mango):</span>
+        <button class="tb" data-act="pdf">PDF za štampu, 300 dpi, bez žiga</button>
+        <button class="tb" data-act="png-clean">PNG bez žiga</button>
+      </div>
+      <div class="ed-tools" role="toolbar" aria-label="Alati">
+        <button class="tb" data-act="undo" title="Poništi (Ctrl+Z)" aria-label="Poništi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg><span class="lbl">Nazad</span></button>
+        <button class="tb" data-act="redo" title="Ponovi (Ctrl+Shift+Z)" aria-label="Ponovi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg><span class="lbl">Napred</span></button>
+        <span class="sep"></span>
+        <button class="tb" data-act="add" aria-label="Dodaj tekst"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">Dodaj tekst</span></button>
+        <button class="tb" data-act="guides" aria-pressed="true" title="Prikaži bezbednu zonu i vodilje" aria-label="Vodilje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" stroke-dasharray="2 2"/><path d="M12 2v20"/></svg><span class="lbl">Vodilje</span></button>
+        <button class="tb" data-act="reset" title="Vrati originalni tekst šablona" aria-label="Vrati šablon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4v6h6"/><path d="M5 15a8 8 0 1 0 1-9L4 10"/></svg><span class="lbl">Vrati šablon</span></button>
+        <span class="grow"></span>
+        <button class="tb" data-act="png" title="Preuzmi sliku pripreme sa vodenim žigom" aria-label="Preuzmi pripremu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg><span class="lbl">Priprema</span></button>
+        <button class="tb ghost" data-act="eorder"><span class="lbl">E-pozivnica</span></button>
+        <button class="tb primary" data-act="order"><span class="lbl">Poruči štampu</span></button>
+      </div>
+      <div class="ed-stagebox" id="box">
+        <div class="stage-frame" id="frame">
+          <div class="stage edit guides" id="stage">
+            <img class="bg" id="bg" alt="">
+            <div class="layers" id="layers"></div>
+            <div class="safe" id="safe"></div>
+            <div class="guide v" id="gv"></div>
+            <div class="guide h" id="gh"></div>
+            <div class="wm" id="wm"></div>
+          </div>
+        </div>
+      </div>
+      <p class="ed-hint" id="hint">Kliknite na tekst da ga izaberete, ponovo kliknite da kucate. Prevucite tekst da ga pomerite. Fino pomeranje: <kbd>← ↑ → ↓</kbd></p>
+    </section>
+
+    <aside class="ed-props" id="props" aria-label="Podešavanja teksta">
+      <div id="pNone" class="props-empty"><b>Izaberite tekst</b>Kliknite na bilo koji tekst na pozivnici ili ga izaberite sa liste ispod. Zatim mu menjate font, veličinu, boju i položaj.</div>
+
+      <div id="pSel" hidden>
+        <div class="pg">
+          <label for="pText">Tekst</label>
+          <textarea id="pText" rows="3"></textarea>
+        </div>
+        <div class="pg">
+          <span class="lab">Font <output id="fpCount"></output></span>
+          <button class="fp-btn" id="fpBtn" aria-expanded="false" aria-controls="fp"><span id="fpName">Font</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="fp" id="fp" hidden>
+            <input type="search" id="fpSearch" placeholder="Pretraži fontove…" aria-label="Pretraži fontove">
+            <div class="chips" id="fpCats"></div>
+            <label class="cyr"><input type="checkbox" id="fpCyr"> Samo fontovi sa ćirilicom</label>
+            <div class="list" id="fpList" role="listbox" aria-label="Fontovi"></div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <select id="pWeight" aria-label="Debljina"></select>
+            <div class="seg toggles" style="flex:none">
+              <button id="pItalic" aria-pressed="false" title="Kurziv" aria-label="Kurziv"><i>I</i></button>
+              <button id="pUpper" aria-pressed="false" title="Sva velika slova" aria-label="Velika slova" style="font-family:var(--sans);font-size:.7rem;letter-spacing:.1em">AA</button>
+            </div>
+          </div>
+        </div>
+        <div class="pg">
+          <span class="lab">Veličina <output id="oSize"></output></span>
+          <div class="row"><input type="range" id="pSize" min="5" max="90" step="0.5" aria-label="Veličina"><input class="num" type="number" id="pSizeN" min="4" max="120" step="0.5" aria-label="Veličina u pt"></div>
+        </div>
+        <div class="pg">
+          <span class="lab">Boja</span>
+          <div class="swatches" id="pColors"></div>
+        </div>
+        <div class="pg">
+          <span class="lab">Poravnanje</span>
+          <div class="seg" id="pAlign">
+            <button data-v="left" aria-label="Levo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 10h10M4 14h16M4 18h10"/></svg></button>
+            <button data-v="center" aria-label="Centrirano"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M7 10h10M4 14h16M7 18h10"/></svg></button>
+            <button data-v="right" aria-label="Desno"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M10 10h10M4 14h16M10 18h10"/></svg></button>
+          </div>
+        </div>
+        <div class="pg">
+          <span class="lab">Razmak slova <output id="oLs"></output></span>
+          <input type="range" id="pLs" min="-60" max="800" step="10" aria-label="Razmak slova">
+          <span class="lab" style="margin-top:12px">Prored <output id="oLh"></output></span>
+          <input type="range" id="pLh" min="0.7" max="2.4" step="0.05" aria-label="Prored">
+        </div>
+        <div class="pg">
+          <span class="lab">Raspored</span>
+          <div class="acts">
+            <button class="tb" data-act="centerH">Centriraj levo-desno</button>
+            <button class="tb" data-act="dup">Dupliraj</button>
+            <button class="tb" data-act="front">Ispred</button>
+            <button class="tb" data-act="back">Iza</button>
+            <button class="tb danger" data-act="del" style="grid-column:1/-1">Obriši tekst</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pg">
+        <h3 style="margin-bottom:6px">Svi tekstovi</h3>
+        <div class="layer-list" id="layerList"></div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<dialog class="ed-order" id="order" aria-labelledby="orderTitle">
+  <form method="dialog" class="order-in" id="orderForm">
+    <button class="x" value="close" aria-label="Zatvori">×</button>
+    <div class="eyebrow">Poslednji korak</div>
+    <h2 id="orderTitle">Pošaljite nam svoj dizajn</h2>
+    <div class="kind">
+      <label><input type="radio" name="kind" value="stampa" checked><b>Štampane pozivnice</b><small>Pregledamo pripremu, javimo cenu i štampamo na papiru po izboru. Elektronska verzija je gratis.</small></label>
+      <label><input type="radio" name="kind" value="e"><b>Samo elektronska</b><small>Bez štampe. Pozivnicu bez vodenog žiga dobijate na e-mail, spremnu za Viber i WhatsApp.</small></label>
+    </div>
+    <div class="of">
+      <div class="f"><label for="oName">Ime i prezime</label><input id="oName" autocomplete="name" placeholder="Ana Petrović"></div>
+      <div class="f"><label for="oPhone">Telefon</label><input id="oPhone" type="tel" autocomplete="tel" placeholder="06x xxx xxxx"></div>
+      <div class="f" id="fEmail"><label for="oEmail">E-mail</label><input id="oEmail" type="email" autocomplete="email" placeholder="ana@primer.rs"></div>
+      <div class="f" id="fQty"><label for="oQty">Broj pozivnica</label><input id="oQty" type="number" min="30" step="5" placeholder="npr. 80"></div>
+      <div class="f"><label for="oDate">Datum događaja</label><input id="oDate" type="date"></div>
+      <div class="f full"><label for="oNote">Napomena</label><textarea id="oNote" placeholder="Papir, koverte, pečat, rok…"></textarea></div>
+    </div>
+    <div class="enote" id="eNote" hidden><b>Plaćanje karticom stiže uskoro.</b> Tada će se elektronska pozivnica sama poslati na vaš e-mail čim platite. Do tada nam pošaljite poruku. Javićemo vam cenu i podatke za uplatu, a pozivnicu bez žiga šaljemo istog dana.</div>
+    <div class="send" id="send">
+      <button type="button" data-ch="viber">Viber</button>
+      <button type="button" data-ch="whatsapp">WhatsApp</button>
+      <button type="button" data-ch="instagram">Instagram</button>
+      <button type="button" class="alt" data-ch="copy">Kopiraj poruku</button>
+    </div>
+    <p class="fine">U poruci je link do vašeg dizajna. Preko njega vidimo tačno ono što ste napravili. Okvirnu cenu štampe proverite u <a href="kalkulator.html" style="border-bottom:1px solid">kalkulatoru</a>.</p>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<footer>
+  <div class="wrap">
+    <div class="f-top">
+      <div>
+        <a class="brand" href="index.html"><svg class="logo" viewBox="0 0 330 74" fill="none" stroke="currentColor" stroke-width="7" stroke-miterlimit="2" aria-label="Mango"><path d="M8 66V16l27 38 27-38v50"/><path d="M76 66l25-52 25 52"/><path d="M140 66V16l38 50V16"/><path d="M240 26a25 25 0 1 0 3 22V41h-18"/><path d="M282 16c14 0 23 12 23 26s-10 24-23 24-23-10-23-24 9-26 23-26z"/><path d="M296 14c1-8 7-12 15-12-1 8-7 12-15 12z" fill="currentColor" stroke="none"/><path d="M299 16c6-5 13-5 19 0-6 5-13 5-19 0z" fill="currentColor" stroke="none"/></svg><small>Pozivnice</small></a>
+        <p style="margin-top:22px;max-width:300px">Pozivnice za venčanja, krštenja i proslave. Prijavite se za novosti i nove kolekcije.</p>
+        <form class="news" onsubmit="event.preventDefault();this.querySelector('input').value='';this.querySelector('button').textContent='Hvala ✓'">
+          <input type="email" placeholder="Vaša e-mail adresa" required aria-label="E-mail">
+          <button>Prijava</button>
+        </form>
+      </div>
+      <div><h5>Kolekcije</h5><ul><li><a href="index.html#boarding">Boarding pass i pasoš</a></li><li><a href="index.html#kolekcije">Venčanja</a></li><li><a href="index.html#kolekcije">Krštenja</a></li><li><a href="index.html#kolekcije">Dečiji rođendani</a></li><li><a href="index.html#kolekcije">Punoletstva</a></li></ul></div>
+      <div><h5>Informacije</h5><ul><li><a href="editor.html" aria-current="page">Mango Atelje: napravite pozivnicu</a></li><li><a href="pecati.html">Voštani pečati</a></li><li><a href="koverte.html">Koverte</a></li><li><a href="stampa.html">Štampa vašeg dizajna</a></li><li><a href="index.html#cene">Cenovnik</a></li><li><a href="kalkulator.html">Kalkulator cena</a></li></ul></div>
+      <div><h5>Kontakt</h5><ul><li><a href="https://www.instagram.com/mango.pozivnice/" target="_blank" rel="noopener">Instagram @mango.pozivnice</a></li><li><a href="https://www.facebook.com/people/mangopozivnice/100089547316737" target="_blank" rel="noopener">Facebook</a></li><li>Novi Sad</li><li>Dostava u celoj Srbiji</li></ul></div>
+    </div>
+    <div class="f-bot"><span>© 2026 Mango Pozivnice</span><span>Ana i Jovan · Novi Sad</span></div>
+  </div>
+</footer>
+
+<script>const drawer=document.getElementById('drawer');</script>
+<script src="editor/fontovi.js"></script>
+<script src="sabloni/sabloni.js"></script>
+<script src="editor/editor.js"></script>
+</body>
+</html>

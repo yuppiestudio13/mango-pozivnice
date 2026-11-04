@@ -1,0 +1,8 @@
+# sirove fotografije (4,4 GB) – ne idu na sajt
+mango-slike/
+# alati i sistemski fajlovi
+.claude/
+.playwright-mcp/
+.DS_Store
+# stare rezervne verzije (istorija je sada u git-u)
+*-backup.html

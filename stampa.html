@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Štampa vašeg dizajna · Mango Pozivnice</title>
+<meta name="description" content="Pošaljite svoj dizajn pozivnice u PDF ili SVG formatu (12,5 × 16,5 cm), izaberite papir, foliotisak, koverte i pečate.">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="stil.css">
+</head>
+<body>
+
+<div class="topbar"><a href="editor.html"><b>Novo:</b> Mango Atelje, napravite svoju pozivnicu online <span aria-hidden="true">→</span></a><span class="tb-rest"> · Elektronska pozivnica gratis · Dostava u celoj Srbiji</span></div>
+
+<header>
+  <div class="wrap">
+    <button class="burger" aria-label="Meni" onclick="drawer.classList.add('open')"><span></span><span></span><span></span></button>
+    <nav><a href="index.html#kolekcije">Kolekcije</a><a href="index.html#boarding">Boarding pass</a><a href="pecati.html">Pečati</a><a href="koverte.html">Koverte</a></nav>
+    <a class="brand" href="index.html"><svg class="logo" viewBox="0 0 330 74" fill="none" stroke="currentColor" stroke-width="7" stroke-miterlimit="2" aria-label="Mango"><path d="M8 66V16l27 38 27-38v50"/><path d="M76 66l25-52 25 52"/><path d="M140 66V16l38 50V16"/><path d="M240 26a25 25 0 1 0 3 22V41h-18"/><path d="M282 16c14 0 23 12 23 26s-10 24-23 24-23-10-23-24 9-26 23-26z"/><path d="M296 14c1-8 7-12 15-12-1 8-7 12-15 12z" fill="currentColor" stroke="none"/><path d="M299 16c6-5 13-5 19 0-6 5-13 5-19 0z" fill="currentColor" stroke="none"/></svg><small>Pozivnice</small></a>
+    <nav class="right"><a class="nav-cta" href="editor.html">Napravi pozivnicu</a><a href="stampa.html" aria-current="page">Vaš dizajn</a><a href="kalkulator.html">Kalkulator</a><a href="kalkulator.html#porudzbina">Poruči</a></nav>
+  </div>
+</header>
+
+<div class="drawer" id="drawer">
+  <button class="x" aria-label="Zatvori">×</button>
+  <a class="d-cta" href="editor.html">Napravi svoju pozivnicu ✦</a>
+  <a href="index.html#kolekcije">Kolekcije</a>
+  <a href="index.html#boarding">Boarding pass</a>
+  <a href="pecati.html">Pečati</a>
+  <a href="koverte.html">Koverte</a>
+  <a href="stampa.html" aria-current="page">Štampa vašeg dizajna</a>
+  <a href="index.html#papir">Papir</a>
+  <a href="index.html#cene">Cene</a>
+  <a href="index.html#prica">O nama</a>
+  <a href="index.html#pitanja">Pitanja</a>
+  <a href="kalkulator.html">Kalkulator</a>
+  <a href="https://www.instagram.com/mango.pozivnice/">Instagram</a>
+</div>
+
+<main>
+<section class="hero sub" style="padding:0">
+  <div class="copy">
+    <div class="crumbs"><a href="index.html">Početna</a><span>/</span>Štampa vašeg dizajna</div>
+    <h1 class="h-xl">Vaš dizajn, <em>naša štampa</em></h1>
+    <p class="lead">Imate gotov dizajn pozivnice? Pošaljite nam fajl, izaberite papir i dodatke, a mi ćemo ga odštampati i složiti, sa kovertom i pečatom ako želite.</p>
+    <div class="actions">
+      <a class="btn" href="#porudzbina">Pošalji dizajn</a>
+      <a class="link" href="#pravila">Kako da pripremim fajl <span>→</span></a>
+    </div>
+  </div>
+  <div class="stage-wrap">
+    <img src="slike/kol-monogram.jpg" alt="Odštampane pozivnice sa crnim monogramom i zaobljenim uglovima" fetchpriority="high">
+    <div class="caption">Format 12,5 × 16,5 cm</div>
+  </div>
+</section>
+
+<section style="padding-bottom:40px">
+  <div class="wrap">
+    <div class="steps-row reveal">
+      <div><b>01</b><h3>Pošaljete fajl</h3><p>PDF ili SVG, u formatu 12,5 × 16,5 cm.</p></div>
+      <div><b>02</b><h3>Izaberete papir</h3><p>Vrstu štampe, foliotisak i dodatke.</p></div>
+      <div><b>03</b><h3>Proverimo pripremu</h3><p>Javljamo vam se ako nešto treba prilagoditi.</p></div>
+      <div><b>04</b><h3>Štampamo i šaljemo</h3><p>Pozivnice stižu Post Expressom na vašu adresu.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="porudzbina" style="padding-top:60px">
+  <div class="wrap">
+    <div class="sent hide" id="sent"><div class="eyebrow">Hvala!</div><h2>Vaš dizajn je poslat</h2><p class="lead" style="margin:10px auto 0">Pregledaćemo fajl i javiti vam se na e-mail ili telefon sa pripremom i tačnom cenom.</p></div>
+    <form class="order" id="orderForm" method="POST" enctype="multipart/form-data" novalidate>
+      <div>
+        <fieldset>
+          <legend><span>Korak 1</span>Vaš fajl</legend>
+          <p class="hint">PDF ili SVG, dimenzije <b>12,5 × 16,5 cm</b>. Najviše 10 MB po fajlu.</p>
+          <label class="drop" id="dropFront"><b>Prednja strana</b> <small>obavezno</small>
+            <input type="file" name="Prednja strana" id="fileFront" accept=".pdf,.svg,application/pdf,image/svg+xml" required></label>
+          <div class="fcheck" id="chkFront" aria-live="polite"></div>
+          <label class="drop hide" id="dropBack"><b>Zadnja strana</b> <small>za dvostranu štampu</small>
+            <input type="file" name="Zadnja strana" id="fileBack" accept=".pdf,.svg,application/pdf,image/svg+xml"></label>
+          <div class="fcheck" id="chkBack" aria-live="polite"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>Korak 2</span>Vrsta štampe</legend>
+          <div class="choices" id="printChoices">
+            <div class="choice"><input type="radio" name="Vrsta štampe" id="pr-obicna" value="Štampa u boji" checked><label for="pr-obicna"><b>Štampa u boji</b><small>na papiru koji izaberete</small><em>od 60 din</em></label></div>
+            <div class="choice"><input type="radio" name="Vrsta štampe" id="pr-folio" value="Foliotisak"><label for="pr-folio"><b>Foliotisak</b><small>mat štampa + folija</small><em>130 din</em></label></div>
+          </div>
+          <div id="paperBox">
+            <p class="hint">Papir</p>
+            <div class="choices">
+              <div class="choice"><input type="radio" name="Papir" id="pa-350" value="350g papir" data-price="60" checked><label for="pa-350"><b>350g papir</b><small>gladak, mat</small><em>60 din</em></label></div>
+              <div class="choice"><input type="radio" name="Papir" id="pa-hrap" value="Hrapavi papir" data-price="80"><label for="pa-hrap"><b>Hrapavi papir</b><small>izražena tekstura</small><em>80 din</em></label></div>
+              <div class="choice"><input type="radio" name="Papir" id="pa-sedef" value="Sedefasti papir" data-price="80"><label for="pa-sedef"><b>Sedefasti papir</b><small>blagi biserni sjaj</small><em>80 din</em></label></div>
+            </div>
+          </div>
+          <div id="foilBox" class="hide">
+            <p class="hint">Boja folije</p>
+            <div class="choices">
+              <div class="choice"><input type="radio" name="Boja folije" id="fo-gold" value="Zlatna (gold)" checked><label for="fo-gold"><b><i class="foil-dot" style="background:linear-gradient(135deg,#f3dc8c,#b8902f)"></i>Zlatna</b></label></div>
+              <div class="choice"><input type="radio" name="Boja folije" id="fo-rose" value="Rose gold"><label for="fo-rose"><b><i class="foil-dot" style="background:linear-gradient(135deg,#f6c9b5,#b9776a)"></i>Rose gold</b></label></div>
+              <div class="choice"><input type="radio" name="Boja folije" id="fo-silver" value="Srebrna (silver)"><label for="fo-silver"><b><i class="foil-dot" style="background:linear-gradient(135deg,#f2f2f2,#9a9a9a)"></i>Srebrna</b></label></div>
+              <div class="choice"><input type="radio" name="Boja folije" id="fo-red" value="Crvena (red)"><label for="fo-red"><b><i class="foil-dot" style="background:linear-gradient(135deg,#e2585a,#8f1a20)"></i>Crvena</b></label></div>
+            </div>
+            <div class="fields">
+              <div class="field full"><label for="foilWhat">Šta ide u foliotisak?</label>
+                <textarea id="foilWhat" name="Šta ide u foliotisak" placeholder="Na primer: imena mladenaca i datum na prednjoj strani"></textarea></div>
+            </div>
+            <label class="drop"><b>Fajl samo sa elementima za foliju</b> <small>opciono, ali najsigurnije</small>
+              <input type="file" name="Fajl za foliju" id="fileFoil" accept=".pdf,.svg,application/pdf,image/svg+xml"></label>
+            <div class="fcheck" id="chkFoil" aria-live="polite"></div>
+          </div>
+          <p class="hint">Strane</p>
+          <div class="choices">
+            <div class="choice"><input type="radio" name="Strane" id="si-1" value="Jednostrana" checked><label for="si-1"><b>Jednostrana</b><small>štampa samo spreda</small><em>uključeno</em></label></div>
+            <div class="choice"><input type="radio" name="Strane" id="si-2" value="Dvostrana"><label for="si-2"><b>Dvostrana</b><small>prednja i zadnja strana</small><em id="duplexPrice">+20 din</em></label></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>Korak 3</span>Dodaci</legend>
+          <div class="choices">
+            <div class="choice"><input type="checkbox" name="Koverta" id="ex-kov" value="Koverta 13 × 17 cm" data-price="40"><label for="ex-kov"><b>Koverta 13 × 17 cm</b><small>odgovara formatu 12,5 × 16,5</small><em>+40 din</em></label></div>
+            <div class="choice"><input type="checkbox" name="Voštani pečat" id="ex-pecat" value="Da" data-price="30"><label for="ex-pecat"><b>Voštani pečat</b><small>boja po izboru</small><em>+30 din</em></label></div>
+            <div class="choice"><input type="checkbox" name="Paus papir omot" id="ex-paus" value="Da" data-price="50"><label for="ex-paus"><b>Paus papir, omot</b><small>providni omot oko pozivnice</small><em>+50 din</em></label></div>
+          </div>
+          <div class="fields">
+            <div class="field hide" id="kovColorF"><label for="kovColor">Boja koverte</label>
+              <input id="kovColor" name="Boja koverte" placeholder="npr. žalfija zelena, slonovača"></div>
+            <div class="field hide" id="sealColorF"><label for="sealColor">Boja pečata</label>
+              <select id="sealColor" name="Boja pečata"><option>Zlatna</option><option>Bela</option><option>Bakarna</option><option>Maslinasta</option><option>Mint</option><option>Roze</option><option>Srebrna</option><option>Taupe</option><option>Nisam siguran/na, predložite</option></select></div>
+          </div>
+          <p class="hint">Pogledajte <a href="koverte.html" style="border-bottom:1px solid">boje koverti</a> i <a href="pecati.html" style="border-bottom:1px solid">boje pečata</a>. Kvadratna koverta 15 × 15 cm nije za ovaj format.</p>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>Korak 4</span>Količina i kontakt</legend>
+          <div class="fields">
+            <div class="field"><label for="qty">Količina (min. 30 kom)</label><input type="number" id="qty" name="Količina" min="30" step="1" value="50" required></div>
+            <div class="field"><label for="needBy">Potrebno do</label><input type="date" id="needBy" name="Potrebno do"></div>
+            <div class="field"><label for="cName">Ime i prezime</label><input id="cName" name="Ime i prezime" autocomplete="name" required></div>
+            <div class="field"><label for="cPhone">Telefon</label><input id="cPhone" name="Telefon" type="tel" autocomplete="tel" required></div>
+            <div class="field full"><label for="cEmail">E-mail</label><input id="cEmail" name="email" type="email" autocomplete="email" required></div>
+            <div class="field full"><label for="cNote">Napomena</label><textarea id="cNote" name="Napomena" placeholder="Bilo šta što treba da znamo: zaobljeni uglovi, adresa za dostavu, rok…"></textarea></div>
+          </div>
+        </fieldset>
+
+        <div class="tips" id="pravila">
+          <h3>Kako da pripremite fajl</h3>
+          <ul>
+            <li>Format pozivnice je <b>12,5 × 16,5 cm</b>, uspravno ili položeno.</li>
+            <li>Pošaljite <b>PDF</b> ili <b>SVG</b>. Tekst pretvorite u krive (outline) ili ugradite fontove.</li>
+            <li>Važan tekst držite bar 5 mm od ivice, da ne bude odsečen.</li>
+            <li>Za dvostranu štampu pošaljite prednju i zadnju stranu kao posebne fajlove.</li>
+            <li>Za foliotisak je najsigurnije poslati poseban fajl samo sa elementima koji idu u foliju.</li>
+          </ul>
+        </div>
+
+        <input type="hidden" name="Obračun" id="calcField">
+        <input type="hidden" name="_subject" id="subjField" value="Nova porudžbina: štampa vašeg dizajna">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_next" id="nextField">
+        <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+      </div>
+
+      <aside class="osum" aria-live="polite">
+        <h3>Vaša porudžbina</h3>
+        <div id="sumRows"></div>
+        <div class="tot"><span>Ukupno</span><b id="sumTotal">0 din</b></div>
+        <div class="per" id="sumPer"></div>
+        <button class="btn" type="submit" id="sendBtn">Pošalji dizajn</button>
+        <div class="msg" id="formMsg"></div>
+        <p class="note">Cena je okvirna. Tačnu cenu potvrđujemo kada pregledamo fajl. Poštarina nije uključena.</p>
+      </aside>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="f-top">
+      <div>
+        <a class="brand" href="index.html"><svg class="logo" viewBox="0 0 330 74" fill="none" stroke="currentColor" stroke-width="7" stroke-miterlimit="2" aria-label="Mango"><path d="M8 66V16l27 38 27-38v50"/><path d="M76 66l25-52 25 52"/><path d="M140 66V16l38 50V16"/><path d="M240 26a25 25 0 1 0 3 22V41h-18"/><path d="M282 16c14 0 23 12 23 26s-10 24-23 24-23-10-23-24 9-26 23-26z"/><path d="M296 14c1-8 7-12 15-12-1 8-7 12-15 12z" fill="currentColor" stroke="none"/><path d="M299 16c6-5 13-5 19 0-6 5-13 5-19 0z" fill="currentColor" stroke="none"/></svg><small>Pozivnice</small></a>
+        <p style="margin-top:22px;max-width:300px">Pozivnice za venčanja, krštenja i proslave. Prijavite se za novosti i nove kolekcije.</p>
+        <form class="news" onsubmit="event.preventDefault();this.querySelector('input').value='';this.querySelector('button').textContent='Hvala ✓'">
+          <input type="email" placeholder="Vaša e-mail adresa" required aria-label="E-mail">
+          <button>Prijava</button>
+        </form>
+      </div>
+      <div><h5>Kolekcije</h5><ul><li><a href="index.html#boarding">Boarding pass i pasoš</a></li><li><a href="index.html#kolekcije">Venčanja</a></li><li><a href="index.html#kolekcije">Krštenja</a></li><li><a href="index.html#kolekcije">Dečiji rođendani</a></li><li><a href="index.html#kolekcije">Punoletstva</a></li></ul></div>
+      <div><h5>Informacije</h5><ul><li><a href="editor.html">Mango Atelje: napravite pozivnicu</a></li><li><a href="pecati.html">Voštani pečati</a></li><li><a href="koverte.html">Koverte</a></li><li><a href="stampa.html" aria-current="page">Štampa vašeg dizajna</a></li><li><a href="index.html#papir">Vrste papira</a></li><li><a href="index.html#cene">Cenovnik</a></li><li><a href="kalkulator.html">Kalkulator cena</a></li><li><a href="index.html#prica">Kako poručiti</a></li><li><a href="index.html#pitanja">Česta pitanja</a></li></ul></div>
+      <div><h5>Kontakt</h5><ul><li><a href="https://www.instagram.com/mango.pozivnice/" target="_blank" rel="noopener">Instagram @mango.pozivnice</a></li><li><a href="https://www.facebook.com/people/mangopozivnice/100089547316737" target="_blank" rel="noopener">Facebook</a></li><li>Novi Sad</li><li>Dostava u celoj Srbiji</li></ul></div>
+    </div>
+    <div class="f-bot"><span>© 2026 Mango Pozivnice</span><span>Ana i Jovan · Novi Sad</span></div>
+  </div>
+</footer>
+
+<script>
+const drawer=document.getElementById('drawer');
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach((el,i)=>{el.style.transitionDelay=(i%4)*90+'ms';io.observe(el)});
+document.querySelectorAll('[role=tablist]').forEach(list=>{
+  const tabs=[...list.querySelectorAll('[role=tab]')];
+  const pick=t=>tabs.forEach(b=>{const on=b===t;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;document.getElementById(b.getAttribute('aria-controls')).hidden=!on});
+  tabs.forEach((b,i)=>{b.onclick=()=>pick(b);b.onkeydown=e=>{const d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(d){const n=tabs[(i+d+tabs.length)%tabs.length];pick(n);n.focus()}}});
+});
+</script>
+<script>
+/* =========================================================
+   ŠTAMPA VAŠEG DIZAJNA – podešavanja
+   email: adresa na koju stižu porudžbine sa fajlovima.
+   Dok je prazno, forma ne šalje ništa (prikazuje poruku).
+   ========================================================= */
+const ORDER = {
+  email: "mango.pozivnice@gmail.com",   // promeniti kad bude domen
+  minQty: 30,
+  foil: 130,              // foliotisak po komadu
+  duplex: { obicna: 20, folio: 30 },
+  maxMB: 10,
+  size: [125, 165],       // mm
+};
+
+(()=>{
+const f = document.getElementById('orderForm'); if(!f) return;
+const $ = id => document.getElementById(id);
+const fmt = n => Math.round(n).toLocaleString('sr-RS') + ' din';
+const isFoil = () => $('pr-folio').checked;
+const isDuplex = () => $('si-2').checked;
+const fileOk = {};
+
+function ui(){
+  $('paperBox').classList.toggle('hide', isFoil());
+  $('foilBox').classList.toggle('hide', !isFoil());
+  $('duplexPrice').textContent = '+' + (isFoil() ? ORDER.duplex.folio : ORDER.duplex.obicna) + ' din';
+  $('dropBack').classList.toggle('hide', !isDuplex());
+  $('chkBack').classList.toggle('hide', !isDuplex());
+  $('kovColorF').classList.toggle('hide', !$('ex-kov').checked);
+  $('sealColorF').classList.toggle('hide', !$('ex-pecat').checked);
+}
+
+function calc(){
+  const qty = Math.max(+$('qty').value || 0, ORDER.minQty);
+  const rows = [];
+  if(isFoil()) rows.push([`Foliotisak, ${f.querySelector('[name="Boja folije"]:checked').value}`, ORDER.foil]);
+  else { const p = f.querySelector('[name="Papir"]:checked'); rows.push([p.value, +p.dataset.price]); }
+  if(isDuplex()) rows.push(['Dvostrana štampa', isFoil() ? ORDER.duplex.folio : ORDER.duplex.obicna]);
+  ['ex-kov','ex-pecat','ex-paus'].forEach(id=>{ const x=$(id); if(x.checked) rows.push([x.closest('.choice').querySelector('b').textContent, +x.dataset.price]); });
+  const perPiece = rows.reduce((s,r)=>s+r[1],0);
+  const total = perPiece*qty;
+  return { qty, rows, perPiece, total };
+}
+
+function render(){
+  ui();
+  const c = calc();
+  $('sumRows').innerHTML = c.rows.map(r=>`<div class="r"><span>${r[0]}</span><span>${r[1]} din</span></div>`).join('')
+    + `<div class="r"><span>Količina</span><span>× ${c.qty}</span></div>`;
+  $('sumTotal').textContent = fmt(c.total);
+  $('sumPer').textContent = `${c.perPiece} din po komadu` + (+$('qty').value < ORDER.minQty ? ` · minimum ${ORDER.minQty} kom` : '');
+  $('calcField').value = c.rows.map(r=>`${r[0]}: ${r[1]} din/kom`).join('; ') + `; količina ${c.qty}; UKUPNO ${fmt(c.total)}`;
+}
+
+/* --- provera fajla: tip, veličina i dimenzije --- */
+const toMM = (v,u) => ({mm:1, cm:10, in:25.4, pt:25.4/72, pc:25.4/6, px:25.4/96, '':25.4/96})[u] * v;
+async function dims(file){
+  if(/\.svg$/i.test(file.name) || file.type==='image/svg+xml'){
+    const doc = new DOMParser().parseFromString(await file.text(), 'image/svg+xml');
+    const s = doc.querySelector('svg'); if(!s) return null;
+    const p = a => { const m = (s.getAttribute(a)||'').match(/^\s*([\d.]+)\s*(mm|cm|in|pt|pc|px)?\s*$/); return m ? toMM(+m[1], m[2]||'') : null; };
+    const w = p('width'), h = p('height');
+    return (w && h) ? [w, h] : null;
+  }
+  const scan = async blob => { const t = new TextDecoder('latin1').decode(await blob.arrayBuffer());
+    const re = b => t.match(new RegExp('/' + b + '\\s*\\[\\s*(-?[\\d.]+)\\s+(-?[\\d.]+)\\s+(-?[\\d.]+)\\s+(-?[\\d.]+)\\s*\\]'));
+    const m = re('TrimBox') || re('MediaBox'); return m ? [(m[3]-m[1])*25.4/72, (m[4]-m[2])*25.4/72] : null; };
+  return await scan(file.slice(0, 3e6)) || (file.size > 3e6 ? await scan(file.slice(-2e6)) : null);
+}
+async function check(input, out, key){
+  const file = input.files[0]; out.className = 'fcheck'; out.textContent = ''; fileOk[key] = !file ? null : false;
+  if(!file) return;
+  if(!/\.(pdf|svg)$/i.test(file.name)){ out.className='fcheck err'; out.textContent='Fajl mora biti PDF ili SVG.'; return; }
+  if(file.size > ORDER.maxMB*1024*1024){ out.className='fcheck err'; out.textContent=`Fajl je veći od ${ORDER.maxMB} MB. Smanjite ga ili nam ga pošaljite e-mailom.`; return; }
+  fileOk[key] = true;
+  let d = null; try{ d = await dims(file); }catch(e){}
+  const [W,H] = ORDER.size;
+  if(!d){ out.className='fcheck ok'; out.textContent='✓ Fajl je u redu. Dimenzije ćemo proveriti mi.'; return; }
+  const w = Math.round(d[0]*10)/10, h = Math.round(d[1]*10)/10;
+  const fits = (a,b) => (Math.abs(a-W)<=1.5 && Math.abs(b-H)<=1.5);
+  const bleed = (a,b) => (a>=W && b>=H && a-W<=10 && b-H<=10);
+  const txt = `${String(w).replace('.',',')} × ${String(h).replace('.',',')} mm`;
+  if(fits(w,h)||fits(h,w)){ out.className='fcheck ok'; out.textContent=`✓ Dimenzije ${txt}, tačno kako treba.`; }
+  else if(bleed(w,h)||bleed(h,w)){ out.className='fcheck ok'; out.textContent=`✓ Dimenzije ${txt}, format sa napustom. U redu je.`; }
+  else { out.className='fcheck warn'; out.textContent=`Fajl je ${txt}, a format pozivnice je 125 × 165 mm. Možete ga poslati, javićemo vam se oko prilagođavanja.`; }
+}
+[['fileFront','chkFront','front'],['fileBack','chkBack','back'],['fileFoil','chkFoil','foil']].forEach(([i,o,k])=>{
+  const inp = $(i), drop = inp.closest('.drop');
+  inp.addEventListener('change', ()=>check(inp, $(o), k));
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev, ()=>drop.classList.add('over')));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev, ()=>drop.classList.remove('over')));
+});
+
+f.addEventListener('input', render); f.addEventListener('change', render);
+
+f.addEventListener('submit', e=>{
+  e.preventDefault();
+  const msg = $('formMsg'); msg.textContent = '';
+  const need = [];
+  if(!fileOk.front) need.push('fajl prednje strane (PDF ili SVG)');
+  if(isDuplex() && !fileOk.back) need.push('fajl zadnje strane');
+  if(fileOk.foil === false) need.push('ispravan fajl za foliju');
+  if((+$('qty').value||0) < ORDER.minQty) need.push(`količinu od najmanje ${ORDER.minQty} kom`);
+  if(!$('cName').value.trim()) need.push('ime');
+  if(!$('cPhone').value.trim()) need.push('telefon');
+  if(!$('cEmail').checkValidity() || !$('cEmail').value) need.push('ispravan e-mail');
+  if(need.length){ msg.textContent = 'Nedostaje: ' + need.join(', ') + '.'; return; }
+  if(!ORDER.email){ msg.textContent = 'Slanje još nije povezano sa e-mail adresom. Pošaljite nam dizajn preko Instagrama dok ne podesimo formu.'; return; }
+  render();
+  $('subjField').value = `Štampa vašeg dizajna: ${$('cName').value.trim()}, ${calc().qty} kom`;
+  $('nextField').value = location.href.split('#')[0].split('?')[0] + '?poslato=1#porudzbina';
+  f.action = 'https://formsubmit.co/' + encodeURIComponent(ORDER.email);
+  $('sendBtn').disabled = true; $('sendBtn').textContent = 'Šaljem…';
+  f.submit();
+});
+
+if(new URLSearchParams(location.search).has('poslato')){ $('sent').classList.remove('hide'); }
+render();
+})();
+</script>
+</body>
+</html>

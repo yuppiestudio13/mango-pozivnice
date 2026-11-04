@@ -17,6 +17,7 @@ window.FONTOVI=[
 ["Ballet", "kaligrafija", 0, "400", ""],
 ["WindSong", "kaligrafija", 0, "400,500", ""],
 ["Corinthia", "kaligrafija", 0, "400,700", ""],
+["Ms Madi", "kaligrafija", 0, "400", ""],
 ["Lavishly Yours", "kaligrafija", 0, "400", ""],
 ["The Nautigal", "kaligrafija", 0, "400,700", ""],
 ["Mea Culpa", "kaligrafija", 0, "400", ""],

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mango Radionica · Izaberite dizajn pozivnice</title>
+<meta name="description" content="Izaberite dizajn pozivnice za venčanje, krštenje, rođendan ili punoletstvo, upišite svoj tekst i poručite štampu ili elektronsku pozivnicu.">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="stil.css?v=5">
+<link rel="stylesheet" href="editor/galerija.css?v=1">
+</head>
+<body>
+
+<div class="topbar" role="region" aria-label="Obaveštenja"><div class="tb-track">
+  <a class="tb-msg on" href="radionica.html"><b>Novo:</b> Mango Radionica, napravite svoju pozivnicu online <span aria-hidden="true">→</span></a>
+  <a class="tb-msg" href="pozivnice-boarding-pass.html"><b>Bestseler:</b> boarding pass i pasoš pozivnice <span aria-hidden="true">→</span></a>
+  <span class="tb-msg">Elektronska pozivnica gratis uz štampane</span>
+  <span class="tb-msg">Izrada do 14 radnih dana od uplate avansa</span>
+  <span class="tb-msg">Dostava Post Expressom u celoj Srbiji</span>
+</div></div>
+
+<header>
+  <div class="wrap">
+    <button class="burger" aria-label="Meni" onclick="drawer.classList.add('open')"><span></span><span></span><span></span></button>
+    <nav><div class="dd"><a href="pozivnice.html" aria-haspopup="true">Pozivnice</a><div class="dd-menu"><a href="pozivnice-vencanja.html">Venčanja</a><a href="pozivnice-boarding-pass.html">Boarding pass i pasoš</a><a href="pozivnice-krstenja.html">Krštenja</a><a href="pozivnice-rodjendani.html">Dečiji rođendani</a><a href="pozivnice-punoletstva.html">Punoletstva</a><a class="dd-all" href="pozivnice.html">Sve pozivnice</a></div></div><a href="pecati.html">Pečati</a><a href="koverte.html">Koverte</a></nav>
+    <a class="brand" href="index.html"><svg class="logo" viewBox="0 0 330 74" fill="none" stroke="currentColor" stroke-width="7" stroke-miterlimit="2" aria-label="Mango"><path d="M8 66V16l27 38 27-38v50"/><path d="M76 66l25-52 25 52"/><path d="M140 66V16l38 50V16"/><path d="M240 26a25 25 0 1 0 3 22V41h-18"/><path d="M282 16c14 0 23 12 23 26s-10 24-23 24-23-10-23-24 9-26 23-26z"/><path d="M296 14c1-8 7-12 15-12-1 8-7 12-15 12z" fill="currentColor" stroke="none"/><path d="M299 16c6-5 13-5 19 0-6 5-13 5-19 0z" fill="currentColor" stroke="none"/></svg><small>Pozivnice</small></a>
+    <nav class="right"><a class="nav-cta" href="radionica.html" aria-current="page">Napravi pozivnicu</a><a href="kalkulator.html">Kalkulator</a><a href="kalkulator.html#porudzbina">Poruči</a></nav>
+  </div>
+</header>
+
+<div class="drawer" id="drawer">
+  <button class="x" aria-label="Zatvori" onclick="drawer.classList.remove('open')">×</button>
+  <a class="d-cta" href="radionica.html">Napravi svoju pozivnicu ✦</a>
+  <a href="pozivnice.html">Pozivnice</a>
+  <a class="d-sub" href="pozivnice-vencanja.html">Venčanja</a>
+  <a class="d-sub" href="pozivnice-boarding-pass.html">Boarding pass i pasoš</a>
+  <a class="d-sub" href="pozivnice-krstenja.html">Krštenja</a>
+  <a class="d-sub" href="pozivnice-rodjendani.html">Dečiji rođendani</a>
+  <a class="d-sub" href="pozivnice-punoletstva.html">Punoletstva</a>
+  <a href="pecati.html">Pečati</a>
+  <a href="koverte.html">Koverte</a>
+  <a href="stampa.html">Štampa vašeg dizajna</a>
+  <a href="index.html#cene">Cene</a>
+  <a href="kalkulator.html">Kalkulator</a>
+  <a href="https://www.instagram.com/mango.pozivnice/">Instagram</a>
+</div>
+
+<main>
+  <section class="g-intro">
+    <div class="wrap">
+      <div class="eyebrow">Mango Radionica</div>
+      <h1 class="h-lg">Izaberite <em>dizajn</em></h1>
+      <p class="lead">Kliknite na pozivnicu koja vam se dopada. U sledećem koraku upisujete svoj tekst, birate font i raspoređujete ga kako želite.</p>
+      <div class="g-filter" id="gFilter" role="group" aria-label="Prilika"></div>
+    </div>
+  </section>
+
+  <section class="g-wrap" aria-label="Dizajni">
+    <div class="wrap">
+      <div class="g-grid" id="gGrid"></div>
+      <div class="g-empty" id="gEmpty" hidden></div>
+    </div>
+  </section>
+
+  <section class="g-own">
+    <div class="wrap">
+      <div class="eyebrow">Imate svoju ideju?</div>
+      <h2 class="h-lg">Napravićemo je <em>zajedno</em></h2>
+      <p class="lead">Pošaljite nam gotov dizajn za štampu ili nam pišite na Instagramu, pa ćemo pozivnicu osmisliti po vašoj želji.</p>
+      <div class="actions"><a class="btn" href="stampa.html">Štampa vašeg dizajna</a><a class="link" href="https://www.instagram.com/mango.pozivnice/" target="_blank" rel="noopener">Pišite nam na Instagramu <span>→</span></a></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="f-top">
+      <div>
+        <a class="brand" href="index.html"><svg class="logo" viewBox="0 0 330 74" fill="none" stroke="currentColor" stroke-width="7" stroke-miterlimit="2" aria-label="Mango"><path d="M8 66V16l27 38 27-38v50"/><path d="M76 66l25-52 25 52"/><path d="M140 66V16l38 50V16"/><path d="M240 26a25 25 0 1 0 3 22V41h-18"/><path d="M282 16c14 0 23 12 23 26s-10 24-23 24-23-10-23-24 9-26 23-26z"/><path d="M296 14c1-8 7-12 15-12-1 8-7 12-15 12z" fill="currentColor" stroke="none"/><path d="M299 16c6-5 13-5 19 0-6 5-13 5-19 0z" fill="currentColor" stroke="none"/></svg><small>Pozivnice</small></a>
+        <p style="margin-top:22px;max-width:300px">Pozivnice za venčanja, krštenja i proslave. Prijavite se za novosti i nove kolekcije.</p>
+        <form class="news" onsubmit="event.preventDefault();this.querySelector('input').value='';this.querySelector('button').textContent='Hvala ✓'">
+          <input type="email" placeholder="Vaša e-mail adresa" required aria-label="E-mail">
+          <button>Prijava</button>
+        </form>
+      </div>
+      <div><h5>Pozivnice</h5><ul><li><a href="pozivnice-boarding-pass.html">Boarding pass i pasoš</a></li><li><a href="pozivnice-vencanja.html">Venčanja</a></li><li><a href="pozivnice-krstenja.html">Krštenja</a></li><li><a href="pozivnice-rodjendani.html">Dečiji rođendani</a></li><li><a href="pozivnice-punoletstva.html">Punoletstva</a></li></ul></div>
+      <div><h5>Informacije</h5><ul><li><a href="radionica.html" aria-current="page">Mango Radionica: napravite pozivnicu</a></li><li><a href="pecati.html">Voštani pečati</a></li><li><a href="koverte.html">Koverte</a></li><li><a href="stampa.html">Štampa vašeg dizajna</a></li><li><a href="index.html#cene">Cenovnik</a></li><li><a href="kalkulator.html">Kalkulator cena</a></li></ul></div>
+      <div><h5>Kontakt</h5><ul><li><a href="https://www.instagram.com/mango.pozivnice/" target="_blank" rel="noopener">Instagram @mango.pozivnice</a></li><li><a href="https://www.facebook.com/people/mangopozivnice/100089547316737" target="_blank" rel="noopener">Facebook</a></li><li>Novi Sad</li><li>Dostava u celoj Srbiji</li></ul></div>
+    </div>
+    <div class="f-bot"><span>© 2026 Mango Pozivnice</span><span>Ana i Jovan · Novi Sad</span></div>
+  </div>
+</footer>
+
+<script>const drawer=document.getElementById('drawer');</script>
+<script src="editor/fontovi.js?v=2"></script>
+<script src="sabloni/sabloni.js?v=8"></script>
+<script src="editor/galerija.js?v=3"></script>
+<script src="js/sajt.js?v=1"></script>
+</body>
+</html>

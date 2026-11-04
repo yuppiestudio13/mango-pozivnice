@@ -10,12 +10,88 @@
    size  = veličina slova u pt
    ls    = razmak slova (u hiljaditim delovima em, kao u Illustratoru)
    lh    = prored (1.2 = 120%)
+   grupe = filteri u galeriji (radionica.html): vencanja, boarding,
+           krstenja, rodjendani, punoletstva
+
+   Šablon sa više strana (korica, karta, poleđina…) umesto mm/pozadina/
+   polja ima listu strane: [{ id, naziv, mm, bezbedno, pozadina, folija, polja }].
+   folija (na strani) = SVG crteža koji ide u foliotisak (crno = folija).
+   folija (na šablonu) = { boje: [...], izabrana } → sav tekst je u foliji.
+   papir = papir i štampa koji uvek idu uz ovaj šablon.
    ========================================================= */
 window.SABLONI = [
+  {
+    id: "boarding-roza",
+    naziv: "Boarding roza",
+    kategorija: "Pasoš · punoletstvo i rođendani",
+    grupe: ["boarding", "punoletstva", "rodjendani"],
+    papir: "350g, mat štampa",
+    folija: { boje: ["rose", "gold", "silver", "red"], izabrana: "rose" },   // foliotisak: sav tekst + crtež sa sloja folije
+    strane: [
+      {
+        id: "korica", naziv: "Korica pasoša", mm: [150, 120], bezbedno: 50,
+        pozadina: "sabloni/boarding-roza/korica.svg",
+        folija: null,
+        polja: [
+          { text: "BIRTHDAY\nPASSPORT", x: 882, y: 135, w: 483, font: "Crimson Pro", weight: 400, size: 25.0, color: "#45474a", align: "center", ls: 0, lh: 0.843 },
+          { text: "18.", x: 775, y: 329, w: 672, font: "Crimson Pro", weight: 400, size: 140.0, color: "#45474a", align: "center", ls: 0, lh: 0.9 },
+          { text: "Petra Krstić", x: 804, y: 858, w: 631, font: "Ms Madi", weight: 400, size: 35.0, color: "#45474a", align: "center", ls: 0, lh: 0.8 },
+          { text: "19.10.2025.", x: 956, y: 993, w: 349, font: "Crimson Pro", weight: 600, size: 16.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 }
+        ]
+      },
+      {
+        id: "karta", naziv: "Karta, prednja strana", mm: [170, 70], bezbedno: 15,
+        pozadina: "sabloni/boarding-roza/karta.png",
+        folija: "sabloni/boarding-roza/karta-folija.svg",
+        // Mapa: država iz polja sa uloga: "drzava" bira crtež, a grad iz polja sa uloga: "grad" pomera pribadaču.
+        // Za svaku državu: crtez (crno = folija), okvir = gde je mapa na strani (0,1 mm),
+        // geo = [zapad, istok, sever, jug] tog okvira (Merkator). Nazivi država i mesta su u sabloni/mesta.js.
+        // Za državu koje nema na listi mapa i pribadača se sklanjaju.
+        // putanja = isprekidana linija od mesta gde ulazi u mapu do pribadače (pin je u pt, oko tačke na mestu grada).
+        mapa: {
+          podrazumevana: "srbija",
+          drzave: {
+            srbija:   { crtez: "sabloni/boarding-roza/mapa-srbija.svg",   okvir: [1431.2, 319.6, 1653.5, 641.4], geo: [18.82, 23.01, 46.19, 41.85] },
+            bih:      { crtez: "sabloni/boarding-roza/mapa-bih.svg?v=3",     okvir: [1397.0,  360.3,  1658.1,  613.4], geo: [15.7161,  19.6189,  45.2845,  42.5592] },
+            hrvatska: { crtez: "sabloni/boarding-roza/mapa-hrvatska.svg?v=3", okvir: [1397.0,  358.8,  1658.1,  614.9], geo: [13.5015,  19.4078,  46.547,  42.4163] },
+            austrija: { crtez: "sabloni/boarding-roza/mapa-austrija.svg?v=3", okvir: [1397.0,  419.9,  1658.1,  553.8], geo: [9.5212,  17.1483,  49.0098,  46.3786] },
+            crnagora: { crtez: "sabloni/boarding-roza/mapa-crnagora.svg?v=3", okvir: [1397.0,  330.1,  1658.1,  643.6], geo: [18.4335,  20.3552,  43.5479,  41.8524] },
+          },
+          pocetak: [1406.9, 339.9], smer: [0.985, 0.172],
+          linija: 2.1, crtica: [10.6, 7.3],
+          pin: "M-1.315 -6.097C-1.309 -6.851 -.693 -7.457 .061 -7.45 .816 -7.444 1.421 -6.828 1.415 -6.074 1.409 -5.32 .793 -4.714 .038 -4.72-.715 -4.726-1.321 -5.342-1.315 -6.097ZM-2.171 -5.716C-2.145 -5.563-2.105 -5.416-2.051 -5.275-1.825 -4.598-1.281 -3.451 .013 -1.634 1.336 -3.429 1.899 -4.567 2.137 -5.24 2.193 -5.38 2.237 -5.527 2.264 -5.679 2.323 -5.953 2.301 -6.067 2.301 -6.067 2.311 -7.31 1.312 -8.326 .068 -8.336-1.174 -8.347-2.191 -7.347-2.201 -6.104-2.201 -6.104-2.225 -5.991-2.171 -5.716ZM-.504 0A.504 .504 0 1 0 .504 0 .504 .504 0 1 0-.504 0Z", pinMera: 3.5278
+        },
+        polja: [
+          { text: "OKTOBAR", x: 1430, y: 50, w: 221, font: "Crimson Pro", weight: 600, size: 11.0, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
+          { text: "19.", x: 1419, y: 61, w: 235, font: "Crimson Pro", weight: 600, size: 44.0, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
+          { text: "2025.", x: 1480, y: 214, w: 120, font: "Crimson Pro", weight: 600, size: 10.0, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
+          { text: "KARTA ZA\nPROSLAVU PUNOLETSTVA", x: 307, y: 44, w: 851, font: "Crimson Pro", weight: 400, size: 18.0, color: "#45474a", align: "center", ls: 0, lh: 1.067 },
+          { text: "Petra Krstić", x: 384, y: 227, w: 692, font: "Ms Madi", weight: 400, size: 38.5, color: "#45474a", align: "center", ls: 0, lh: 0.8 },
+          { text: "Datum:\n19.10.2025.", x: 215, y: 399, w: 221, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
+          { text: "Lokacija:\nHotel restoran Madera", x: 422, y: 397, w: 416, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.142 },
+          { uloga: "grad", text: "Grad:\nNiš", x: 819, y: 399, w: 145, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
+          { text: "Vreme:\n17:00h", x: 975, y: 399, w: 159, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
+          { uloga: "drzava", text: "Država:\nSrbija", x: 1125, y: 399, w: 175, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
+          { text: "Save the date!", x: 377, y: 580, w: 688, font: "Ms Madi", weight: 400, size: 36.5, color: "#45474a", align: "center", ls: 0, lh: 0.8 }
+        ]
+      },
+      {
+        id: "poledjina", naziv: "Karta, poleđina", mm: [170, 70], bezbedno: 15,
+        pozadina: "sabloni/boarding-roza/poledjina.svg",
+        folija: null,
+        polja: [
+          { text: "Hvala Vam što ste deo moje životne avanture!", x: 93, y: 42, w: 1513, font: "Crimson Pro", weight: 400, size: 19.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
+          { text: "DOBRO DOŠLI NA MOJ\nLET U SVET ODRASLIH!!!", x: 339, y: 287, w: 1021, font: "Crimson Pro", weight: 500, size: 23.0, color: "#45474a", align: "center", ls: 0, lh: 0.87 },
+          { text: "Molimo vas svoj dolazak potvrditi do 05.10.2025.", x: 159, y: 532, w: 1382, font: "Crimson Pro", weight: 400, size: 16.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 }
+        ]
+      }
+    ]
+  },
   {
     id: "zelenilo",
     naziv: "Minimal zelenilo",
     kategorija: "Venčanja",
+    grupe: ["vencanja"],
     mm: [127, 178],
     pozadina: "sabloni/zelenilo.svg",
     bezbedno: 110,                       // bezbedna zona od ivice (11 mm)
@@ -35,6 +111,7 @@ window.SABLONI = [
     id: "boarding-pass",
     naziv: "Boarding pass",
     kategorija: "Bestseler · venčanja i rođendani",
+    grupe: ["boarding", "vencanja", "rodjendani"],
     mm: [210, 99],
     pozadina: "sabloni/boarding-pass.svg",
     bezbedno: 60,
@@ -58,3 +135,20 @@ window.SABLONI = [
     ]
   }
 ];
+
+/* Šablon sa jednom stranom dobija strane: [...], a šablon sa više strana
+   dobija mm/pozadina/polja prve strane (za galeriju i sličice). */
+window.SABLONI.forEach(t => {
+  if (!t.strane) t.strane = [{ id: "prednja", naziv: "Prednja strana", mm: t.mm, bezbedno: t.bezbedno, pozadina: t.pozadina, folija: null, polja: t.polja }];
+  const p = t.strane[0];
+  t.mm = p.mm; t.pozadina = p.pozadina; t.polja = p.polja; t.bezbedno = p.bezbedno;
+  if (!t.boje) t.boje = ["#45474a"];
+});
+
+/* Boje folije (prikaz u editoru; u štampi je to prava folija). */
+window.FOLIJE = {
+  rose:   { naziv: "Rose gold", boja: "#b8817a", sjaj: "linear-gradient(118deg,#9e6660 0%,#d6a49b 28%,#f0cfc6 44%,#bd8a82 60%,#e7bdb3 80%,#a86f68 100%)" },
+  gold:   { naziv: "Zlatna",    boja: "#b8954f", sjaj: "linear-gradient(118deg,#8f6d2f 0%,#cfae66 28%,#f1dc9e 44%,#b8954f 60%,#e2c880 80%,#93723a 100%)" },
+  silver: { naziv: "Srebrna",   boja: "#9a9ea3", sjaj: "linear-gradient(118deg,#74787d 0%,#b9bdc2 28%,#eceef0 44%,#9a9ea3 60%,#d5d8db 80%,#7c8085 100%)" },
+  red:    { naziv: "Crvena",    boja: "#b0302f", sjaj: "linear-gradient(118deg,#7f1c1d 0%,#c2413e 30%,#e2706a 44%,#a92b2a 60%,#cf4f4a 80%,#86201f 100%)" },
+};

@@ -1,0 +1,58 @@
+/* ---------- Mango Radionica · galerija dizajna ---------- */
+.g-intro{background:var(--ivory);padding:64px 0 30px;text-align:center}
+.g-intro .h-lg{color:var(--green);margin:16px 0 14px}
+.g-intro .lead{margin:0 auto;max-width:34em}
+
+.g-filter{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 26px;padding:26px 0 0;margin:0 auto}
+.g-filter button{background:none;border:0;border-bottom:1px solid transparent;font:inherit;font-size:.68rem;font-weight:400;letter-spacing:.22em;text-transform:uppercase;color:var(--stone);padding:6px 0;cursor:pointer;transition:color .25s,border-color .25s}
+.g-filter button:hover{color:var(--ink)}
+.g-filter button[aria-pressed=true]{color:var(--green);border-bottom-color:var(--gold)}
+.g-filter sup{font-size:.56rem;letter-spacing:0;margin-left:5px;color:var(--gold)}
+
+.g-wrap{background:var(--sand);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:56px 0 90px;margin-top:34px}
+.g-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:54px 30px}
+.g-card{display:flex;flex-direction:column}
+.g-card[hidden]{display:none}
+
+/* "sto" na kom leži pozivnica: isti format za uspravne i položene */
+.g-desk{position:relative;aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;padding:13%;
+  background:radial-gradient(ellipse 70% 60% at 50% 48%,#fbf8f1 0,rgba(251,248,241,0) 75%),#e7ddca;overflow:hidden}
+.g-card.land .g-desk{padding:9%}
+.g-desk::before,.g-desk::after{content:"";position:absolute;width:14px;height:14px;border-color:var(--gold-2);border-style:solid;opacity:0;transition:opacity .35s}
+.g-desk::before{top:14px;left:14px;border-width:1px 0 0 1px}
+.g-desk::after{bottom:14px;right:14px;border-width:0 1px 1px 0}
+.g-paper{position:relative;width:100%;overflow:hidden;background:var(--paper);
+  box-shadow:0 1px 2px rgba(40,32,18,.08),0 22px 38px -22px rgba(40,32,18,.5);transition:transform .5s cubic-bezier(.2,.7,.2,1),box-shadow .5s}
+.g-stage{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none}
+.g-stage img{position:absolute;inset:0;width:100%;height:100%}
+.g-layers{position:absolute;inset:0}
+.g-go{position:absolute;left:50%;bottom:18px;transform:translate(-50%,6px);opacity:0;white-space:nowrap;
+  font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:var(--green);transition:opacity .35s,transform .35s}
+.g-draft{position:absolute;top:0;right:0;z-index:2;padding:5px 10px 4px;background:var(--green);color:var(--ivory);font-size:.54rem;letter-spacing:.2em;text-transform:uppercase}
+.g-card:hover .g-paper,.g-card:focus-visible .g-paper{transform:translateY(-6px);box-shadow:0 1px 2px rgba(40,32,18,.08),0 34px 46px -24px rgba(40,32,18,.55)}
+.g-card:hover .g-go,.g-card:focus-visible .g-go{opacity:1;transform:translate(-50%,0)}
+.g-card:hover .g-desk::before,.g-card:hover .g-desk::after{opacity:1}
+.g-card:focus-visible{outline:none}
+.g-card:focus-visible .g-desk{outline:1px solid var(--gold);outline-offset:4px}
+
+.g-meta{padding-top:18px}
+.g-meta h3{font-family:var(--serif);font-weight:400;font-size:1.35rem;line-height:1.2;color:var(--green)}
+.g-meta span{display:block;margin-top:4px;font-size:.72rem;color:var(--stone);letter-spacing:.04em}
+
+.g-empty{text-align:center;max-width:30em;margin:10px auto 0;padding:46px 24px;background:var(--paper);border:1px solid var(--line)}
+.g-empty b{display:block;font-family:var(--serif);font-weight:400;font-size:1.45rem;color:var(--green)}
+.g-empty p{color:var(--stone);margin:10px 0 22px;font-size:.95rem}
+
+.g-own{text-align:center;padding:70px 0 80px}
+.g-own .h-lg{color:var(--green);margin:14px 0 14px}
+.g-own .lead{margin:0 auto 30px}
+.g-own .actions{display:flex;justify-content:center;align-items:center;gap:30px;flex-wrap:wrap}
+
+@media(max-width:640px){
+  .g-intro{padding:44px 0 20px}
+  .g-filter{gap:4px 18px}
+  .g-wrap{padding:36px 0 60px;margin-top:24px}
+  .g-grid{grid-template-columns:1fr 1fr;gap:34px 14px}
+  .g-meta h3{font-size:1.08rem}
+  .g-go{display:none}
+}

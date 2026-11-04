@@ -10,12 +10,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="stil.css?v=5">
-<link rel="stylesheet" href="editor/editor.css?v=6">
+<link rel="stylesheet" href="editor/editor.css?v=9">
 </head>
 <body>
 
 <div class="topbar" role="region" aria-label="Obaveštenja"><div class="tb-track">
-  <a class="tb-msg on" href="editor.html"><b>Novo:</b> Mango Radionica, napravite svoju pozivnicu online <span aria-hidden="true">→</span></a>
+  <a class="tb-msg on" href="radionica.html"><b>Novo:</b> Mango Radionica, napravite svoju pozivnicu online <span aria-hidden="true">→</span></a>
   <a class="tb-msg" href="pozivnice-boarding-pass.html"><b>Bestseler:</b> boarding pass i pasoš pozivnice <span aria-hidden="true">→</span></a>
   <span class="tb-msg">Elektronska pozivnica gratis uz štampane</span>
   <span class="tb-msg">Izrada do 14 radnih dana od uplate avansa</span>
@@ -27,13 +27,13 @@
     <button class="burger" aria-label="Meni" onclick="drawer.classList.add('open')"><span></span><span></span><span></span></button>
     <nav><div class="dd"><a href="pozivnice.html" aria-haspopup="true">Pozivnice</a><div class="dd-menu"><a href="pozivnice-vencanja.html">Venčanja</a><a href="pozivnice-boarding-pass.html">Boarding pass i pasoš</a><a href="pozivnice-krstenja.html">Krštenja</a><a href="pozivnice-rodjendani.html">Dečiji rođendani</a><a href="pozivnice-punoletstva.html">Punoletstva</a><a class="dd-all" href="pozivnice.html">Sve pozivnice</a></div></div><a href="pecati.html">Pečati</a><a href="koverte.html">Koverte</a></nav>
     <a class="brand" href="index.html"><svg class="logo" viewBox="0 0 330 74" fill="none" stroke="currentColor" stroke-width="7" stroke-miterlimit="2" aria-label="Mango"><path d="M8 66V16l27 38 27-38v50"/><path d="M76 66l25-52 25 52"/><path d="M140 66V16l38 50V16"/><path d="M240 26a25 25 0 1 0 3 22V41h-18"/><path d="M282 16c14 0 23 12 23 26s-10 24-23 24-23-10-23-24 9-26 23-26z"/><path d="M296 14c1-8 7-12 15-12-1 8-7 12-15 12z" fill="currentColor" stroke="none"/><path d="M299 16c6-5 13-5 19 0-6 5-13 5-19 0z" fill="currentColor" stroke="none"/></svg><small>Pozivnice</small></a>
-    <nav class="right"><a class="nav-cta" href="editor.html" aria-current="page">Napravi pozivnicu</a><a href="kalkulator.html">Kalkulator</a><a href="kalkulator.html#porudzbina">Poruči</a></nav>
+    <nav class="right"><a class="nav-cta" href="radionica.html">Napravi pozivnicu</a><a href="kalkulator.html">Kalkulator</a><a href="kalkulator.html#porudzbina">Poruči</a></nav>
   </div>
 </header>
 
 <div class="drawer" id="drawer">
   <button class="x" aria-label="Zatvori" onclick="drawer.classList.remove('open')">×</button>
-  <a class="d-cta" href="editor.html">Napravi svoju pozivnicu ✦</a>
+  <a class="d-cta" href="radionica.html">Napravi svoju pozivnicu ✦</a>
   <a href="pozivnice.html">Pozivnice</a>
   <a class="d-sub" href="pozivnice-vencanja.html">Venčanja</a>
   <a class="d-sub" href="pozivnice-boarding-pass.html">Boarding pass i pasoš</a>
@@ -62,7 +62,7 @@
         <li><span>03</span>Poručite štampu ili e-pozivnicu</li>
       </ol>
     </div>
-    <div class="wrap"><a class="link ed-own" href="stampa.html">Imate gotov dizajn? Pošaljite ga za štampu <span>→</span></a></div>
+    <div class="wrap ed-links"><a class="link ed-own" href="radionica.html"><span>←</span> Svi dizajni</a><a class="link ed-own" href="stampa.html">Imate gotov dizajn? Pošaljite ga za štampu <span>→</span></a></div>
   </section>
 
   <div class="ed-app" id="app">
@@ -90,11 +90,16 @@
         <button class="tb ghost" data-act="eorder"><span class="lbl">E-pozivnica</span></button>
         <button class="tb primary" data-act="order"><span class="lbl">Poruči štampu</span></button>
       </div>
+      <div class="ed-pages" id="pages" role="tablist" aria-label="Strane pozivnice" hidden></div>
       <div class="ed-stagebox" id="box">
         <div class="stage-frame" id="frame">
           <div class="stage edit guides" id="stage">
             <img class="bg" id="bg" alt="">
+            <div class="foilart" id="foilart" hidden></div>
+            <div class="foilart" id="mapart" hidden></div>
+            <div class="foilart" id="routeart" hidden></div>
             <div class="layers" id="layers"></div>
+            <div class="pin-h" id="pinH" hidden title="Prevucite pribadaču na pravo mesto"></div>
             <div class="safe" id="safe"></div>
             <div class="guide v" id="gv"></div>
             <div class="guide h" id="gh"></div>
@@ -132,9 +137,9 @@
         </div>
         <div class="pg">
           <span class="lab">Veličina <output id="oSize"></output></span>
-          <div class="row"><input type="range" id="pSize" min="5" max="90" step="0.5" aria-label="Veličina"><input class="num" type="number" id="pSizeN" min="4" max="120" step="0.5" aria-label="Veličina u pt"></div>
+          <div class="row"><input type="range" id="pSize" min="5" max="150" step="0.5" aria-label="Veličina"><input class="num" type="number" id="pSizeN" min="4" max="200" step="0.5" aria-label="Veličina u pt"></div>
         </div>
-        <div class="pg">
+        <div class="pg" id="pgColor">
           <span class="lab">Boja</span>
           <div class="swatches" id="pColors"></div>
         </div>
@@ -162,6 +167,12 @@
             <button class="tb danger" data-act="del" style="grid-column:1/-1">Obriši tekst</button>
           </div>
         </div>
+      </div>
+
+      <div class="pg foil-box" id="foilBox" hidden>
+        <span class="lab">Foliotisak <output id="oFoil"></output></span>
+        <div class="swatches" id="foilSw"></div>
+        <p class="foil-note">Sav tekst i crtež štampaju se folijom. <span id="foilPaper"></span></p>
       </div>
 
       <div class="pg">
@@ -222,7 +233,7 @@
         </form>
       </div>
       <div><h5>Pozivnice</h5><ul><li><a href="pozivnice-boarding-pass.html">Boarding pass i pasoš</a></li><li><a href="pozivnice-vencanja.html">Venčanja</a></li><li><a href="pozivnice-krstenja.html">Krštenja</a></li><li><a href="pozivnice-rodjendani.html">Dečiji rođendani</a></li><li><a href="pozivnice-punoletstva.html">Punoletstva</a></li></ul></div>
-      <div><h5>Informacije</h5><ul><li><a href="editor.html" aria-current="page">Mango Radionica: napravite pozivnicu</a></li><li><a href="pecati.html">Voštani pečati</a></li><li><a href="koverte.html">Koverte</a></li><li><a href="stampa.html">Štampa vašeg dizajna</a></li><li><a href="index.html#cene">Cenovnik</a></li><li><a href="kalkulator.html">Kalkulator cena</a></li></ul></div>
+      <div><h5>Informacije</h5><ul><li><a href="radionica.html">Mango Radionica: napravite pozivnicu</a></li><li><a href="pecati.html">Voštani pečati</a></li><li><a href="koverte.html">Koverte</a></li><li><a href="stampa.html">Štampa vašeg dizajna</a></li><li><a href="index.html#cene">Cenovnik</a></li><li><a href="kalkulator.html">Kalkulator cena</a></li></ul></div>
       <div><h5>Kontakt</h5><ul><li><a href="https://www.instagram.com/mango.pozivnice/" target="_blank" rel="noopener">Instagram @mango.pozivnice</a></li><li><a href="https://www.facebook.com/people/mangopozivnice/100089547316737" target="_blank" rel="noopener">Facebook</a></li><li>Novi Sad</li><li>Dostava u celoj Srbiji</li></ul></div>
     </div>
     <div class="f-bot"><span>© 2026 Mango Pozivnice</span><span>Ana i Jovan · Novi Sad</span></div>
@@ -230,9 +241,10 @@
 </footer>
 
 <script>const drawer=document.getElementById('drawer');</script>
-<script src="editor/fontovi.js"></script>
-<script src="sabloni/sabloni.js"></script>
-<script src="editor/editor.js"></script>
+<script src="editor/fontovi.js?v=2"></script>
+<script src="sabloni/sabloni.js?v=8"></script>
+<script src="sabloni/mesta.js?v=2"></script>
+<script src="editor/editor.js?v=7"></script>
 <script src="js/sajt.js?v=1"></script>
 </body>
 </html>

@@ -6,3 +6,5 @@ mango-slike/
 .DS_Store
 # stare rezervne verzije (istorija je sada u git-u)
 *-backup.html
+# izvorni PDF šabloni (u njima su ugrađeni plaćeni fontovi) – ne idu na sajt
+sabloni/pdf/

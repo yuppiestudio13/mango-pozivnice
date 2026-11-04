@@ -16,7 +16,11 @@ const CATS = { kaligrafija: "Kaligrafija", rukopis: "Rukopis", serif: "Serif", s
 const FONT = Object.fromEntries(FONTOVI.map(([n, c, cy, w, i]) => [n, { n, c, cy, w: w.split(",").map(Number), i: i ? i.split(",").map(Number) : [] }]));
 
 let T = null;             // aktivni šablon
-let layers = [];          // tekstovi
+let pages = [];           // tekstovi za svaku stranu šablona
+let pi = 0;               // strana koja je otvorena
+let layers = [];          // tekstovi otvorene strane (= pages[pi])
+let foil = null;          // izabrana folija (rose, gold…) ili null kad šablon nema foliotisak
+let pins = [];            // pribadača na mapi za svaku stranu: { x, y, k: grad za koji je postavljena } ili null
 let sel = null;           // id izabranog
 let editing = null;       // id teksta koji se kuca
 let S = 1;                // razmera prikaza
@@ -52,8 +56,12 @@ function nearestWeight(name, w, italic) {
 }
 
 /* ---------------- šablon i tekstovi ---------------- */
-function W() { return T.mm[0] * 10; }
-function H() { return T.mm[1] * 10; }
+const PG = () => T.strane[pi];
+function W() { return PG().mm[0] * 10; }
+function H() { return PG().mm[1] * 10; }
+const dims = t => t.strane.length > 1
+  ? [...new Set(t.strane.map(s => `${s.mm[0] / 10} × ${s.mm[1] / 10}`))].join(" + ") + " cm"
+  : `${t.mm[0] / 10} × ${t.mm[1] / 10} cm`;
 // Svaki tekst prolazi kroz proveru (i onaj iz linka), da u dizajn ne može da uđe ništa osim ispravnih vrednosti.
 function norm(L) {
   const n = (v, d, lo, hi) => Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : d;
@@ -66,25 +74,157 @@ function norm(L) {
     size: n(L.size, 14, 3, 200), ls: n(L.ls, 0, -200, 1500), lh: n(L.lh, 1.2, 0.5, 4),
     color: /^#[0-9a-f]{6}$/i.test(L.color) ? L.color.toLowerCase() : "#1c3627",
     align: ["left", "center", "right"].includes(L.align) ? L.align : "center",
+    uloga: ["grad", "drzava"].includes(L.uloga) ? L.uloga : undefined,
   };
 }
-function fromTemplate(t) { return t.polja.map(p => norm({ ...p })); }
+function fromTemplate(t) { return t.strane.map(s => s.polja.map(p => norm({ ...p }))); }
 
+// Sačuvan dizajn: { p: [tekstovi po stranama], f: folija }. Stari oblik: { layers } ili samo niz tekstova.
 function loadTemplate(t, preset) {
   T = t;
   stopEdit(true);
   sel = null;
-  layers = (preset || store.get("mango-ed:" + t.id)?.layers || fromTemplate(t)).map(L => norm({ ...L, id: undefined }));
-  stage.style.width = W() + "px"; stage.style.height = H() + "px";
-  $("bg").src = t.pozadina;
-  const b = t.bezbedno || 0;
-  Object.assign($("safe").style, { left: b + "px", top: b + "px", right: b + "px", bottom: b + "px" });
-  $("gv").style.left = W() / 2 + "px"; $("gh").style.top = H() / 2 + "px";
-  hist = [JSON.stringify(layers)]; hi = 0;
+  const d = preset || store.get("mango-ed:" + t.id) || {};
+  const P = Array.isArray(d) ? [d] : d.p || (d.layers ? [d.layers] : null);
+  pages = t.strane.map((s, i) => (Array.isArray(P?.[i]) ? P[i] : s.polja).map(L => norm({ ...L, id: undefined })));
+  foil = t.folija ? (FOLIJE[d.f] && t.folija.boje.includes(d.f) ? d.f : t.folija.izabrana) : null;
+  // Nacrt sačuvan pre nego što su polja dobila ulogu: „Grad:…“ je grad, „Država:…“ je država.
+  t.strane.forEach((s, i) => {
+    if (!s.mapa) return;
+    for (const [u, re] of [["grad", /^\s*grad\s*:/i], ["drzava", /^\s*dr[žz]ava\s*:/i]]) {
+      if (pages[i].some(L => L.uloga === u)) continue;
+      const L = pages[i].find(L => !L.uloga && re.test(L.text)); if (L) L.uloga = u;
+    }
+  });
+  pins = t.strane.map((s, i) => s.mapa ? validPin(s.mapa, d.m?.[i]) : null);
+  t.strane.forEach((s, i) => { if (s.mapa) autoPin(i, true); });
+  pi = 0; layers = pages[0];
+  hist = [snap()]; hi = 0;
   document.querySelectorAll(".tpl").forEach(el => el.setAttribute("aria-current", el.dataset.id === t.id));
   try { const u = new URL(location); u.searchParams.set("s", t.id); history.replaceState(null, "", u.pathname + u.search); } catch {}
-  renderAll(); fit(); syncProps(); updateTools();
+  renderPageTabs(); renderFoil(); showPage(0); updateTools();
 }
+
+function showPage(i) {
+  stopEdit(true);
+  pages[pi] = layers; pi = i; layers = pages[pi]; sel = null;
+  const p = PG();
+  stage.style.width = W() + "px"; stage.style.height = H() + "px";
+  $("bg").src = p.pozadina;
+  const fa = $("foilart");
+  fa.hidden = !p.folija;
+  if (p.folija) fa.style.webkitMaskImage = fa.style.maskImage = `url("${p.folija}")`;
+  const b = p.bezbedno || 0;
+  Object.assign($("safe").style, { left: b + "px", top: b + "px", right: b + "px", bottom: b + "px" });
+  $("gv").style.left = W() / 2 + "px"; $("gh").style.top = H() / 2 + "px";
+  $("pages").querySelectorAll("button").forEach((x, k) => x.setAttribute("aria-selected", k === pi));
+  renderRoute(); renderAll(); fit(); syncProps();
+}
+
+/* ---------------- mapa: pribadača ide na upisani grad ---------------- */
+const CYR = { а: "a", б: "b", в: "v", г: "g", д: "d", ђ: "đ", е: "e", ж: "ž", з: "z", и: "i", ј: "j", к: "k", л: "l", љ: "lj", м: "m", н: "n", њ: "nj", о: "o", п: "p", р: "r", с: "s", т: "t", ћ: "ć", у: "u", ф: "f", х: "h", ц: "c", ч: "č", џ: "dž", ш: "š" };
+// „Niš“, „nis“, „НИШ“ i „Đakovica“/„Djakovica“/„Dakovica“ daju isti ključ.
+const fold = s => s.toLowerCase().replace(/[а-џ]/g, c => CYR[c] ?? c).replace(/đ/g, "d").normalize("NFD")
+  .replace(/[̀-ͯ]/g, "").replace(/dj/g, "d").replace(/[^a-z]+/g, " ").trim();
+// Mesta po državama i nazivi država (sabloni/mesta.js). „Beč|Wien“ = više naziva za isto mesto.
+const MESTO = Object.fromEntries(Object.entries(window.MESTA || {}).map(([k, list]) => [k, new Map(list.flatMap(([n, la, lo]) => {
+  const names = n.split("|"); return names.map(x => [fold(x), { n: names[0], la, lo }]);
+}))]));
+const GLAVNI = Object.fromEntries(Object.entries(window.MESTA || {}).map(([k, list]) => [k, { n: list[0][0].split("|")[0], la: list[0][1], lo: list[0][2] }]));
+const DRZAVA = new Map(Object.entries(window.DRZAVE || {}).flatMap(([k, names]) => names.map(n => [fold(n), k])));
+const DRZ_NAZIV = k => (window.DRZAVE?.[k] || [k])[0];
+// Polje je „Grad:\nNiš“: preskačemo red koji je samo oznaka (završava se dvotačkom).
+const valueOf = L => L.text.split("\n").map(s => s.trim()).filter(s => s && !s.endsWith(":")).join(" ").replace(/^(grad|dr[žz]ava)\s*:\s*/i, "");
+const merc = f => Math.log(Math.tan(Math.PI / 4 + f * Math.PI / 360));
+function geoXY(D, la, lo) {
+  const [x0, y0, x1, y1] = D.okvir, [w, e, n, s] = D.geo;
+  return [x0 + (lo - w) / (e - w) * (x1 - x0), y0 + (merc(n) - merc(la)) / (merc(n) - merc(s)) * (y1 - y0)];
+}
+const r1 = v => Math.round(v * 10) / 10;
+function validPin(m, v) {
+  if (!v || !Number.isFinite(+v.x) || !Number.isFinite(+v.y)) return null;
+  const d = m.drzave[v.d] ? v.d : "", [x0, y0, x1, y1] = d ? m.drzave[d].okvir : [-1e4, -1e4, 1e4, 1e4];
+  return { x: r1(Math.min(x1, Math.max(x0, +v.x))), y: r1(Math.min(y1, Math.max(y0, +v.y))), k: String(v.k ?? "").slice(0, 80), d };
+}
+// Država iz polja sa uloga „drzava“: ključ iz DRZAVE, "" kad mape za nju nema (mapa se sklanja).
+function countryOf(i) {
+  const m = T.strane[i].mapa, L = pages[i].find(x => x.uloga === "drzava");
+  const name = L ? valueOf(L) : "";
+  if (!fold(name)) return { k: m.podrazumevana, name };
+  const k = DRZAVA.get(fold(name));
+  return { k: k && m.drzave[k] ? k : "", name };
+}
+let sayT; const say = t => { clearTimeout(sayT); sayT = setTimeout(() => toast(t), 900); };
+// Pomera pribadaču samo kad se grad ili država promene, da ne pregazi ručno pomerenu pribadaču.
+function autoPin(i, quiet) {
+  const m = T.strane[i].mapa; if (!m) return;
+  const L = pages[i].find(x => x.uloga === "grad"), name = L ? valueOf(L) : "", key = fold(name), cur = pins[i];
+  const c = countryOf(i);
+  if (cur && cur.k === key && cur.d === c.k) return;
+  const newCountry = !cur || cur.d !== c.k;
+  const place = (p, d) => { const [x, y] = geoXY(m.drzave[d], p.la, p.lo); pins[i] = { x: r1(x), y: r1(y), k: key, d }; };
+  if (!c.k) {
+    pins[i] = { x: cur?.x ?? 0, y: cur?.y ?? 0, k: key, d: "" };
+    if (!quiet && newCountry) say(`Za državu „${c.name}“ još nemamo mapu, pa je mapa sklonjena sa karte.`);
+  } else {
+    const hit = MESTO[c.k]?.get(key);
+    if (hit) { place(hit, c.k); if (!quiet) say(`Pribadača na mapi: ${hit.n}${c.k !== m.podrazumevana ? ", " + DRZ_NAZIV(c.k) : ""}`); }
+    else if (!newCountry) { pins[i] = { ...cur, k: key }; if (!quiet && key) say(`„${name}“ nije na našoj listi mesta. Prevucite pribadaču na mapi na pravo mesto.`); }
+    else {
+      place(GLAVNI[c.k], c.k);
+      if (!quiet) say(key ? `„${name}“ nije na listi mesta za ${DRZ_NAZIV(c.k)}. Pribadača je na glavnom gradu (${GLAVNI[c.k].n}), prevucite je na pravo mesto.` : `Mapa: ${DRZ_NAZIV(c.k)}`);
+    }
+  }
+  if (!quiet && i === pi) renderRoute();
+}
+// Isprekidana linija od ulaska u mapu do pribadače + pribadača; crno = folija.
+function routeSVG(i) {
+  const s = T.strane[i], m = s.mapa, P = pins[i]; if (!m || !P || !P.d) return null;
+  const w = s.mm[0] * 10, h = s.mm[1] * 10, [sx, sy] = m.pocetak, [tx, ty] = m.smer;
+  const d = Math.hypot(P.x - sx, P.y - sy), k1 = d * 0.4, k2 = d * 0.27;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
+    `<path d="M${sx} ${sy}C${r1(sx + tx * k1)} ${r1(sy + ty * k1)} ${r1(P.x - k2)} ${P.y} ${P.x} ${P.y}" fill="none" stroke="#000" stroke-width="${m.linija}" stroke-dasharray="${m.crtica.join(" ")}" stroke-linecap="round"/>` +
+    `<path transform="translate(${P.x} ${P.y}) scale(${m.pinMera})" d="${m.pin}" fill="#000" fill-rule="evenodd"/></svg>`;
+}
+const mapOf = i => { const m = T.strane[i].mapa, d = pins[i]?.d; return m && d ? m.drzave[d].crtez : null; };
+const svgUrl = svg => "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+function renderRoute() {
+  const svg = routeSVG(pi), map = mapOf(pi), el = $("routeart"), h = $("pinH"), ma = $("mapart");
+  ma.hidden = !map;
+  if (map) ma.style.webkitMaskImage = ma.style.maskImage = `url("${map}")`;
+  el.hidden = h.hidden = !svg;
+  if (!svg) return;
+  el.style.webkitMaskImage = el.style.maskImage = `url("${svgUrl(svg)}")`;
+  h.style.left = pins[pi].x + "px"; h.style.top = pins[pi].y + "px";
+}
+function renderPageTabs() {
+  const el = $("pages");
+  el.hidden = T.strane.length < 2;
+  el.replaceChildren(...T.strane.map((s, k) => {
+    const b = document.createElement("button");
+    b.setAttribute("role", "tab");
+    b.innerHTML = `<span>${k + 1}</span><b></b><small>${s.mm[0] / 10} × ${s.mm[1] / 10} cm</small>`;
+    b.querySelector("b").textContent = s.naziv;
+    b.onclick = () => { if (k !== pi) showPage(k); };
+    return b;
+  }));
+}
+
+/* ---------------- foliotisak ---------------- */
+function renderFoil() {
+  const on = !!foil;
+  $("foilBox").hidden = !on; $("pgColor").hidden = on;
+  stage.classList.toggle("foiled", on);
+  if (!on) return;
+  stage.style.setProperty("--foil", FOLIJE[foil].sjaj);
+  $("oFoil").textContent = FOLIJE[foil].naziv;
+  $("foilPaper").textContent = T.papir ? `Papir: ${T.papir}.` : "";
+  $("foilSw").innerHTML = T.folija.boje.map(k => `<button class="sw foil" style="background:${FOLIJE[k].sjaj}" data-f="${k}" aria-label="${FOLIJE[k].naziv}" title="${FOLIJE[k].naziv}" aria-pressed="${k === foil}"></button>`).join("");
+}
+$("foilSw").addEventListener("click", e => {
+  const b = e.target.closest("[data-f]"); if (!b || b.dataset.f === foil) return;
+  foil = b.dataset.f; renderFoil(); commit();
+});
 
 /* ---------------- crtanje ---------------- */
 function styleLayer(el, L, live = true) {
@@ -96,6 +236,7 @@ function styleLayer(el, L, live = true) {
     fontFamily: `"${L.font}", serif`, fontWeight: L.weight, fontStyle: L.italic ? "italic" : "normal",
     fontSize: L.size * PT + "px", color: L.color, letterSpacing: L.ls / 1000 + "em",
     marginRight: -L.ls / 1000 + "em", lineHeight: L.lh, textTransform: L.upper ? "uppercase" : "none",
+    minHeight: Math.min(1, L.lh) + "em",
   });
   if (editing !== L.id && t.textContent !== L.text) t.textContent = L.text;
   if (live) { el.classList.toggle("sel", sel === L.id); requestAnimationFrame(() => checkSafe(el, L)); }
@@ -116,7 +257,7 @@ const get = id => layers.find(L => L.id === id);
 function refresh(L) { const el = elOf(L.id); if (el) styleLayer(el, L); renderList(); }
 
 function checkSafe(el, L) {
-  const b = T.bezbedno || 0, h = el.offsetHeight;
+  const b = PG().bezbedno || 0, h = el.offsetHeight;
   el.classList.toggle("out", L.x < b - 1 || L.y < b - 1 || L.x + L.w > W() - b + 1 || L.y + h > H() - b + 1);
   const any = layersEl.querySelector(".L.out");
   $("hint").innerHTML = any
@@ -148,9 +289,10 @@ function renderTemplates() {
     const b = document.createElement("button");
     b.className = "tpl"; b.dataset.id = t.id;
     const w = t.mm[0] * 10, h = t.mm[1] * 10;
-    b.innerHTML = `<div class="thumb" style="aspect-ratio:${w}/${h}"><div class="stage" style="width:${w}px;height:${h}px"><img class="bg" src="${t.pozadina}" alt=""><div class="layers"></div></div></div><b>${t.naziv}</b><small>${t.kategorija} · ${t.mm[0] / 10} × ${t.mm[1] / 10} cm</small>`;
+    const p = t.strane[0], fo = t.folija && FOLIJE[t.folija.izabrana];
+    b.innerHTML = `<div class="thumb" style="aspect-ratio:${w}/${h}"><div class="stage${fo ? " foiled" : ""}" style="width:${w}px;height:${h}px${fo ? ";--foil:" + fo.sjaj : ""}"><img class="bg" src="${p.pozadina}" alt="">${p.folija ? `<div class="foilart" style="-webkit-mask-image:url('${p.folija}');mask-image:url('${p.folija}')"></div>` : ""}<div class="layers"></div></div></div><b>${t.naziv}</b><small>${t.kategorija} · ${dims(t)}${t.papir ? " · " + t.papir : ""}</small>`;
     const st = b.querySelector(".stage");
-    st.querySelector(".layers").append(...fromTemplate(t).map(L => makeLayer(L, false)));
+    st.querySelector(".layers").append(...fromTemplate(t)[0].map(L => makeLayer(L, false)));
     new ResizeObserver(() => { st.style.transform = `scale(${b.querySelector(".thumb").clientWidth / w})`; }).observe(b.querySelector(".thumb"));
     b.onclick = () => { if (T.id !== t.id) loadTemplate(t); };
     return b;
@@ -159,18 +301,23 @@ function renderTemplates() {
 
 /* ---------------- istorija ---------------- */
 let saveT;
+// Akcije ponekad prave novi niz (layers = layers.filter…), pa ga ovde vraćamo u pages.
+function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins }); }
+const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins });
 function commit() {
-  const snap = JSON.stringify(layers);
-  if (snap !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(snap); if (hist.length > 150) hist.shift(); hi = hist.length - 1; }
-  clearTimeout(saveT); saveT = setTimeout(() => store.set("mango-ed:" + T.id, { layers }), 300);
+  const s = snap();
+  if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 150) hist.shift(); hi = hist.length - 1; }
+  clearTimeout(saveT); saveT = setTimeout(saveNow, 300);
   updateTools();
 }
 let commitT; const commitSoon = () => { clearTimeout(commitT); commitT = setTimeout(commit, 450); };
 function restore(i) {
-  stopEdit(true); hi = i; layers = JSON.parse(hist[hi]);
+  stopEdit(true); hi = i;
+  const d = JSON.parse(hist[hi]);
+  pages = d.p; foil = d.f; pins = d.m || []; layers = pages[pi];
   if (!get(sel)) sel = null;
-  renderAll(); syncProps(); updateTools();
-  store.set("mango-ed:" + T.id, { layers });
+  renderFoil(); renderRoute(); renderAll(); syncProps(); updateTools();
+  saveNow();
 }
 function updateTools() {
   document.querySelector('[data-act=undo]').disabled = hi <= 0;
@@ -213,6 +360,7 @@ layersEl.addEventListener("input", e => {
   const el = e.target.closest(".L"); if (!el) return;
   const L = get(el.dataset.id); L.text = readText(e.target);
   if (sel === L.id) $("pText").value = L.text;
+  if (L.uloga) autoPin(pi);
   checkSafe(el, L); renderList(); commitSoon();
 });
 layersEl.addEventListener("paste", e => {
@@ -225,6 +373,11 @@ layersEl.addEventListener("focusout", e => { if (editing && e.target.classList.c
 /* ---------------- prevlačenje i menjanje veličine ---------------- */
 let drag = null;
 stage.addEventListener("pointerdown", e => {
+  if (e.target.id === "pinH") {
+    e.preventDefault(); stopEdit(); select(null);
+    drag = { mode: "pin", sx: e.clientX, sy: e.clientY, P0: { ...pins[pi] }, moved: false };
+    e.target.setPointerCapture(e.pointerId); return;
+  }
   const el = e.target.closest(".L");
   if (!el) { stopEdit(); select(null); return; }
   const id = el.dataset.id, L = get(id);
@@ -241,6 +394,11 @@ stage.addEventListener("pointermove", e => {
   const dx = (e.clientX - drag.sx) / S, dy = (e.clientY - drag.sy) / S;
   if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 3) return;
   drag.moved = true;
+  if (drag.mode === "pin") {
+    const [x0, y0, x1, y1] = PG().mapa.drzave[drag.P0.d].okvir, c = (v, lo, hi) => Math.round(Math.min(hi, Math.max(lo, v)) * 10) / 10;
+    pins[pi] = { ...drag.P0, x: c(drag.P0.x + dx, x0, x1), y: c(drag.P0.y + dy, y0, y1) };
+    renderRoute(); return;
+  }
   const L = get(drag.id), o = drag.L0, snap = 7 / S;
   if (drag.mode === "move") {
     let x = o.x + dx, y = o.y + dy;
@@ -265,6 +423,7 @@ stage.addEventListener("pointermove", e => {
 function endDrag() {
   if (!drag) return;
   const d = drag; drag = null;
+  if (d.mode === "pin") { if (d.moved) { commit(); toast("Pribadača je pomerena. Ostaje tu dok ne upišete drugi grad."); } return; }
   $("gv").classList.remove("on"); $("gh").classList.remove("on");
   if (d.moved) { commit(); renderList(); }
   else if (d.was && d.mode === "move") startEdit(d.id);
@@ -307,7 +466,8 @@ function act(a) {
     case "back": if (L) { layers = [L, ...layers.filter(x => x !== L)]; renderAll(); commit(); } break;
     case "centerH": if (L) { L.x = Math.round(W() / 2 - L.w / 2); refresh(L); commit(); } break;
     case "guides": { const b = document.querySelector("[data-act=guides]"), on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", on); stage.classList.toggle("guides", on); break; }
-    case "reset": stopEdit(true); layers = fromTemplate(T); sel = null; renderAll(); syncProps(); commit(); toast("Vraćen originalni tekst. Prethodnu verziju vraćate sa „Nazad“."); break;
+    case "reset": stopEdit(true); pages = fromTemplate(T); layers = pages[pi]; sel = null;
+      pins = T.strane.map(() => null); T.strane.forEach((s, i) => autoPin(i, true)); renderRoute(); renderAll(); syncProps(); commit(); toast(T.strane.length > 1 ? "Vraćen originalni tekst na svim stranama. Prethodnu verziju vraćate sa „Nazad“." : "Vraćen originalni tekst. Prethodnu verziju vraćate sa „Nazad“."); break;
     case "png": exportPNG(true); break;
     case "png-clean": exportPNG(false); break;
     case "pdf": exportPDF(); break;
@@ -343,6 +503,7 @@ function setProp(k, v, now) {
   const L = get(sel); if (!L) return;
   L[k] = v;
   if (k === "font" || k === "italic") L.weight = nearestWeight(L.font, L.weight, L.italic);
+  if (k === "text" && L.uloga) autoPin(pi);
   refresh(L); syncProps();
   now ? commit() : commitSoon();
 }
@@ -351,7 +512,7 @@ $("pWeight").onchange = e => setProp("weight", +e.target.value, true);
 $("pItalic").onclick = () => setProp("italic", !get(sel).italic, true);
 $("pUpper").onclick = () => setProp("upper", !get(sel).upper, true);
 $("pSize").oninput = e => setProp("size", +e.target.value);
-$("pSizeN").onchange = e => setProp("size", Math.max(4, Math.min(120, +e.target.value || 12)), true);
+$("pSizeN").onchange = e => setProp("size", Math.max(4, Math.min(200, +e.target.value || 12)), true);
 $("pLs").oninput = e => setProp("ls", +e.target.value);
 $("pLh").oninput = e => setProp("lh", +e.target.value);
 $("pAlign").onclick = e => { const b = e.target.closest("button"); if (b) setProp("align", b.dataset.v, true); };
@@ -407,7 +568,16 @@ function loadScript(src) { return new Promise((ok, no) => { const s = document.c
 
 // Tekst crtamo sami na canvas, red po red, na tačnim pozicijama koje je izračunao pregledač,
 // pa je slika identična onome što kupac vidi u editoru.
-async function renderCanvas(scale, watermark) {
+const loadImg = async src => { const img = new Image(); img.src = src; await img.decode(); return img; };
+// Sjaj folije iz CSS gradijenta (FOLIJE[x].sjaj) prenosimo na canvas, dijagonalno preko cele strane.
+function foilGradient(ctx) {
+  const g = ctx.createLinearGradient(0, 0, W(), H());
+  for (const [, c, p] of FOLIJE[foil].sjaj.matchAll(/(#[0-9a-f]{6}) (\d+)%/gi)) g.addColorStop(p / 100, c);
+  return g;
+}
+// mode: "kompozit" = kako izgleda (pregled), "stampa" = samo ono što ide u kolor štampu,
+// "folija" = crno na belom, sve što ide u foliotisak (tekst + crtež sa sloja folije).
+async function renderCanvas(scale, watermark, mode = "kompozit") {
   stopEdit(true);
   await Promise.all(layers.map(L => document.fonts.load(`${L.italic ? "italic " : ""}${L.weight} 40px "${L.font}"`, L.text || "A").catch(() => {})));
   await document.fonts.ready;
@@ -415,15 +585,29 @@ async function renderCanvas(scale, watermark) {
   cv.width = Math.round(W() * scale); cv.height = Math.round(H() * scale);
   const ctx = cv.getContext("2d");
   ctx.scale(scale, scale);
-  const img = new Image(); img.src = T.pozadina; await img.decode();
-  ctx.drawImage(img, 0, 0, W(), H());
+  const p = PG(), foiled = !!foil;
+  if (mode === "folija") { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W(), H()); }
+  else ctx.drawImage(await loadImg(p.pozadina), 0, 0, W(), H());
+  const route = routeSVG(pi);
+  for (const src of mode === "stampa" ? [] : [p.folija, mapOf(pi), route && svgUrl(route)].filter(Boolean)) {
+    const art = await loadImg(src);
+    if (mode === "folija") ctx.drawImage(art, 0, 0, W(), H());
+    else {
+      const off = document.createElement("canvas"); off.width = cv.width; off.height = cv.height;
+      const o = off.getContext("2d"); o.scale(scale, scale);
+      o.drawImage(art, 0, 0, W(), H());
+      o.globalCompositeOperation = "source-in"; o.fillStyle = foilGradient(o); o.fillRect(0, 0, W(), H());
+      ctx.drawImage(off, 0, 0, W(), H());
+    }
+  }
   const sr = stage.getBoundingClientRect();
-  for (const L of layers) {
+  const textOn = !(foiled && mode === "stampa");
+  for (const L of textOn ? layers : []) {
     const el = elOf(L.id), t = el.firstChild;
     if (!L.text.trim()) continue;
     const px = L.size * PT;
     ctx.font = `${L.italic ? "italic " : ""}${L.weight} ${px}px "${L.font}"`;
-    ctx.fillStyle = L.color; ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = mode === "folija" ? "#000" : foiled ? foilGradient(ctx) : L.color; ctx.textBaseline = "alphabetic";
     const asc = ctx.measureText("Hg").fontBoundingBoxAscent ?? px * 0.8;
     const lsPx = L.ls / 1000 * px;
     const node = t.firstChild; if (!node) continue;
@@ -460,24 +644,40 @@ async function renderCanvas(scale, watermark) {
   return cv;
 }
 function download(url, name) { const a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+// Prolazi kroz sve strane (svaku prikaže, da bi pozicije teksta bile tačne) i vraća se na otvorenu.
+async function eachPage(fn) {
+  const cur = pi;
+  try { for (let k = 0; k < T.strane.length; k++) { if (k !== pi) showPage(k); await new Promise(r => requestAnimationFrame(r)); await fn(k); } }
+  finally { if (pi !== cur) showPage(cur); }
+}
+const pageTag = () => T.strane.length > 1 ? "-" + PG().id : "";
 async function exportPNG(wm) {
   document.body.classList.add("busy");
   try {
     const cv = await renderCanvas(wm ? 0.8 : 300 / 254, wm);
-    download(cv.toDataURL("image/png"), `mango-${T.id}-${wm ? "priprema" : "stampa"}.png`);
-    toast(wm ? "Priprema je preuzeta, sa vodenim žigom." : "PNG bez žiga je preuzet.");
+    download(cv.toDataURL("image/png"), `mango-${T.id}${pageTag()}-${wm ? "priprema" : "stampa"}.png`);
+    const strana = T.strane.length > 1 ? ` (${PG().naziv.toLowerCase()})` : "";
+    toast(wm ? `Priprema${strana} je preuzeta, sa vodenim žigom.` : `PNG bez žiga${strana} je preuzet.`);
   } catch (err) { console.error(err); toast("Priprema nije napravljena. Otvorite stranicu preko sajta, ne kao fajl."); }
   document.body.classList.remove("busy");
 }
+// Za šablon sa folijom svaka strana daje dve stranice PDF-a: kolor štampu i crni sloj za foliotisak.
 async function exportPDF() {
   document.body.classList.add("busy");
   try {
     if (!window.jspdf) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
-    const cv = await renderCanvas(300 / 254, false);
-    const [w, h] = T.mm;
-    const pdf = new jspdf.jsPDF({ orientation: w > h ? "landscape" : "portrait", unit: "mm", format: [w, h] });
-    pdf.addImage(cv.toDataURL("image/jpeg", 0.96), "JPEG", 0, 0, w, h);
+    let pdf = null;
+    const add = (cv, [w, h]) => {
+      const o = w > h ? "landscape" : "portrait";
+      if (!pdf) pdf = new jspdf.jsPDF({ orientation: o, unit: "mm", format: [w, h] }); else pdf.addPage([w, h], o);
+      pdf.addImage(cv.toDataURL("image/jpeg", 0.96), "JPEG", 0, 0, w, h);
+    };
+    await eachPage(async () => {
+      if (foil) { add(await renderCanvas(300 / 254, false, "stampa"), PG().mm); add(await renderCanvas(300 / 254, false, "folija"), PG().mm); }
+      else add(await renderCanvas(300 / 254, false), PG().mm);
+    });
     pdf.save(`mango-${T.id}-stampa.pdf`);
+    if (foil) toast(`PDF: za svaku stranu kolor štampa, pa crni sloj za foliju (${FOLIJE[foil].naziv}).`);
   } catch (err) { console.error(err); toast("PDF nije napravljen."); }
   document.body.classList.remove("busy");
 }
@@ -486,7 +686,9 @@ async function exportPDF() {
 const b64u = bytes => { let s = ""; for (let i = 0; i < bytes.length; i += 8192) s += String.fromCharCode(...bytes.subarray(i, i + 8192)); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
 const unb64u = s => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0));
 async function encodeDesign() {
-  const data = JSON.stringify({ t: T.id, l: layers.map(({ id, ...L }) => L) });
+  pages[pi] = layers;
+  const strip = P => P.map(({ id, ...L }) => L);
+  const data = JSON.stringify(T.strane.length > 1 || foil ? { t: T.id, p: pages.map(strip), f: foil, m: pins } : { t: T.id, l: strip(layers) });
   const raw = new TextEncoder().encode(data);
   if (window.CompressionStream) {
     const buf = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer();
@@ -526,8 +728,8 @@ async function orderMessage() {
   store.set("mango-ed:kontakt", { oName: v("oName"), oPhone: v("oPhone"), oEmail: v("oEmail") });
   return `Zdravo! Napravio/la sam pozivnicu u vašem editoru.
 Vrsta: ${e ? "ELEKTRONSKA pozivnica (bez štampe)" : "Štampane pozivnice"}
-Šablon: ${T.naziv} (${T.mm[0] / 10} × ${T.mm[1] / 10} cm)
-${e ? "" : `Broj pozivnica: ${v("oQty") || "—"}\n`}Ime: ${v("oName") || "—"}
+Šablon: ${T.naziv} (${T.strane.length > 1 ? T.strane.map(s => `${s.naziv.toLowerCase()} ${s.mm[0] / 10} × ${s.mm[1] / 10} cm`).join(", ") : dims(T)})
+${!e && T.papir ? `Papir: ${T.papir}\n` : ""}${!e && foil ? `Foliotisak: ${FOLIJE[foil].naziv}\n` : ""}${e ? "" : `Broj pozivnica: ${v("oQty") || "—"}\n`}Ime: ${v("oName") || "—"}
 Telefon: ${v("oPhone") || "—"}
 E-mail: ${v("oEmail") || "—"}
 Datum događaja: ${date}
@@ -560,7 +762,7 @@ $("send").onclick = async e => {
   if (m) {
     try {
       const d = await decodeDesign(m[1]);
-      t = SABLONI.find(x => x.id === d.t) || t; preset = d.l;
+      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m } : { p: [d.l] };
       setTimeout(() => toast("Otvoren je dizajn iz linka."), 400);
     } catch (err) { console.error(err); toast("Link do dizajna nije ispravan."); }
   }

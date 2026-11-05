@@ -100,6 +100,18 @@ function loadTemplate(t, preset) {
   pages = T.strane.map((s, i) => (Array.isArray(P?.[i]) ? P[i] : s.polja).map(L => norm({ ...L, id: undefined })));
   foil = t.folija ? (FOLIJE[d.f] && t.folija.boje.includes(d.f) ? d.f : t.folija.izabrana) : null;
   tint = t.boja ? validTint(t, d.b) : null;
+  // Nacrt iz vremena zamenskih fontova: polje koje odgovara polju iz šablona dobija font, veličinu i mesto iz šablona
+  // (tekst kupca ostaje), ostala samo novi font u srazmernoj veličini. fz = nacrt je već prebačen.
+  const Z = t.zameneFontova;
+  if (Z && P && !d.fz) pages = pages.map((Pg, i) => {
+    const def = T.strane[i].polja;
+    return Pg.map((L, k) => {
+      if (!Z[L.font]) return L;
+      const D = Pg.length === def.length && Z[L.font][0] === def[k].font ? def[k] : null;
+      return norm(D ? { ...L, font: D.font, weight: D.weight, size: D.size, lh: D.lh, ls: D.ls, x: D.x, y: D.y, w: D.w }
+        : { ...L, font: Z[L.font][0], size: +(L.size * Z[L.font][1]).toFixed(1), weight: L.weight >= 600 ? 700 : L.weight });
+    });
+  });
   // Nacrt sačuvan pre nego što su polja dobila ulogu: „Grad:…“ je grad, „Država:…“ je država.
   T.strane.forEach((s, i) => {
     if (!s.mapa) return;
@@ -419,8 +431,8 @@ function renderTemplates() {
 /* ---------------- istorija ---------------- */
 let saveT;
 // Akcije ponekad prave novi niz (layers = layers.filter…), pa ga ovde vraćamo u pages.
-function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins, b: tint, v: vrsta }); }
-const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins, b: tint, v: vrsta });
+function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins, b: tint, v: vrsta, fz: 1 }); }
+const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins, b: tint, v: vrsta, fz: 1 });
 function commit() {
   const s = snap();
   if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 150) hist.shift(); hi = hist.length - 1; }
@@ -832,7 +844,7 @@ const unb64u = s => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")
 async function encodeDesign() {
   pages[pi] = layers;
   const strip = P => P.map(({ id, ...L }) => L);
-  const data = JSON.stringify(T.strane.length > 1 || foil || tint ? { t: T.id, p: pages.map(strip), f: foil, m: pins, b: tint, v: vrsta } : { t: T.id, l: strip(layers) });
+  const data = JSON.stringify(T.strane.length > 1 || foil || tint ? { t: T.id, p: pages.map(strip), f: foil, m: pins, b: tint, v: vrsta, fz: 1 } : { t: T.id, l: strip(layers) });
   const raw = new TextEncoder().encode(data);
   if (window.CompressionStream) {
     const buf = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer();
@@ -906,7 +918,7 @@ $("send").onclick = async e => {
   if (m) {
     try {
       const d = await decodeDesign(m[1]);
-      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m, b: d.b, v: d.v } : { p: [d.l] };
+      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m, b: d.b, v: d.v, fz: d.fz } : { p: [d.l] };
       setTimeout(() => toast("Otvoren je dizajn iz linka."), 400);
     } catch (err) { console.error(err); toast("Link do dizajna nije ispravan."); }
   }

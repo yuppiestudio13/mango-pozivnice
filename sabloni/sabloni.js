@@ -26,6 +26,9 @@ window.SABLONI = [
     kategorija: "Pasoš · rođendani, punoletstva i venčanja",
     grupe: ["boarding", "punoletstva", "rodjendani", "vencanja"],
     papir: "350g, mat štampa",
+    // Stari nacrti (pre 2026-11-05) su imali zamenske fontove; editor ih pri otvaranju prebacuje na originalne.
+    // [novi font, odnos veličine] se koristi samo kad se polje ne može upariti sa poljem iz šablona.
+    zameneFontova: { "Crimson Pro": ["Scientia", 0.89], "Ms Madi": ["Retro Signature", 1.13] },
     folija: { boje: ["rose", "gold", "silver", "red"], izabrana: "rose" },   // foliotisak: sav tekst + crtež sa sloja folije
     // Vrste: ista karta i poleđina, druga korica i podrazumevani tekstovi. Prva vrsta = strane kako su ispod;
     // ostale menjaju polja (i foliju) pojedinih strana po id-ju strane. Venčanje: iz „Danijela komplet.pdf“.

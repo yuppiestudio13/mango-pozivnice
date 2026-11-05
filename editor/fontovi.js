@@ -1,5 +1,8 @@
 /* Besplatni Google fontovi sa latin-ext (č ć š ž đ). [ime, kategorija, ćirilica, debljine, kurziv debljine] – generisano iz fonts.google.com/metadata */
 window.FONTOVI=[
+// Mango originalni fontovi (licencirani, sa našeg servera: fontovi/fontovi.css). Šesti član "mango" = ne učitava se sa Google-a.
+["Scientia", "mango", 1, "400,500,700,900", "400,500,700,900", "mango"],
+["Retro Signature", "mango", 0, "400", "", "mango"],
 ["Great Vibes", "kaligrafija", 1, "400", ""],
 ["Parisienne", "kaligrafija", 0, "400", ""],
 ["Pinyon Script", "kaligrafija", 0, "400", ""],

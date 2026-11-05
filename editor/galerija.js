@@ -14,7 +14,7 @@
     ["punoletstva", "Punoletstva"],
   ];
   const STRANA = { vencanja: "pozivnice-vencanja.html", boarding: "pozivnice-boarding-pass.html", krstenja: "pozivnice-krstenja.html", rodjendani: "pozivnice-rodjendani.html", punoletstva: "pozivnice-punoletstva.html" };
-  const FONT = Object.fromEntries(FONTOVI.map(([n, c, cy, w, i]) => [n, { w: w.split(",").map(Number), i: i ? i.split(",").map(Number) : [] }]));
+  const FONT = Object.fromEntries(FONTOVI.map(([n, c, cy, w, i, own]) => [n, { own: !!own, w: w.split(",").map(Number), i: i ? i.split(",").map(Number) : [] }]));
   const grid = document.getElementById("gGrid"), filt = document.getElementById("gFilter"), empty = document.getElementById("gEmpty");
 
   /* fontovi: isti URL kao u editoru, da se ne traži težina koje nema */
@@ -22,6 +22,7 @@
   function ensureFont(name) {
     if (loaded.has(name)) return; loaded.add(name);
     const f = FONT[name], fam = name.replace(/ /g, "+");
+    if (f && f.own) return;   // naši fontovi: fontovi/fontovi.css
     let spec = "";
     if (f && f.i.length) spec = ":ital,wght@" + [...f.w.map(w => "0," + w), ...f.i.map(w => "1," + w)].join(";");
     else if (f && (f.w.length > 1 || f.w[0] !== 400)) spec = ":wght@" + f.w.join(";");

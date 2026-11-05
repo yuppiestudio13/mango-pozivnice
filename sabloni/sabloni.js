@@ -35,31 +35,31 @@ window.SABLONI = [
         korica: {
           folija: "sabloni/boarding-roza/korica-vencanje-folija.svg",   // krug, X, avion i srce
           polja: [
-            { text: "WEDDING\nPASSPORT", x: 893, y: 150, w: 483, font: "Crimson Pro", weight: 400, size: 25.0, color: "#45474a", align: "center", ls: 0, lh: 0.843 },
-            { text: "K", x: 916, y: 569, w: 160, font: "Crimson Pro", weight: 400, size: 32.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
-            { text: "D", x: 1187, y: 569, w: 160, font: "Crimson Pro", weight: 400, size: 32.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
-            { text: "30.08.2026.", x: 933, y: 911, w: 420, font: "Crimson Pro", weight: 400, size: 22.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 }
+            { text: "WEDDING\nPASSPORT", x: 891, y: 153, w: 483, font: "Scientia", weight: 400, size: 22.0, color: "#45474a", align: "center", ls: 20, lh: 0.958 },
+            { text: "K", x: 915, y: 570, w: 160, font: "Scientia", weight: 400, size: 29.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 },
+            { text: "D", x: 1187, y: 570, w: 160, font: "Scientia", weight: 400, size: 29.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 },
+            { text: "30.08.2026.", x: 933, y: 913, w: 420, font: "Scientia", weight: 400, size: 20.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 }
           ]
         },
         karta: {
           polja: [
-            { text: "AVGUST", x: 1430, y: 50, w: 221, font: "Crimson Pro", weight: 600, size: 11.0, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
-            { text: "30.", x: 1419, y: 61, w: 235, font: "Crimson Pro", weight: 600, size: 44.0, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
-            { text: "2026.", x: 1480, y: 214, w: 120, font: "Crimson Pro", weight: 600, size: 10.0, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
-            { text: "KARTA PRVE KLASE ZA LET\nU NAŠ NOVI ŽIVOT", x: 307, y: 44, w: 851, font: "Crimson Pro", weight: 400, size: 18.0, color: "#45474a", align: "center", ls: 0, lh: 1.067 },
-            { text: "Kosta Mihić i Danijela Mirković", x: 180, y: 250, w: 1100, font: "Ms Madi", weight: 400, size: 27.5, color: "#45474a", align: "center", ls: 0, lh: 0.8 },
-            { text: "Datum:\n30.8.2026.", x: 283, y: 399, w: 220, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
-            { uloga: "grad", text: "Grad:\nNovi Sad", x: 546, y: 399, w: 220, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
-            { text: "Vreme:\n16:00h", x: 783, y: 399, w: 220, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
-            { uloga: "drzava", text: "Država:\nSrbija", x: 1014, y: 399, w: 220, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
-            { text: "Save the date!", x: 377, y: 580, w: 688, font: "Ms Madi", weight: 400, size: 36.5, color: "#45474a", align: "center", ls: 0, lh: 0.8 }
+            { text: "AVGUST", x: 1426, y: 55, w: 221, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 },
+            { text: "30.", x: 1414, y: 87, w: 235, font: "Scientia", weight: 700, size: 35.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 },
+            { text: "2026.", x: 1480, y: 214, w: 120, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 },
+            { text: "KARTA PRVE KLASE ZA LET\nU NAŠ NOVI ŽIVOT", x: 302, y: 46, w: 851, font: "Scientia", weight: 400, size: 16.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+            { text: "Kosta Mihić i Danijela Mirković", x: 190, y: 234, w: 1119, font: "Retro Signature", weight: 400, size: 32.0, color: "#45474a", align: "center", ls: 10, lh: 0.8 },
+            { text: "Datum:\n30.8.2026.", x: 283, y: 400, w: 220, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+            { uloga: "grad", text: "Grad:\nNovi Sad", x: 546, y: 400, w: 220, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+            { text: "Vreme:\n16:00h", x: 783, y: 400, w: 220, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+            { uloga: "drzava", text: "Država:\nSrbija", x: 1013, y: 400, w: 220, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+            { text: "Save the date!", x: 402, y: 573, w: 688, font: "Retro Signature", weight: 400, size: 40.0, color: "#45474a", align: "center", ls: 10, lh: 0.8 }
           ]
         },
         poledjina: {
           polja: [
-            { text: "Hvala vam što ste deo naše životne avanture!", x: 93, y: 42, w: 1513, font: "Crimson Pro", weight: 400, size: 19.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
-            { text: "DOBRO DOŠLI NA NAŠ\nLET U ZAJEDNIČKI ŽIVOT!", x: 339, y: 287, w: 1021, font: "Crimson Pro", weight: 500, size: 23.0, color: "#45474a", align: "center", ls: 0, lh: 0.87 },
-            { text: "Dolazak potvrditi do 1. avgusta 2026. godine", x: 159, y: 532, w: 1382, font: "Crimson Pro", weight: 400, size: 16.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 }
+            { text: "Hvala vam što ste deo naše životne avanture!", x: 93, y: 50, w: 1513, font: "Scientia", weight: 400, size: 17.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 },
+            { text: "DOBRO DOŠLI NA NAŠ\nLET U ZAJEDNIČKI ŽIVOT!", x: 339, y: 290, w: 1021, font: "Scientia", weight: 500, size: 20.0, color: "#45474a", align: "center", ls: 10, lh: 1.0 },
+            { text: "Dolazak potvrditi do 1. avgusta 2026. godine", x: 159, y: 537, w: 1382, font: "Scientia", weight: 400, size: 15.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 }
           ]
         }
       } },
@@ -89,10 +89,10 @@ window.SABLONI = [
         pozadina: "sabloni/boarding-roza/korica.svg",
         folija: null,
         polja: [
-          { text: "BIRTHDAY\nPASSPORT", x: 882, y: 135, w: 483, font: "Crimson Pro", weight: 400, size: 25.0, color: "#45474a", align: "center", ls: 0, lh: 0.843 },
-          { text: "18.", x: 775, y: 329, w: 672, font: "Crimson Pro", weight: 400, size: 140.0, color: "#45474a", align: "center", ls: 0, lh: 0.9 },
-          { text: "Petra Krstić", x: 804, y: 858, w: 631, font: "Ms Madi", weight: 400, size: 35.0, color: "#45474a", align: "center", ls: 0, lh: 0.8 },
-          { text: "19.10.2025.", x: 956, y: 993, w: 349, font: "Crimson Pro", weight: 600, size: 16.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 }
+          { text: "BIRTHDAY\nPASSPORT", x: 882, y: 138, w: 483, font: "Scientia", weight: 400, size: 22.0, color: "#45474a", align: "center", ls: 20, lh: 0.958 },
+          { text: "18.", x: 775, y: 369, w: 672, font: "Scientia", weight: 400, size: 125.0, color: "#45474a", align: "center", ls: 10, lh: 0.9 },
+          { text: "Petra Krstić", x: 804, y: 837, w: 631, font: "Retro Signature", weight: 400, size: 41.0, color: "#45474a", align: "center", ls: 10, lh: 0.8 },
+          { text: "19.10.2025.", x: 956, y: 994, w: 349, font: "Scientia", weight: 700, size: 16.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 }
         ]
       },
       {
@@ -118,17 +118,17 @@ window.SABLONI = [
           pin: "M-1.315 -6.097C-1.309 -6.851 -.693 -7.457 .061 -7.45 .816 -7.444 1.421 -6.828 1.415 -6.074 1.409 -5.32 .793 -4.714 .038 -4.72-.715 -4.726-1.321 -5.342-1.315 -6.097ZM-2.171 -5.716C-2.145 -5.563-2.105 -5.416-2.051 -5.275-1.825 -4.598-1.281 -3.451 .013 -1.634 1.336 -3.429 1.899 -4.567 2.137 -5.24 2.193 -5.38 2.237 -5.527 2.264 -5.679 2.323 -5.953 2.301 -6.067 2.301 -6.067 2.311 -7.31 1.312 -8.326 .068 -8.336-1.174 -8.347-2.191 -7.347-2.201 -6.104-2.201 -6.104-2.225 -5.991-2.171 -5.716ZM-.504 0A.504 .504 0 1 0 .504 0 .504 .504 0 1 0-.504 0Z", pinMera: 3.5278
         },
         polja: [
-          { text: "OKTOBAR", x: 1430, y: 50, w: 221, font: "Crimson Pro", weight: 600, size: 11.0, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
-          { text: "19.", x: 1419, y: 61, w: 235, font: "Crimson Pro", weight: 600, size: 44.0, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
-          { text: "2025.", x: 1480, y: 214, w: 120, font: "Crimson Pro", weight: 600, size: 10.0, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
-          { text: "KARTA ZA\nPROSLAVU PUNOLETSTVA", x: 307, y: 44, w: 851, font: "Crimson Pro", weight: 400, size: 18.0, color: "#45474a", align: "center", ls: 0, lh: 1.067 },
-          { text: "Petra Krstić", x: 384, y: 227, w: 692, font: "Ms Madi", weight: 400, size: 38.5, color: "#45474a", align: "center", ls: 0, lh: 0.8 },
-          { text: "Datum:\n19.10.2025.", x: 215, y: 399, w: 221, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
-          { text: "Lokacija:\nHotel restoran Madera", x: 422, y: 397, w: 416, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.142 },
-          { uloga: "grad", text: "Grad:\nNiš", x: 819, y: 399, w: 145, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
-          { text: "Vreme:\n17:00h", x: 975, y: 399, w: 159, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
-          { uloga: "drzava", text: "Država:\nSrbija", x: 1125, y: 399, w: 175, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
-          { text: "Save the date!", x: 377, y: 580, w: 688, font: "Ms Madi", weight: 400, size: 36.5, color: "#45474a", align: "center", ls: 0, lh: 0.8 }
+          { text: "OKTOBAR", x: 1430, y: 53, w: 221, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 },
+          { text: "19.", x: 1419, y: 74, w: 235, font: "Scientia", weight: 700, size: 40.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 },
+          { text: "2025.", x: 1480, y: 214, w: 120, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 },
+          { text: "KARTA ZA\nPROSLAVU PUNOLETSTVA", x: 302, y: 46, w: 851, font: "Scientia", weight: 400, size: 16.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+          { text: "Petra Krstić", x: 384, y: 205, w: 692, font: "Retro Signature", weight: 400, size: 45.0, color: "#45474a", align: "center", ls: 10, lh: 0.8 },
+          { text: "Datum:\n19.10.2025.", x: 215, y: 399, w: 221, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+          { text: "Lokacija:\nHotel restoran Madera", x: 422, y: 399, w: 416, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+          { uloga: "grad", text: "Grad:\nNiš", x: 819, y: 399, w: 145, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+          { text: "Vreme:\n17:00h", x: 975, y: 399, w: 159, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+          { uloga: "drzava", text: "Država:\nSrbija", x: 1125, y: 399, w: 175, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+          { text: "Save the date!", x: 377, y: 567, w: 688, font: "Retro Signature", weight: 400, size: 41.0, color: "#45474a", align: "center", ls: 10, lh: 0.8 }
         ]
       },
       {
@@ -136,9 +136,9 @@ window.SABLONI = [
         pozadina: "sabloni/boarding-roza/poledjina.svg",
         folija: null,
         polja: [
-          { text: "Hvala Vam što ste deo moje životne avanture!", x: 93, y: 42, w: 1513, font: "Crimson Pro", weight: 400, size: 19.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
-          { text: "DOBRO DOŠLI NA MOJ\nLET U SVET ODRASLIH!!!", x: 339, y: 287, w: 1021, font: "Crimson Pro", weight: 500, size: 23.0, color: "#45474a", align: "center", ls: 0, lh: 0.87 },
-          { text: "Molimo vas svoj dolazak potvrditi do 05.10.2025.", x: 159, y: 532, w: 1382, font: "Crimson Pro", weight: 400, size: 16.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 }
+          { text: "Hvala Vam što ste deo moje životne avanture!", x: 93, y: 50, w: 1513, font: "Scientia", weight: 400, size: 17.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 },
+          { text: "DOBRO DOŠLI NA MOJ\nLET U SVET ODRASLIH!!!", x: 339, y: 290, w: 1021, font: "Scientia", weight: 500, size: 20.0, color: "#45474a", align: "center", ls: 10, lh: 1.0 },
+          { text: "Molimo vas svoj dolazak potvrditi do 05.10.2025.", x: 159, y: 537, w: 1382, font: "Scientia", weight: 400, size: 15.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 }
         ]
       }
     ]

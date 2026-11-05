@@ -12,8 +12,8 @@ const CONFIG = {
 const PT = 3.5278;              // 1 pt u jedinicama šablona (0,1 mm)
 const $ = id => document.getElementById(id);
 const stage = $("stage"), layersEl = $("layers"), frame = $("frame"), box = $("box");
-const CATS = { kaligrafija: "Kaligrafija", rukopis: "Rukopis", serif: "Serif", sans: "Moderni", ukrasni: "Ukrasni", masina: "Boarding / mašina", deciji: "Dečiji" };
-const FONT = Object.fromEntries(FONTOVI.map(([n, c, cy, w, i]) => [n, { n, c, cy, w: w.split(",").map(Number), i: i ? i.split(",").map(Number) : [] }]));
+const CATS = { mango: "Mango originali", kaligrafija: "Kaligrafija", rukopis: "Rukopis", serif: "Serif", sans: "Moderni", ukrasni: "Ukrasni", masina: "Boarding / mašina", deciji: "Dečiji" };
+const FONT = Object.fromEntries(FONTOVI.map(([n, c, cy, w, i, own]) => [n, { n, c, cy, own: !!own, w: w.split(",").map(Number), i: i ? i.split(",").map(Number) : [] }]));
 
 let T = null;             // aktivni šablon
 let pages = [];           // tekstovi za svaku stranu šablona
@@ -48,6 +48,7 @@ function fontUrl(name) {
 function ensureFont(name) {
   if (loadedFonts.has(name)) return;
   loadedFonts.add(name);
+  if (FONT[name]?.own) return;   // naši fontovi su već opisani u fontovi/fontovi.css (preuzimaju se tek kad zatrebaju)
   const l = document.createElement("link");
   l.rel = "stylesheet"; l.href = fontUrl(name);
   document.head.appendChild(l);

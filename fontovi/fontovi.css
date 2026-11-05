@@ -1,0 +1,12 @@
+/* Mango originalni fontovi (licencirani za upotrebu na sajtu).
+   Izvorni fajlovi (ttf/otf/eot) su u fontovi/scientia i fontovi/retro_signature i ne idu na sajt – na sajt idu samo woff2 iz fontovi/web.
+   Retro Signature nema Ž i Đ u originalu: u web verziju su dodati (Ž = Z + kvačica iz Š, Đ = Ð). */
+@font-face{font-family:"Retro Signature";src:url("web/RetroSignature.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Scientia";src:url("web/Scientia-Regular.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Scientia";src:url("web/Scientia-Italic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Scientia";src:url("web/Scientia-Medium.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Scientia";src:url("web/Scientia-MediumItalic.woff2") format("woff2");font-weight:500;font-style:italic;font-display:swap}
+@font-face{font-family:"Scientia";src:url("web/Scientia-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Scientia";src:url("web/Scientia-BoldItalic.woff2") format("woff2");font-weight:700;font-style:italic;font-display:swap}
+@font-face{font-family:"Scientia";src:url("web/Scientia-Black.woff2") format("woff2");font-weight:900;font-style:normal;font-display:swap}
+@font-face{font-family:"Scientia";src:url("web/Scientia-BlackItalic.woff2") format("woff2");font-weight:900;font-style:italic;font-display:swap}

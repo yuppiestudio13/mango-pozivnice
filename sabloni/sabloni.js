@@ -60,11 +60,26 @@ window.SABLONI = [
           ]
         },
         poledjina: {
+          naziv: "Karta, poleđina (satnica)",
+          folija: "sabloni/boarding-roza/poledjina-vencanje-folija.svg",   // avion levo od linije
           polja: [
-            { text: "Hvala vam što ste deo naše životne avanture!", x: 93, y: 50, w: 1513, font: "Scientia", weight: 400, size: 17.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 },
-            { text: "DOBRO DOŠLI NA NAŠ\nLET U ZAJEDNIČKI ŽIVOT!", x: 339, y: 290, w: 1021, font: "Scientia", weight: 500, size: 20.0, color: "#45474a", align: "center", ls: 10, lh: 1.0 },
-            { text: "Dolazak potvrditi do 1. avgusta 2026. godine", x: 159, y: 537, w: 1382, font: "Scientia", weight: 400, size: 15.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 }
-          ]
+            { text: "Kosta Mihić i Danijela Mirković", x: 100, y: 38, w: 1500, font: "Retro Signature", weight: 400, size: 40.0, color: "#45474a", align: "center", ls: 0, lh: 0.8 },
+            { text: "Dolazak potvrditi do 1. avgusta 2026. godine", x: 250, y: 618, w: 1200, font: "Scientia", weight: 500, size: 12.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 }
+          ],
+          // Satnica: kupac dodaje/briše korake (najviše max) i bira ikonicu (sabloni/ikonice.js).
+          // Koraci se ravnomerno raspoređuju između x0 i x1; linija, tačke i ikonice idu u foliju.
+          // vreme/opis = izgled teksta svakog koraka (y, font…); x i širinu računa editor.
+          satnica: {
+            x0: 220, x1: 1552, linija: [258, 1619, 381], debljina: 4.57, tacka: 9.5, dno: 350, maxW: 185, max: 5,
+            vreme: { y: 410, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+            opis: { y: 457, font: "Scientia", weight: 500, size: 7.3, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+            koraci: [
+              { ikona: "mladenci", vreme: "12:00", opis: "SKUP PORODICE\nMIHIĆ I MIRKOVIĆ\nU CAFFE ARENA\nBEOČIN" },
+              { ikona: "crkva", vreme: "14:30", opis: "CRKVENO VENČANJE\nU HRAMU SVETI\nVASILIJE OSTROŠKI\nU BEOČINU" },
+              { ikona: "sala", vreme: "16:00", opis: "ODLAZAK U SALU\nHOTEL MOSKVA\nNOVI SAD" },
+              { ikona: "burme", vreme: "17:00", opis: "GRAĐANSKO VENČANJE\nU RESTORANU" }
+            ]
+          }
         }
       } },
     ],

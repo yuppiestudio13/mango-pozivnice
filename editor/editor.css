@@ -248,3 +248,19 @@ dialog.ed-order::backdrop{background:rgba(16,32,23,.55);backdrop-filter:blur(3px
 .ed-promise p{font-size:.88rem;color:var(--stone);line-height:1.6}
 @media(max-width:800px){.ed-promise .wrap{grid-template-columns:1fr;gap:26px}}
 .ed-links{display:flex;justify-content:center;flex-wrap:wrap;gap:0 30px}
+
+/* ---- satnica ---- */
+.sat-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.sat-row{display:flex;align-items:center;gap:6px}
+.sat-ic{width:46px;height:40px;flex:none;border:1px solid var(--line);background:var(--paper);display:grid;place-items:center;cursor:pointer;color:var(--ink);padding:4px}
+.sat-ic[aria-expanded=true]{border-color:var(--green)}
+.sat-ic svg{width:100%;height:100%}
+.sat-t{flex:1;min-width:0;font-size:.84rem;color:var(--ink);line-height:1.25;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.sat-t small{display:block;font-size:.68rem;color:var(--stone)}
+.sat-b{width:28px;height:28px;flex:none;border:1px solid var(--line);background:none;cursor:pointer;color:var(--ink);font-size:.95rem;line-height:1;padding:0}
+.sat-b:disabled{opacity:.3;cursor:default}
+.sat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:8px;border:1px solid var(--line);background:var(--paper)}
+.sat-grid button{border:1px solid transparent;background:none;cursor:pointer;color:var(--ink);padding:6px 2px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.6rem;line-height:1.2}
+.sat-grid button:hover{border-color:var(--line)}
+.sat-grid button[aria-pressed=true]{border-color:var(--green)}
+.sat-grid svg{width:38px;height:34px}

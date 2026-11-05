@@ -22,6 +22,7 @@ let layers = [];          // tekstovi otvorene strane (= pages[pi])
 let foil = null;          // izabrana folija (rose, gold…) ili null kad šablon nema foliotisak
 let vrsta = null;         // vrsta pozivnice (rodjendan, vencanje…) ili null kad šablon nema vrste
 let wmDark = false;       // true = pozadina je tamna, pa je vodeni žig svetao
+let sat = [];             // satnica za svaku stranu: niz ključeva ikonica (sabloni/ikonice.js) ili null
 let tint = null;          // boja pozadine (#rrggbb) ili null kad šablon nema izbor boje
 let pins = [];            // pribadača na mapi za svaku stranu: { x, y, k: grad za koji je postavljena } ili null
 let sel = null;           // id izabranog
@@ -78,10 +79,16 @@ function norm(L) {
     size: n(L.size, 14, 3, 200), ls: n(L.ls, 0, -200, 1500), lh: n(L.lh, 1.2, 0.5, 4),
     color: /^#[0-9a-f]{6}$/i.test(L.color) ? L.color.toLowerCase() : "#1c3627",
     align: ["left", "center", "right"].includes(L.align) ? L.align : "center",
-    uloga: ["grad", "drzava"].includes(L.uloga) ? L.uloga : undefined,
+    uloga: ["grad", "drzava", "tl"].includes(L.uloga) ? L.uloga : undefined,
+    ...(L.uloga === "tl" ? { k: n(L.k, 0, 0, 9) | 0, deo: L.deo === "o" ? "o" : "v" } : {}),
   };
 }
-function fromTemplate(t) { return t.strane.map(s => s.polja.map(p => norm({ ...p }))); }
+function fromTemplate(t) { return t.strane.map(defaultPage); }
+// Podrazumevani tekstovi strane; strana sa satnicom dobija i vreme + opis za svaki korak.
+function defaultPage(s) {
+  const P = s.polja.map(p => norm({ ...p, id: undefined })), S = s.satnica;
+  return S ? P.concat(S.koraci.flatMap((K, k, A) => [tlLayer(S, A.length, k, "v", K.vreme), tlLayer(S, A.length, k, "o", K.opis)])) : P;
+}
 
 // Sačuvan dizajn: { p: [tekstovi po stranama], f: folija }. Stari oblik: { layers } ili samo niz tekstova.
 // Šablon sa vrstama (rođendan, venčanje…): vrsta menja polja i foliju pojedinih strana. T.base = izvorni šablon.
@@ -97,7 +104,10 @@ function loadTemplate(t, preset) {
   vrsta = t.vrste ? (t.vrste.some(v => v.id === d.v) ? d.v : t.vrste[0].id) : null;
   T = withVrsta(t, vrsta);
   const P = Array.isArray(d) ? [d] : d.p || (d.layers ? [d.layers] : null);
-  pages = T.strane.map((s, i) => (Array.isArray(P?.[i]) ? P[i] : s.polja).map(L => norm({ ...L, id: undefined })));
+  // Strana sa satnicom iz nacrta koji satnicu nije imao dobija nov raspored iz šablona.
+  const fresh = (s, i) => !Array.isArray(P?.[i]) || (s.satnica && !Array.isArray(d.s?.[i]));
+  pages = T.strane.map((s, i) => fresh(s, i) ? defaultPage(s) : P[i].map(L => norm({ ...L, id: undefined })));
+  sat = T.strane.map((s, i) => validSat(s, fresh(s, i) ? null : d.s?.[i]));
   foil = t.folija ? (FOLIJE[d.f] && t.folija.boje.includes(d.f) ? d.f : t.folija.izabrana) : null;
   tint = t.boja ? validTint(t, d.b) : null;
   // Nacrt iz vremena zamenskih fontova: polje koje odgovara polju iz šablona dobija font, veličinu i mesto iz šablona
@@ -137,6 +147,7 @@ function showPage(i) {
   setBg(p);
   const fa = $("foilart");
   fa.hidden = !p.folija;
+  fa.dataset.src = p.folija || "";
   if (p.folija) fa.style.webkitMaskImage = fa.style.maskImage = `url("${p.folija}")`;
   const b = p.bezbedno || 0;
   Object.assign($("safe").style, { left: b + "px", top: b + "px", right: b + "px", bottom: b + "px" });
@@ -213,6 +224,7 @@ function routeSVG(i) {
 const mapOf = i => { const m = T.strane[i].mapa, d = pins[i]?.d; return m && d ? m.drzave[d].crtez : null; };
 const svgUrl = svg => "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 function renderRoute() {
+  renderTl();
   const svg = routeSVG(pi), map = mapOf(pi), el = $("routeart"), h = $("pinH"), ma = $("mapart");
   ma.hidden = !map;
   if (map) ma.style.webkitMaskImage = ma.style.maskImage = `url("${map}")`;
@@ -234,6 +246,95 @@ function renderPageTabs() {
   }));
 }
 
+/* ---------------- satnica (poleđina) ---------------- */
+const IK = window.IKONICE || {};
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+function validSat(s, v) {
+  const S = s.satnica; if (!S) return null;
+  return Array.isArray(v) ? v.filter(k => IK[k]).slice(0, S.max) : S.koraci.map(K => K.ikona);
+}
+// Korak k od n: sredina c i širina kolone s.
+// Tekst je malo širi od kolone (centriran je, pa se susedi ne dodiruju), da se duži opis ne lomi kod 5 koraka.
+function tlPos(S, n, k) { const s = (S.x1 - S.x0) / n, c = S.x0 + (k + .5) * s; return { c, s, x: Math.round(c - (s + 30) / 2), w: Math.round(s + 30) }; }
+function tlLayer(S, n, k, deo, text) {
+  const { x, w } = tlPos(S, n, k);
+  return norm({ ...(deo === "v" ? S.vreme : S.opis), uloga: "tl", k, deo, text, x, w });
+}
+// Linija, tačke i ikonice; crno = folija.
+function tlSVG(i) {
+  const st = T.strane[i], S = st.satnica, A = sat[i]; if (!S || !A) return null;
+  const w = st.mm[0] * 10, h = st.mm[1] * 10, [lx0, lx1, ly] = S.linija;
+  let g = `<path d="M${lx0} ${ly}H${lx1}" stroke="#000" stroke-width="${S.debljina}" fill="none"/>`;
+  A.forEach((key, k) => {
+    const { c, s } = tlPos(S, A.length, k), I = IK[key];
+    g += `<circle cx="${r1(c)}" cy="${ly}" r="${S.tacka}"/>`;
+    const [vx, vy, vw, vh] = I.vb, maxW = Math.min(S.maxW, s - 30);
+    const m = Math.min(I.mera, maxW / vw);
+    g += `<g transform="translate(${r1(c - (vx + vw / 2) * m)} ${r1(S.dno - (vy + vh) * m)}) scale(${+m.toFixed(4)})">${I.svg}</g>`;
+  });
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${g}</svg>`;
+}
+const icoSVG = key => { const I = IK[key]; return `<svg viewBox="${I.vb.join(" ")}" aria-hidden="true">${I.svg.replace(/#000/g, "currentColor")}</svg>`; };
+let satPick = null;   // korak kome se bira ikonica
+function renderTl() {
+  const svg = tlSVG(pi), el = $("tlart");
+  el.hidden = !svg;
+  if (svg) el.style.webkitMaskImage = el.style.maskImage = `url("${svgUrl(svg)}")`;
+  renderSat();
+}
+function renderSat() {
+  const S = PG().satnica, A = sat[pi];
+  $("satBox").hidden = !S || !A;
+  if (!S || !A) return;
+  const txt = k => layers.find(L => L.uloga === "tl" && L.k === k && L.deo === "v")?.text || "";
+  $("oSat").textContent = `${A.length} od ${S.max}`;
+  $("satList").innerHTML = A.map((key, k) => `<div class="sat-row" data-k="${k}">
+      <button class="sat-ic" data-a="pick" title="Promenite ikonicu" aria-label="Ikonica: ${esc(IK[key].naziv)}" aria-expanded="${satPick === k}">${icoSVG(key)}</button>
+      <span class="sat-t">${esc(txt(k)) || "&nbsp;"}<small>${esc(IK[key].naziv)}</small></span>
+      <button class="sat-b" data-a="up" aria-label="Pomeri levo" title="Pomeri levo"${k ? "" : " disabled"}>‹</button>
+      <button class="sat-b" data-a="down" aria-label="Pomeri desno" title="Pomeri desno"${k < A.length - 1 ? "" : " disabled"}>›</button>
+      <button class="sat-b" data-a="del" aria-label="Obriši korak" title="Obriši korak"${A.length > 1 ? "" : " disabled"}>×</button>
+    </div>` + (satPick === k ? `<div class="sat-grid" data-k="${k}">${Object.keys(IK).map(n => `<button data-a="set" data-i="${n}" aria-pressed="${n === key}">${icoSVG(n)}<span>${esc(IK[n].naziv)}</span></button>`).join("")}</div>` : "")).join("");
+  $("satAdd").disabled = A.length >= S.max;
+}
+// Posle dodavanja/brisanja/pomeranja: vreme i opis svakog koraka idu ispod njegove tačke.
+function tlRelayout() {
+  const S = PG().satnica, n = sat[pi].length;
+  for (const L of layers) if (L.uloga === "tl") {
+    const { x, w } = tlPos(S, n, L.k);
+    L.x = x; L.w = w; L.y = (L.deo === "v" ? S.vreme : S.opis).y;
+  }
+  pages[pi] = layers;
+  if (!get(sel)) sel = null;
+  renderAll(); renderTl(); syncProps(); commit();
+}
+$("satList").addEventListener("click", e => {
+  const b = e.target.closest("[data-a]"); if (!b) return;
+  stopEdit(true);
+  const k = +b.closest("[data-k]").dataset.k, A = sat[pi];
+  if (b.dataset.a === "pick") { satPick = satPick === k ? null : k; renderSat(); return; }
+  if (b.dataset.a === "set") { A[k] = b.dataset.i; satPick = null; renderTl(); commit(); return; }
+  satPick = null;
+  if (b.dataset.a === "del") {
+    A.splice(k, 1);
+    layers = layers.filter(L => !(L.uloga === "tl" && L.k === k));
+    for (const L of layers) if (L.uloga === "tl" && L.k > k) L.k--;
+  } else {
+    const j = b.dataset.a === "up" ? k - 1 : k + 1;
+    [A[k], A[j]] = [A[j], A[k]];
+    for (const L of layers) if (L.uloga === "tl") L.k = L.k === k ? j : L.k === j ? k : L.k;
+  }
+  tlRelayout();
+});
+$("satAdd").onclick = () => {
+  const S = PG().satnica, A = sat[pi]; if (!S || A.length >= S.max) return;
+  stopEdit(true);
+  A.push("torta"); satPick = A.length - 1;
+  layers.push(tlLayer(S, A.length, A.length - 1, "v", "00:00"), tlLayer(S, A.length, A.length - 1, "o", "OPIS"));
+  tlRelayout();
+  toast("Dodat je korak. Izaberite ikonicu, pa kliknite na tekst na poleđini da upišete vreme i opis.");
+};
+
 /* ---------------- vrsta pozivnice ---------------- */
 function renderVrsta() {
   const V = (T.base || T).vrste;
@@ -245,7 +346,7 @@ $("vrstaSeg").addEventListener("click", e => {
   const b = e.target.closest("[data-v]"); if (!b || b.dataset.v === vrsta) return;
   stopEdit(true);
   vrsta = b.dataset.v; T = withVrsta(T.base || T, vrsta);
-  pages = fromTemplate(T);
+  pages = fromTemplate(T); sat = T.strane.map(s => validSat(s, null));
   pins = T.strane.map(s => s.mapa ? validPin(s.mapa, null) : null);
   T.strane.forEach((s, i) => { if (s.mapa) autoPin(i, true); });
   layers = pages[pi];
@@ -431,8 +532,8 @@ function renderTemplates() {
 /* ---------------- istorija ---------------- */
 let saveT;
 // Akcije ponekad prave novi niz (layers = layers.filter…), pa ga ovde vraćamo u pages.
-function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins, b: tint, v: vrsta, fz: 1 }); }
-const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins, b: tint, v: vrsta, fz: 1 });
+function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fz: 1 }); }
+const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fz: 1 });
 function commit() {
   const s = snap();
   if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 150) hist.shift(); hi = hist.length - 1; }
@@ -444,8 +545,10 @@ function restore(i) {
   stopEdit(true); hi = i;
   const d = JSON.parse(hist[hi]);
   pages = d.p; foil = d.f; pins = d.m || []; tint = d.b || null; layers = pages[pi];
+  const nv = d.v || null; if (nv !== vrsta) { vrsta = nv; T = withVrsta(T.base || T, vrsta); renderVrsta(); }
+  sat = T.strane.map((s, k) => validSat(s, d.s?.[k]));
   renderTint(); renderFoil();
-  if ((d.v || null) !== vrsta) { vrsta = d.v || null; T = withVrsta(T.base || T, vrsta); renderVrsta(); showPage(pi); }
+  if (PG().folija !== $("foilart").dataset.src) showPage(pi);
   else { if (!get(sel)) sel = null; setBg(PG()); renderRoute(); renderAll(); syncProps(); }
   updateTools();
   saveNow();
@@ -597,7 +700,7 @@ function act(a) {
     case "back": if (L) { layers = [L, ...layers.filter(x => x !== L)]; renderAll(); commit(); } break;
     case "centerH": if (L) { L.x = Math.round(W() / 2 - L.w / 2); refresh(L); commit(); } break;
     case "guides": { const b = document.querySelector("[data-act=guides]"), on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", on); stage.classList.toggle("guides", on); break; }
-    case "reset": stopEdit(true); pages = fromTemplate(T); layers = pages[pi]; sel = null;
+    case "reset": stopEdit(true); pages = fromTemplate(T); sat = T.strane.map(s => validSat(s, null)); layers = pages[pi]; sel = null;
       pins = T.strane.map(() => null); T.strane.forEach((s, i) => autoPin(i, true)); renderRoute(); renderAll(); syncProps(); commit(); toast(T.strane.length > 1 ? "Vraćen originalni tekst na svim stranama. Prethodnu verziju vraćate sa „Nazad“." : "Vraćen originalni tekst. Prethodnu verziju vraćate sa „Nazad“."); break;
     case "png": exportPNG(true); break;
     case "png-clean": exportPNG(false); break;
@@ -720,8 +823,8 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
   const p = PG(), foiled = !!foil;
   if (mode === "folija") { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W(), H()); }
   else { const bg = await loadImg(await bgUrl(p)); ctx.drawImage(bg, 0, 0, W(), H()); wmDark = isDark(bg); }
-  const route = routeSVG(pi);
-  for (const src of mode === "stampa" ? [] : [p.folija, mapOf(pi), route && svgUrl(route)].filter(Boolean)) {
+  const route = routeSVG(pi), tl = tlSVG(pi);
+  for (const src of mode === "stampa" ? [] : [p.folija, mapOf(pi), route && svgUrl(route), tl && svgUrl(tl)].filter(Boolean)) {
     const art = await loadImg(src);
     if (mode === "folija") ctx.drawImage(art, 0, 0, W(), H());
     else {
@@ -844,7 +947,7 @@ const unb64u = s => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")
 async function encodeDesign() {
   pages[pi] = layers;
   const strip = P => P.map(({ id, ...L }) => L);
-  const data = JSON.stringify(T.strane.length > 1 || foil || tint ? { t: T.id, p: pages.map(strip), f: foil, m: pins, b: tint, v: vrsta, fz: 1 } : { t: T.id, l: strip(layers) });
+  const data = JSON.stringify(T.strane.length > 1 || foil || tint ? { t: T.id, p: pages.map(strip), f: foil, m: pins, b: tint, v: vrsta, s: sat, fz: 1 } : { t: T.id, l: strip(layers) });
   const raw = new TextEncoder().encode(data);
   if (window.CompressionStream) {
     const buf = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer();
@@ -918,7 +1021,7 @@ $("send").onclick = async e => {
   if (m) {
     try {
       const d = await decodeDesign(m[1]);
-      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m, b: d.b, v: d.v, fz: d.fz } : { p: [d.l] };
+      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m, b: d.b, v: d.v, s: d.s, fz: d.fz } : { p: [d.l] };
       setTimeout(() => toast("Otvoren je dizajn iz linka."), 400);
     } catch (err) { console.error(err); toast("Link do dizajna nije ispravan."); }
   }

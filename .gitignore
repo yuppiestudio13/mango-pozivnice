@@ -8,3 +8,6 @@ mango-slike/
 *-backup.html
 # izvorni PDF šabloni (u njima su ugrađeni plaćeni fontovi) – ne idu na sajt
 sabloni/pdf/
+
+# Plaćeni fontovi: ne objavljivati dok licenca za web nije potvrđena
+fontovi/

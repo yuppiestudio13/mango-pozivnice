@@ -589,6 +589,7 @@ function act(a) {
     case "png": exportPNG(true); break;
     case "png-clean": exportPNG(false); break;
     case "pdf": exportPDF(); break;
+    case "epoz": exportEPozivnica(); break;
     case "order": openOrder("stampa"); break;
     case "eorder": openOrder("e"); break;
   }
@@ -778,6 +779,29 @@ async function exportPNG(wm) {
     const strana = T.strane.length > 1 ? ` (${PG().naziv.toLowerCase()})` : "";
     toast(wm ? `Priprema${strana} je preuzeta, sa vodenim žigom.` : `PNG bez žiga${strana} je preuzet.`);
   } catch (err) { console.error(err); toast("Priprema nije napravljena. Otvorite stranicu preko sajta, ne kao fajl."); }
+  document.body.classList.remove("busy");
+}
+// E-pozivnica za kupca koji je platio: sve strane jedna ispod druge, bez žiga, u jednoj slici za Viber/WhatsApp.
+async function exportEPozivnica() {
+  document.body.classList.add("busy");
+  try {
+    const shots = [], px = 1600, pad = 70, gap = 50;
+    await eachPage(async () => shots.push(await renderCanvas(px / Math.max(...T.strane.map(s => s.mm[0] * 10)), false)));
+    const cv = document.createElement("canvas");
+    cv.width = Math.max(...shots.map(c => c.width)) + pad * 2;
+    cv.height = shots.reduce((a, c) => a + c.height, 0) + gap * (shots.length - 1) + pad * 2;
+    const ctx = cv.getContext("2d");
+    ctx.fillStyle = "#f6f1e8"; ctx.fillRect(0, 0, cv.width, cv.height);
+    let y = pad;
+    for (const c of shots) {
+      const x = (cv.width - c.width) / 2;
+      ctx.save(); ctx.shadowColor = "rgba(40,30,20,.18)"; ctx.shadowBlur = 30; ctx.shadowOffsetY = 8;
+      ctx.fillStyle = "#fff"; ctx.fillRect(x, y, c.width, c.height); ctx.restore();
+      ctx.drawImage(c, x, y); y += c.height + gap;
+    }
+    download(cv.toDataURL("image/jpeg", .92), `mango-e-pozivnica-${T.id}.jpg`);
+    toast("E-pozivnica bez žiga je preuzeta. Pošaljite je kupcu.");
+  } catch (err) { console.error(err); toast("E-pozivnica nije napravljena."); }
   document.body.classList.remove("busy");
 }
 // Za šablon sa folijom svaka strana daje dve stranice PDF-a: kolor štampu i crni sloj za foliotisak.

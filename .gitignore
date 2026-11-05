@@ -9,5 +9,10 @@ mango-slike/
 # izvorni PDF šabloni (u njima su ugrađeni plaćeni fontovi) – ne idu na sajt
 sabloni/pdf/
 
-# Plaćeni fontovi: ne objavljivati dok licenca za web nije potvrđena
-fontovi/
+# Fontovi: licence potvrđene (2026-11-05). Na sajt idu samo fontovi.css i woff2 iz fontovi/web,
+# izvorni fajlovi (ttf/otf/eot, demo, probe) ostaju samo na računaru.
+fontovi/*
+!fontovi/fontovi.css
+!fontovi/web/
+fontovi/web/*
+!fontovi/web/*.woff2

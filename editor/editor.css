@@ -136,6 +136,8 @@ input[type=range]{width:100%;accent-color:var(--green);height:22px}
 .sw-pick{display:inline-block;overflow:hidden;background:conic-gradient(#e0574f,#e8c25a,#7fbf6a,#5aa9d6,#7b6fd6,#d66fb0,#e0574f)}
 .sw-pick input{opacity:0;width:100%;height:100%;cursor:pointer;border:0;padding:0}
 .sw.foil{width:34px;height:34px}
+.sw.tint{width:34px;height:34px}
+.sw-pick[aria-pressed=true]{box-shadow:0 0 0 2px var(--paper),0 0 0 3.5px var(--green)}
 .foil-box output{font-family:var(--serif);color:var(--green);letter-spacing:0;text-transform:none}
 .foil-note{margin-top:10px;font-size:.74rem;line-height:1.5;color:var(--stone)}
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:6px}

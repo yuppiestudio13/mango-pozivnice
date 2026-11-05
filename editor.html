@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="stil.css?v=5">
-<link rel="stylesheet" href="editor/editor.css?v=9">
+<link rel="stylesheet" href="editor/editor.css?v=10">
 </head>
 <body>
 
@@ -169,6 +169,12 @@
         </div>
       </div>
 
+      <div class="pg foil-box" id="tintBox" hidden>
+        <span class="lab">Boja pozadine <output id="oTint"></output></span>
+        <div class="swatches" id="tintSw"></div>
+        <p class="foil-note">Štampa: <span id="tintCmyk"></span>. Menja se samo boja papira i crteža, tekst i folija ostaju isti. Ako izabrana boja nije dobra za štampu, javićemo vam pre izrade.</p>
+      </div>
+
       <div class="pg foil-box" id="foilBox" hidden>
         <span class="lab">Foliotisak <output id="oFoil"></output></span>
         <div class="swatches" id="foilSw"></div>
@@ -242,9 +248,9 @@
 
 <script>const drawer=document.getElementById('drawer');</script>
 <script src="editor/fontovi.js?v=2"></script>
-<script src="sabloni/sabloni.js?v=8"></script>
+<script src="sabloni/sabloni.js?v=10"></script>
 <script src="sabloni/mesta.js?v=2"></script>
-<script src="editor/editor.js?v=7"></script>
+<script src="editor/editor.js?v=10"></script>
 <script src="js/sajt.js?v=1"></script>
 </body>
 </html>

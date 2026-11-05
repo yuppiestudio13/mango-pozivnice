@@ -27,6 +27,25 @@ window.SABLONI = [
     grupe: ["boarding", "punoletstva", "rodjendani"],
     papir: "350g, mat štampa",
     folija: { boje: ["rose", "gold", "silver", "red"], izabrana: "rose" },   // foliotisak: sav tekst + crtež sa sloja folije
+    // Boja pozadine: osnovna = boja iz originalnog PDF-a. Editor je u svim pozadinama zamenjuje izabranom,
+    // a svetlije nijanse (mapa sveta) prate je srazmerno. slobodna: true = kupac može i sam da izabere boju.
+    // ponuda = najpopularnije boje iz radionice (od korisnika, 2026-11-05). Štampa je CMYK: uz boju može da stoji
+    // i tačan CMYK [c, m, y, k] kao treći član; bez njega editor ga računa iz hex-a (približno).
+    boja: {
+      osnovna: "#ebc8d2",
+      ponuda: [
+        ["Roza", "#ebc8d2"],
+        ["Svetlo roza", "#fbd7db"],
+        ["Krem", "#f2e7d4"],
+        ["Svetlo plava", "#ccebf2"],
+        ["Mint zelena", "#cce5d2"],
+        ["Maslinasto zelena", "#4a5b57"],
+        ["Tamno plava", "#163158"],
+        ["Bordo", "#581027"],
+        ["Crna", "#000000"],
+      ],
+      slobodna: true,
+    },
     strane: [
       {
         id: "korica", naziv: "Korica pasoša", mm: [150, 120], bezbedno: 50,

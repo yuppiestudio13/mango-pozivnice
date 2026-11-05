@@ -20,6 +20,7 @@ let pages = [];           // tekstovi za svaku stranu šablona
 let pi = 0;               // strana koja je otvorena
 let layers = [];          // tekstovi otvorene strane (= pages[pi])
 let foil = null;          // izabrana folija (rose, gold…) ili null kad šablon nema foliotisak
+let tint = null;          // boja pozadine (#rrggbb) ili null kad šablon nema izbor boje
 let pins = [];            // pribadača na mapi za svaku stranu: { x, y, k: grad za koji je postavljena } ili null
 let sel = null;           // id izabranog
 let editing = null;       // id teksta koji se kuca
@@ -88,6 +89,7 @@ function loadTemplate(t, preset) {
   const P = Array.isArray(d) ? [d] : d.p || (d.layers ? [d.layers] : null);
   pages = t.strane.map((s, i) => (Array.isArray(P?.[i]) ? P[i] : s.polja).map(L => norm({ ...L, id: undefined })));
   foil = t.folija ? (FOLIJE[d.f] && t.folija.boje.includes(d.f) ? d.f : t.folija.izabrana) : null;
+  tint = t.boja ? validTint(t, d.b) : null;
   // Nacrt sačuvan pre nego što su polja dobila ulogu: „Grad:…“ je grad, „Država:…“ je država.
   t.strane.forEach((s, i) => {
     if (!s.mapa) return;
@@ -102,7 +104,7 @@ function loadTemplate(t, preset) {
   hist = [snap()]; hi = 0;
   document.querySelectorAll(".tpl").forEach(el => el.setAttribute("aria-current", el.dataset.id === t.id));
   try { const u = new URL(location); u.searchParams.set("s", t.id); history.replaceState(null, "", u.pathname + u.search); } catch {}
-  renderPageTabs(); renderFoil(); showPage(0); updateTools();
+  renderPageTabs(); renderFoil(); renderTint(); showPage(0); updateTools();
 }
 
 function showPage(i) {
@@ -110,7 +112,7 @@ function showPage(i) {
   pages[pi] = layers; pi = i; layers = pages[pi]; sel = null;
   const p = PG();
   stage.style.width = W() + "px"; stage.style.height = H() + "px";
-  $("bg").src = p.pozadina;
+  setBg(p);
   const fa = $("foilart");
   fa.hidden = !p.folija;
   if (p.folija) fa.style.webkitMaskImage = fa.style.maskImage = `url("${p.folija}")`;
@@ -210,6 +212,78 @@ function renderPageTabs() {
   }));
 }
 
+/* ---------------- boja pozadine ---------------- */
+const HEX = /^#[0-9a-f]{6}$/i;
+const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+function validTint(t, v) {
+  const ok = typeof v === "string" && HEX.test(v) && (t.boja.slobodna || t.boja.ponuda.some(([, h]) => h === v.toLowerCase()));
+  return ok ? v.toLowerCase() : (t.boja.izabrana || t.boja.ponuda[0][1]);
+}
+const tintName = () => T.boja.ponuda.find(([, h]) => h === tint)?.[0];
+// CMYK za štampu: tačan iz šablona ako postoji, inače približno iz hex-a.
+function tintCmyk() {
+  const set = T.boja.ponuda.find(([, h]) => h === tint)?.[2];
+  if (set) return set;
+  const [r, g, b] = rgb(tint).map(c => c / 255), k = 1 - Math.max(r, g, b);
+  return k >= 1 ? [0, 0, 0, 100] : [r, g, b].map(c => Math.round((1 - c - k) / (1 - k) * 100)).concat(Math.round(k * 100));
+}
+const cmykText = () => tintCmyk().map((v, i) => "CMYK"[i] + v).join(" ");
+// Pozadina u izabranoj boji. SVG: menja se osnovna boja u kodu (ostaje vektor).
+// Slika: svaki piksel se meri koliko je „obojen“ u odnosu na osnovnu boju i ista količina se nanosi nove boje,
+// pa svetlije nijanse (npr. mapa sveta) ostaju svetlije i u novoj boji.
+const tintCache = new Map();
+function bgUrl(p) {
+  if (!tint || !T.boja || tint === T.boja.osnovna.toLowerCase()) return Promise.resolve(p.pozadina);
+  const key = p.pozadina + "|" + tint;
+  if (!tintCache.has(key)) tintCache.set(key, makeTint(p.pozadina, T.boja.osnovna, tint).catch(err => { console.error(err); tintCache.delete(key); return p.pozadina; }));
+  return tintCache.get(key);
+}
+async function makeTint(src, from, to) {
+  if (/\.svg(\?|$)/i.test(src)) {
+    const txt = await (await fetch(src)).text();
+    return svgUrl(txt.replace(new RegExp(from, "gi"), to));
+  }
+  const img = await loadImg(src);
+  const cv = document.createElement("canvas"); cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+  const ctx = cv.getContext("2d"); ctx.drawImage(img, 0, 0);
+  const id = ctx.getImageData(0, 0, cv.width, cv.height), d = id.data;
+  const F = rgb(from), N = rgb(to), base = F.reduce((a, c) => a + 255 - c, 0) || 1;
+  // Svetle nijanse (k ispod L, npr. mapa sveta) dobijaju istu količinu boje kao u originalu, pa uz tamnu boju
+  // ostaju svetle i tekst preko njih se čita. Puni ton (tačkice, linije) dobija punu novu boju.
+  const s = Math.min(1, base / (N.reduce((a, c) => a + 255 - c, 0) || 1)), L = 0.8;
+  for (let i = 0; i < d.length; i += 4) {
+    if (!d[i + 3]) continue;
+    let k = (765 - d[i] - d[i + 1] - d[i + 2]) / base;
+    k = k <= L ? k * s : L * s + (k - L) / (1 - L) * (1 - L * s);
+    for (let c = 0; c < 3; c++) d[i + c] = 255 - k * (255 - N[c]);
+  }
+  ctx.putImageData(id, 0, 0);
+  return URL.createObjectURL(await new Promise(ok => cv.toBlob(ok, "image/png")));
+}
+function setBg(p) {
+  const want = tint;
+  bgUrl(p).then(u => { if (PG() === p && tint === want) $("bg").src = u; });
+}
+function renderTint() {
+  const on = !!tint;
+  $("tintBox").hidden = !on;
+  if (!on) return;
+  $("oTint").textContent = tintName() || "po želji";
+  $("tintCmyk").textContent = cmykText();
+  $("tintSw").innerHTML = T.boja.ponuda.map(([n, h]) => `<button class="sw tint" style="background:${h}" data-b="${h}" aria-label="${n}" title="${n}" aria-pressed="${h === tint}"></button>`).join("") +
+    (T.boja.slobodna ? `<label class="sw tint sw-pick" title="Izaberite svoju boju" aria-pressed="${!tintName()}"${tintName() ? "" : ` style="background:${tint}"`}><input type="color" id="tintPick" value="${tint}" aria-label="Izaberite svoju boju"></label>` : "");
+}
+function applyTint(h, now) {
+  tint = h.toLowerCase();
+  $("oTint").textContent = tintName() || "po želji";
+  $("tintCmyk").textContent = cmykText();
+  setBg(PG());
+  if (now) { renderTint(); commit(); } else commitSoon();
+}
+$("tintSw").addEventListener("click", e => { const b = e.target.closest("[data-b]"); if (b && b.dataset.b !== tint) applyTint(b.dataset.b, true); });
+$("tintSw").addEventListener("input", e => { if (e.target.id === "tintPick") { e.target.parentNode.style.background = e.target.value; applyTint(e.target.value); } });
+$("tintSw").addEventListener("change", e => { if (e.target.id === "tintPick") { renderTint(); commit(); } });
+
 /* ---------------- foliotisak ---------------- */
 function renderFoil() {
   const on = !!foil;
@@ -302,8 +376,8 @@ function renderTemplates() {
 /* ---------------- istorija ---------------- */
 let saveT;
 // Akcije ponekad prave novi niz (layers = layers.filter…), pa ga ovde vraćamo u pages.
-function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins }); }
-const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins });
+function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins, b: tint }); }
+const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins, b: tint });
 function commit() {
   const s = snap();
   if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 150) hist.shift(); hi = hist.length - 1; }
@@ -314,9 +388,9 @@ let commitT; const commitSoon = () => { clearTimeout(commitT); commitT = setTime
 function restore(i) {
   stopEdit(true); hi = i;
   const d = JSON.parse(hist[hi]);
-  pages = d.p; foil = d.f; pins = d.m || []; layers = pages[pi];
+  pages = d.p; foil = d.f; pins = d.m || []; tint = d.b || null; layers = pages[pi];
   if (!get(sel)) sel = null;
-  renderFoil(); renderRoute(); renderAll(); syncProps(); updateTools();
+  setBg(PG()); renderTint(); renderFoil(); renderRoute(); renderAll(); syncProps(); updateTools();
   saveNow();
 }
 function updateTools() {
@@ -587,7 +661,7 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
   ctx.scale(scale, scale);
   const p = PG(), foiled = !!foil;
   if (mode === "folija") { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W(), H()); }
-  else ctx.drawImage(await loadImg(p.pozadina), 0, 0, W(), H());
+  else ctx.drawImage(await loadImg(await bgUrl(p)), 0, 0, W(), H());
   const route = routeSVG(pi);
   for (const src of mode === "stampa" ? [] : [p.folija, mapOf(pi), route && svgUrl(route)].filter(Boolean)) {
     const art = await loadImg(src);
@@ -688,7 +762,7 @@ const unb64u = s => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")
 async function encodeDesign() {
   pages[pi] = layers;
   const strip = P => P.map(({ id, ...L }) => L);
-  const data = JSON.stringify(T.strane.length > 1 || foil ? { t: T.id, p: pages.map(strip), f: foil, m: pins } : { t: T.id, l: strip(layers) });
+  const data = JSON.stringify(T.strane.length > 1 || foil || tint ? { t: T.id, p: pages.map(strip), f: foil, m: pins, b: tint } : { t: T.id, l: strip(layers) });
   const raw = new TextEncoder().encode(data);
   if (window.CompressionStream) {
     const buf = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer();
@@ -729,7 +803,7 @@ async function orderMessage() {
   return `Zdravo! Napravio/la sam pozivnicu u vašem editoru.
 Vrsta: ${e ? "ELEKTRONSKA pozivnica (bez štampe)" : "Štampane pozivnice"}
 Šablon: ${T.naziv} (${T.strane.length > 1 ? T.strane.map(s => `${s.naziv.toLowerCase()} ${s.mm[0] / 10} × ${s.mm[1] / 10} cm`).join(", ") : dims(T)})
-${!e && T.papir ? `Papir: ${T.papir}\n` : ""}${!e && foil ? `Foliotisak: ${FOLIJE[foil].naziv}\n` : ""}${e ? "" : `Broj pozivnica: ${v("oQty") || "—"}\n`}Ime: ${v("oName") || "—"}
+${!e && T.papir ? `Papir: ${T.papir}\n` : ""}${!e && tint ? `Boja pozadine: ${tintName() || "po želji"} (${tint}, ${cmykText()})\n` : ""}${!e && foil ? `Foliotisak: ${FOLIJE[foil].naziv}\n` : ""}${e ? "" : `Broj pozivnica: ${v("oQty") || "—"}\n`}Ime: ${v("oName") || "—"}
 Telefon: ${v("oPhone") || "—"}
 E-mail: ${v("oEmail") || "—"}
 Datum događaja: ${date}
@@ -762,7 +836,7 @@ $("send").onclick = async e => {
   if (m) {
     try {
       const d = await decodeDesign(m[1]);
-      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m } : { p: [d.l] };
+      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m, b: d.b } : { p: [d.l] };
       setTimeout(() => toast("Otvoren je dizajn iz linka."), 400);
     } catch (err) { console.error(err); toast("Link do dizajna nije ispravan."); }
   }

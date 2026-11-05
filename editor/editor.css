@@ -84,7 +84,7 @@
 .stage .pin-h[hidden]{display:none}
 .stage.edit .pin-h:hover{outline:calc(1px*var(--k)) dashed rgba(168,134,75,.8);outline-offset:calc(2px*var(--k))}
 .stage .pin-h:active{cursor:grabbing}
-.stage.foiled .L .t{background:var(--foil);-webkit-background-clip:text;background-clip:text;color:transparent!important;caret-color:#45474a}
+.stage.foiled .L .t{--padx:.6em;padding:.45em .6em;margin-top:-.45em;margin-bottom:-.45em;margin-left:-.6em;background:var(--foil);-webkit-background-clip:text;background-clip:text;color:transparent!important;caret-color:#45474a}
 .stage.foiled .L .t::selection{color:#45474a;background:rgba(168,134,75,.25)}
 .L{position:absolute;cursor:move;touch-action:none;user-select:none;-webkit-user-select:none}
 .L .t{display:block;white-space:pre-wrap;overflow-wrap:break-word;min-height:1em;outline:none}
@@ -106,7 +106,7 @@
 .stage .guide.v{top:0;bottom:0;width:calc(1px*var(--k))}
 .stage .guide.h{left:0;right:0;height:calc(1px*var(--k))}
 .stage .guide.on{display:block}
-.stage .wm{position:absolute;inset:-60%;pointer-events:none;z-index:4;opacity:.1;background-repeat:repeat;transform:rotate(-24deg)}
+.stage .wm{position:absolute;inset:-60%;pointer-events:none;z-index:4;background-repeat:repeat;transform:rotate(-24deg)}
 
 /* ---- svojstva ---- */
 .props-empty{font-size:.86rem;color:var(--stone);line-height:1.6;padding:4px 0 20px}

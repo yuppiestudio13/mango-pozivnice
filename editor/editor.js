@@ -309,7 +309,7 @@ function styleLayer(el, L, live = true) {
   Object.assign(t.style, {
     fontFamily: `"${L.font}", serif`, fontWeight: L.weight, fontStyle: L.italic ? "italic" : "normal",
     fontSize: L.size * PT + "px", color: L.color, letterSpacing: L.ls / 1000 + "em",
-    marginRight: -L.ls / 1000 + "em", lineHeight: L.lh, textTransform: L.upper ? "uppercase" : "none",
+    marginRight: `calc(${-L.ls / 1000}em - var(--padx, 0em))`, lineHeight: L.lh, textTransform: L.upper ? "uppercase" : "none",
     minHeight: Math.min(1, L.lh) + "em",
   });
   if (editing !== L.id && t.textContent !== L.text) t.textContent = L.text;
@@ -352,8 +352,10 @@ function fit() {
 new ResizeObserver(fit).observe(box);
 
 function drawWatermark() {
-  const fs = Math.round(W() / 26), tw = fs * 25;
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${tw}' height='${fs * 4}'><text x='${tw / 2}' y='${fs * 2.4}' text-anchor='middle' font-family='Josefin Sans,sans-serif' font-size='${fs}' letter-spacing='${fs * .18}' fill='#1c3627'>MANGO POZIVNICE · PRIPREMA</text></svg>`;
+  // Dvobojan žig: tamna slova se vide na svetloj pozadini, svetla (malo pomerena) na tamnoj.
+  const fs = Math.round(W() / 26), tw = fs * 25, o = fs * .07;
+  const txt = (dx, fill, op) => `<text x='${tw / 2 + dx}' y='${fs * 2 + dx}' text-anchor='middle' font-family='Josefin Sans,sans-serif' font-size='${fs}' letter-spacing='${fs * .18}' fill='${fill}' fill-opacity='${op}'>MANGO POZIVNICE · PRIPREMA</text>`;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${tw}' height='${fs * 3.2}'>${txt(o, "#fff", .3)}${txt(0, "#1c3627", .13)}</svg>`;
   $("wm").style.backgroundImage = `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
 }
 
@@ -706,10 +708,13 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
   if (watermark) {
     ctx.save();
     const fs = W() / 26;
-    ctx.font = `400 ${fs}px "Josefin Sans", sans-serif`; ctx.fillStyle = "rgba(28,54,39,.16)";
+    ctx.font = `400 ${fs}px "Josefin Sans", sans-serif`;
     ctx.translate(W() / 2, H() / 2); ctx.rotate(-24 * Math.PI / 180);
-    const txt = "MANGO POZIVNICE · PRIPREMA     ", tw = ctx.measureText(txt).width, D = Math.hypot(W(), H());
-    for (let y = -D / 2; y < D / 2; y += fs * 4) for (let x = -D / 2 - ((y / fs) % 2) * tw / 2; x < D / 2; x += tw) ctx.fillText(txt, x, y);
+    const txt = "MANGO POZIVNICE · PRIPREMA     ", tw = ctx.measureText(txt).width, D = Math.hypot(W(), H()), o = fs * .07;
+    for (const [dx, col] of [[o, "rgba(255,255,255,.34)"], [0, "rgba(28,54,39,.17)"]]) {
+      ctx.fillStyle = col;
+      for (let y = -D / 2; y < D / 2; y += fs * 3.2) for (let x = -D / 2 - ((y / fs) % 2) * tw / 2; x < D / 2; x += tw) ctx.fillText(txt, x + dx, y + dx);
+    }
     ctx.restore();
     ctx.fillStyle = "rgba(28,54,39,.78)"; ctx.fillRect(0, H() - fs * 0.9, W(), fs * 0.9);
     ctx.font = `400 ${fs * 0.34}px "Josefin Sans", sans-serif`; ctx.fillStyle = "#e4cf9f"; ctx.textAlign = "center";

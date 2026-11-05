@@ -23,10 +23,47 @@ window.SABLONI = [
   {
     id: "boarding-roza",
     naziv: "Boarding roza",
-    kategorija: "Pasoš · punoletstvo i rođendani",
-    grupe: ["boarding", "punoletstva", "rodjendani"],
+    kategorija: "Pasoš · rođendani, punoletstva i venčanja",
+    grupe: ["boarding", "punoletstva", "rodjendani", "vencanja"],
     papir: "350g, mat štampa",
     folija: { boje: ["rose", "gold", "silver", "red"], izabrana: "rose" },   // foliotisak: sav tekst + crtež sa sloja folije
+    // Vrste: ista karta i poleđina, druga korica i podrazumevani tekstovi. Prva vrsta = strane kako su ispod;
+    // ostale menjaju polja (i foliju) pojedinih strana po id-ju strane. Venčanje: iz „Danijela komplet.pdf“.
+    vrste: [
+      { id: "rodjendan", naziv: "Rođendan" },
+      { id: "vencanje", naziv: "Venčanje", strane: {
+        korica: {
+          folija: "sabloni/boarding-roza/korica-vencanje-folija.svg",   // krug, X, avion i srce
+          polja: [
+            { text: "WEDDING\nPASSPORT", x: 893, y: 150, w: 483, font: "Crimson Pro", weight: 400, size: 25.0, color: "#45474a", align: "center", ls: 0, lh: 0.843 },
+            { text: "K", x: 916, y: 569, w: 160, font: "Crimson Pro", weight: 400, size: 32.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
+            { text: "D", x: 1187, y: 569, w: 160, font: "Crimson Pro", weight: 400, size: 32.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
+            { text: "30.08.2026.", x: 933, y: 911, w: 420, font: "Crimson Pro", weight: 400, size: 22.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 }
+          ]
+        },
+        karta: {
+          polja: [
+            { text: "AVGUST", x: 1430, y: 50, w: 221, font: "Crimson Pro", weight: 600, size: 11.0, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
+            { text: "30.", x: 1419, y: 61, w: 235, font: "Crimson Pro", weight: 600, size: 44.0, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
+            { text: "2026.", x: 1480, y: 214, w: 120, font: "Crimson Pro", weight: 600, size: 10.0, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
+            { text: "KARTA PRVE KLASE ZA LET\nU NAŠ NOVI ŽIVOT", x: 307, y: 44, w: 851, font: "Crimson Pro", weight: 400, size: 18.0, color: "#45474a", align: "center", ls: 0, lh: 1.067 },
+            { text: "Kosta Mihić i Danijela Mirković", x: 180, y: 250, w: 1100, font: "Ms Madi", weight: 400, size: 27.5, color: "#45474a", align: "center", ls: 0, lh: 0.8 },
+            { text: "Datum:\n30.8.2026.", x: 283, y: 399, w: 220, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
+            { uloga: "grad", text: "Grad:\nNovi Sad", x: 546, y: 399, w: 220, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
+            { text: "Vreme:\n16:00h", x: 783, y: 399, w: 220, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
+            { uloga: "drzava", text: "Država:\nSrbija", x: 1014, y: 399, w: 220, font: "Crimson Pro", weight: 600, size: 10.5, color: "#45474a", align: "center", ls: 0, lh: 1.143 },
+            { text: "Save the date!", x: 377, y: 580, w: 688, font: "Ms Madi", weight: 400, size: 36.5, color: "#45474a", align: "center", ls: 0, lh: 0.8 }
+          ]
+        },
+        poledjina: {
+          polja: [
+            { text: "Hvala vam što ste deo naše životne avanture!", x: 93, y: 42, w: 1513, font: "Crimson Pro", weight: 400, size: 19.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 },
+            { text: "DOBRO DOŠLI NA NAŠ\nLET U ZAJEDNIČKI ŽIVOT!", x: 339, y: 287, w: 1021, font: "Crimson Pro", weight: 500, size: 23.0, color: "#45474a", align: "center", ls: 0, lh: 0.87 },
+            { text: "Dolazak potvrditi do 1. avgusta 2026. godine", x: 159, y: 532, w: 1382, font: "Crimson Pro", weight: 400, size: 16.5, color: "#45474a", align: "center", ls: 0, lh: 1.15 }
+          ]
+        }
+      } },
+    ],
     // Boja pozadine: osnovna = boja iz originalnog PDF-a. Editor je u svim pozadinama zamenjuje izabranom,
     // a svetlije nijanse (mapa sveta) prate je srazmerno. slobodna: true = kupac može i sam da izabere boju.
     // ponuda = najpopularnije boje iz radionice (od korisnika, 2026-11-05). Štampa je CMYK: uz boju može da stoji

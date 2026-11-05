@@ -20,6 +20,8 @@ let pages = [];           // tekstovi za svaku stranu šablona
 let pi = 0;               // strana koja je otvorena
 let layers = [];          // tekstovi otvorene strane (= pages[pi])
 let foil = null;          // izabrana folija (rose, gold…) ili null kad šablon nema foliotisak
+let vrsta = null;         // vrsta pozivnice (rodjendan, vencanje…) ili null kad šablon nema vrste
+let wmDark = false;       // true = pozadina je tamna, pa je vodeni žig svetao
 let tint = null;          // boja pozadine (#rrggbb) ili null kad šablon nema izbor boje
 let pins = [];            // pribadača na mapi za svaku stranu: { x, y, k: grad za koji je postavljena } ili null
 let sel = null;           // id izabranog
@@ -81,30 +83,37 @@ function norm(L) {
 function fromTemplate(t) { return t.strane.map(s => s.polja.map(p => norm({ ...p }))); }
 
 // Sačuvan dizajn: { p: [tekstovi po stranama], f: folija }. Stari oblik: { layers } ili samo niz tekstova.
+// Šablon sa vrstama (rođendan, venčanje…): vrsta menja polja i foliju pojedinih strana. T.base = izvorni šablon.
+function withVrsta(t, v) {
+  if (!t.vrste) return t;
+  const V = t.vrste.find(x => x.id === v) || t.vrste[0];
+  return { ...t, base: t, strane: t.strane.map(s => V.strane?.[s.id] ? { ...s, ...V.strane[s.id] } : s) };
+}
 function loadTemplate(t, preset) {
-  T = t;
   stopEdit(true);
   sel = null;
   const d = preset || store.get("mango-ed:" + t.id) || {};
+  vrsta = t.vrste ? (t.vrste.some(v => v.id === d.v) ? d.v : t.vrste[0].id) : null;
+  T = withVrsta(t, vrsta);
   const P = Array.isArray(d) ? [d] : d.p || (d.layers ? [d.layers] : null);
-  pages = t.strane.map((s, i) => (Array.isArray(P?.[i]) ? P[i] : s.polja).map(L => norm({ ...L, id: undefined })));
+  pages = T.strane.map((s, i) => (Array.isArray(P?.[i]) ? P[i] : s.polja).map(L => norm({ ...L, id: undefined })));
   foil = t.folija ? (FOLIJE[d.f] && t.folija.boje.includes(d.f) ? d.f : t.folija.izabrana) : null;
   tint = t.boja ? validTint(t, d.b) : null;
   // Nacrt sačuvan pre nego što su polja dobila ulogu: „Grad:…“ je grad, „Država:…“ je država.
-  t.strane.forEach((s, i) => {
+  T.strane.forEach((s, i) => {
     if (!s.mapa) return;
     for (const [u, re] of [["grad", /^\s*grad\s*:/i], ["drzava", /^\s*dr[žz]ava\s*:/i]]) {
       if (pages[i].some(L => L.uloga === u)) continue;
       const L = pages[i].find(L => !L.uloga && re.test(L.text)); if (L) L.uloga = u;
     }
   });
-  pins = t.strane.map((s, i) => s.mapa ? validPin(s.mapa, d.m?.[i]) : null);
-  t.strane.forEach((s, i) => { if (s.mapa) autoPin(i, true); });
+  pins = T.strane.map((s, i) => s.mapa ? validPin(s.mapa, d.m?.[i]) : null);
+  T.strane.forEach((s, i) => { if (s.mapa) autoPin(i, true); });
   pi = 0; layers = pages[0];
   hist = [snap()]; hi = 0;
   document.querySelectorAll(".tpl").forEach(el => el.setAttribute("aria-current", el.dataset.id === t.id));
   try { const u = new URL(location); u.searchParams.set("s", t.id); history.replaceState(null, "", u.pathname + u.search); } catch {}
-  renderPageTabs(); renderFoil(); renderTint(); showPage(0); updateTools();
+  renderPageTabs(); renderVrsta(); renderFoil(); renderTint(); showPage(0); updateTools();
 }
 
 function showPage(i) {
@@ -212,6 +221,25 @@ function renderPageTabs() {
   }));
 }
 
+/* ---------------- vrsta pozivnice ---------------- */
+function renderVrsta() {
+  const V = (T.base || T).vrste;
+  $("vrstaBox").hidden = !V;
+  if (V) $("vrstaSeg").innerHTML = V.map(v => `<button data-v="${v.id}" aria-pressed="${v.id === vrsta}">${v.naziv}</button>`).join("");
+}
+// Nova vrsta = nova korica i podrazumevani tekstovi na svim stranama (Poništi vraća prethodne).
+$("vrstaSeg").addEventListener("click", e => {
+  const b = e.target.closest("[data-v]"); if (!b || b.dataset.v === vrsta) return;
+  stopEdit(true);
+  vrsta = b.dataset.v; T = withVrsta(T.base || T, vrsta);
+  pages = fromTemplate(T);
+  pins = T.strane.map(s => s.mapa ? validPin(s.mapa, null) : null);
+  T.strane.forEach((s, i) => { if (s.mapa) autoPin(i, true); });
+  layers = pages[pi];
+  renderVrsta(); showPage(pi); commit();
+  toast(`Vrsta: ${b.textContent}. Tekstovi su vraćeni na primer za ovu vrstu.`);
+});
+
 /* ---------------- boja pozadine ---------------- */
 const HEX = /^#[0-9a-f]{6}$/i;
 const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
@@ -262,7 +290,12 @@ async function makeTint(src, from, to) {
 }
 function setBg(p) {
   const want = tint;
-  bgUrl(p).then(u => { if (PG() === p && tint === want) $("bg").src = u; });
+  bgUrl(p).then(async u => {
+    if (PG() !== p || tint !== want) return;
+    const img = $("bg"); img.src = u;
+    try { await img.decode(); } catch { return; }
+    const d = isDark(img); if (d !== wmDark) { wmDark = d; drawWatermark(); }
+  });
 }
 function renderTint() {
   const on = !!tint;
@@ -351,11 +384,18 @@ function fit() {
 }
 new ResizeObserver(fit).observe(box);
 
+// Prosečna svetlina pozadine: na tamnoj je žig svetao, na svetloj taman.
+function isDark(img) {
+  const c = document.createElement("canvas"); c.width = c.height = 24;
+  const x = c.getContext("2d"); x.drawImage(img, 0, 0, 24, 24);
+  const d = x.getImageData(0, 0, 24, 24).data; let sum = 0;
+  for (let i = 0; i < d.length; i += 4) sum += d[i + 3] < 128 ? 255 : .2126 * d[i] + .7152 * d[i + 1] + .0722 * d[i + 2];
+  return sum / (d.length / 4) < 140;
+}
+const WM = () => wmDark ? ["#ffffff", .3] : ["#1c3627", .15];
 function drawWatermark() {
-  // Dvobojan žig: tamna slova se vide na svetloj pozadini, svetla (malo pomerena) na tamnoj.
-  const fs = Math.round(W() / 26), tw = fs * 25, o = fs * .07;
-  const txt = (dx, fill, op) => `<text x='${tw / 2 + dx}' y='${fs * 2 + dx}' text-anchor='middle' font-family='Josefin Sans,sans-serif' font-size='${fs}' letter-spacing='${fs * .18}' fill='${fill}' fill-opacity='${op}'>MANGO POZIVNICE · PRIPREMA</text>`;
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${tw}' height='${fs * 3.2}'>${txt(o, "#fff", .3)}${txt(0, "#1c3627", .13)}</svg>`;
+  const fs = Math.round(W() / 26), tw = fs * 25, [col, op] = WM();
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${tw}' height='${fs * 3.2}'><text x='${tw / 2}' y='${fs * 2}' text-anchor='middle' font-family='Josefin Sans,sans-serif' font-size='${fs}' letter-spacing='${fs * .18}' fill='${col}' fill-opacity='${op}'>MANGO POZIVNICE · PRIPREMA</text></svg>`;
   $("wm").style.backgroundImage = `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
 }
 
@@ -378,8 +418,8 @@ function renderTemplates() {
 /* ---------------- istorija ---------------- */
 let saveT;
 // Akcije ponekad prave novi niz (layers = layers.filter…), pa ga ovde vraćamo u pages.
-function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins, b: tint }); }
-const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins, b: tint });
+function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins, b: tint, v: vrsta }); }
+const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins, b: tint, v: vrsta });
 function commit() {
   const s = snap();
   if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 150) hist.shift(); hi = hist.length - 1; }
@@ -391,8 +431,10 @@ function restore(i) {
   stopEdit(true); hi = i;
   const d = JSON.parse(hist[hi]);
   pages = d.p; foil = d.f; pins = d.m || []; tint = d.b || null; layers = pages[pi];
-  if (!get(sel)) sel = null;
-  setBg(PG()); renderTint(); renderFoil(); renderRoute(); renderAll(); syncProps(); updateTools();
+  renderTint(); renderFoil();
+  if ((d.v || null) !== vrsta) { vrsta = d.v || null; T = withVrsta(T.base || T, vrsta); renderVrsta(); showPage(pi); }
+  else { if (!get(sel)) sel = null; setBg(PG()); renderRoute(); renderAll(); syncProps(); }
+  updateTools();
   saveNow();
 }
 function updateTools() {
@@ -663,7 +705,7 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
   ctx.scale(scale, scale);
   const p = PG(), foiled = !!foil;
   if (mode === "folija") { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W(), H()); }
-  else ctx.drawImage(await loadImg(await bgUrl(p)), 0, 0, W(), H());
+  else { const bg = await loadImg(await bgUrl(p)); ctx.drawImage(bg, 0, 0, W(), H()); wmDark = isDark(bg); }
   const route = routeSVG(pi);
   for (const src of mode === "stampa" ? [] : [p.folija, mapOf(pi), route && svgUrl(route)].filter(Boolean)) {
     const art = await loadImg(src);
@@ -710,11 +752,9 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
     const fs = W() / 26;
     ctx.font = `400 ${fs}px "Josefin Sans", sans-serif`;
     ctx.translate(W() / 2, H() / 2); ctx.rotate(-24 * Math.PI / 180);
-    const txt = "MANGO POZIVNICE · PRIPREMA     ", tw = ctx.measureText(txt).width, D = Math.hypot(W(), H()), o = fs * .07;
-    for (const [dx, col] of [[o, "rgba(255,255,255,.34)"], [0, "rgba(28,54,39,.17)"]]) {
-      ctx.fillStyle = col;
-      for (let y = -D / 2; y < D / 2; y += fs * 3.2) for (let x = -D / 2 - ((y / fs) % 2) * tw / 2; x < D / 2; x += tw) ctx.fillText(txt, x + dx, y + dx);
-    }
+    const txt = "MANGO POZIVNICE · PRIPREMA     ", tw = ctx.measureText(txt).width, D = Math.hypot(W(), H()), [col, op] = WM();
+    ctx.fillStyle = col; ctx.globalAlpha = op + .03;
+    for (let y = -D / 2; y < D / 2; y += fs * 3.2) for (let x = -D / 2 - ((y / fs) % 2) * tw / 2; x < D / 2; x += tw) ctx.fillText(txt, x, y);
     ctx.restore();
     ctx.fillStyle = "rgba(28,54,39,.78)"; ctx.fillRect(0, H() - fs * 0.9, W(), fs * 0.9);
     ctx.font = `400 ${fs * 0.34}px "Josefin Sans", sans-serif`; ctx.fillStyle = "#e4cf9f"; ctx.textAlign = "center";
@@ -767,7 +807,7 @@ const unb64u = s => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")
 async function encodeDesign() {
   pages[pi] = layers;
   const strip = P => P.map(({ id, ...L }) => L);
-  const data = JSON.stringify(T.strane.length > 1 || foil || tint ? { t: T.id, p: pages.map(strip), f: foil, m: pins, b: tint } : { t: T.id, l: strip(layers) });
+  const data = JSON.stringify(T.strane.length > 1 || foil || tint ? { t: T.id, p: pages.map(strip), f: foil, m: pins, b: tint, v: vrsta } : { t: T.id, l: strip(layers) });
   const raw = new TextEncoder().encode(data);
   if (window.CompressionStream) {
     const buf = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer();
@@ -807,7 +847,7 @@ async function orderMessage() {
   store.set("mango-ed:kontakt", { oName: v("oName"), oPhone: v("oPhone"), oEmail: v("oEmail") });
   return `Zdravo! Napravio/la sam pozivnicu u vašem editoru.
 Vrsta: ${e ? "ELEKTRONSKA pozivnica (bez štampe)" : "Štampane pozivnice"}
-Šablon: ${T.naziv} (${T.strane.length > 1 ? T.strane.map(s => `${s.naziv.toLowerCase()} ${s.mm[0] / 10} × ${s.mm[1] / 10} cm`).join(", ") : dims(T)})
+Šablon: ${T.naziv}${vrsta ? " · " + (T.base || T).vrste.find(v => v.id === vrsta).naziv : ""} (${T.strane.length > 1 ? T.strane.map(s => `${s.naziv.toLowerCase()} ${s.mm[0] / 10} × ${s.mm[1] / 10} cm`).join(", ") : dims(T)})
 ${!e && T.papir ? `Papir: ${T.papir}\n` : ""}${!e && tint ? `Boja pozadine: ${tintName() || "po želji"} (${tint}, ${cmykText()})\n` : ""}${!e && foil ? `Foliotisak: ${FOLIJE[foil].naziv}\n` : ""}${e ? "" : `Broj pozivnica: ${v("oQty") || "—"}\n`}Ime: ${v("oName") || "—"}
 Telefon: ${v("oPhone") || "—"}
 E-mail: ${v("oEmail") || "—"}
@@ -841,7 +881,7 @@ $("send").onclick = async e => {
   if (m) {
     try {
       const d = await decodeDesign(m[1]);
-      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m, b: d.b } : { p: [d.l] };
+      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m, b: d.b, v: d.v } : { p: [d.l] };
       setTimeout(() => toast("Otvoren je dizajn iz linka."), 400);
     } catch (err) { console.error(err); toast("Link do dizajna nije ispravan."); }
   }

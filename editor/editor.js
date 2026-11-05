@@ -65,7 +65,7 @@ function nearestWeight(name, w, italic) {
 const PG = () => T.strane[pi];
 function W() { return PG().mm[0] * 10; }
 function H() { return PG().mm[1] * 10; }
-const dims = t => t.formati && !fmtLive(t) ? "12,5 × 16,5 ili 15 × 15 cm" : t.strane.length > 1
+const dims = t => t.formati && !fmtLive(t) ? fmtList(t).map(k => FORMATI[k].naziv.replace(" cm", "")).join(" ili ") + " cm" : t.strane.length > 1
   ? [...new Set(t.strane.map(s => `${s.mm[0] / 10} × ${s.mm[1] / 10}`))].join(" + ") + " cm"
   : `${t.mm[0] / 10} × ${t.mm[1] / 10} cm`;
 // Svaki tekst prolazi kroz proveru (i onaj iz linka), da u dizajn ne može da uđe ništa osim ispravnih vrednosti.
@@ -98,7 +98,8 @@ function defaultPage(s) {
 // Formati koje kupac bira (dimenzije u mm) i koverta uz njih.
 const FORMATI = { "125x165": { mm: [125, 165], naziv: "12,5 × 16,5 cm" }, "150x150": { mm: [150, 150], naziv: "15 × 15 cm" } };
 // Podrazumevani format = onaj čiji odnos strana je najbliži originalu.
-const fmtOf = t => Object.keys(FORMATI).reduce((a, k) => { const r = m => Math.abs(Math.log((m[0] / m[1]) / (t.strane[0].mm[0] / t.strane[0].mm[1]))); return r(FORMATI[k].mm) < r(FORMATI[a].mm) ? k : a; }, "125x165");
+const fmtList = t => Array.isArray(t.formati) ? t.formati.filter(k => FORMATI[k]) : Object.keys(FORMATI);
+const fmtOf = t => fmtList(t).reduce((a, k) => { const r = m => Math.abs(Math.log((m[0] / m[1]) / (t.strane[0].mm[0] / t.strane[0].mm[1]))); return r(FORMATI[k].mm) < r(FORMATI[a].mm) ? k : a; }, fmtList(t)[0]);
 // Uklapanje originala (b, mm) u format (f, mm): ceo dizajn stane, bez sečenja; razmera s i pomak (0,1 mm).
 function fitOf(b, f) { const s = Math.min(f[0] / b[0], f[1] / b[1]); return { s, ox: (f[0] - b[0] * s) * 5, oy: (f[1] - b[1] * s) * 5, b }; }
 const fitL = (L, F) => ({ ...L, x: Math.round(L.x * F.s + F.ox), y: Math.round(L.y * F.s + F.oy), w: Math.round(L.w * F.s), size: Math.round(L.size * F.s * 2) / 2 });
@@ -126,7 +127,7 @@ function loadTemplate(t, preset) {
   sel = null;
   const d = preset || store.get("mango-ed:" + t.id) || {};
   vrsta = t.vrste ? (t.vrste.some(v => v.id === d.v) ? d.v : t.vrste[0].id) : null;
-  fmt = t.formati ? (FORMATI[d.fo] ? d.fo : fmtOf(t)) : null;
+  fmt = t.formati ? (fmtList(t).includes(d.fo) ? d.fo : fmtOf(t)) : null;
   T = { ...derive(t), base: t };
   const P = Array.isArray(d) ? [d] : d.p || (d.layers ? [d.layers] : null);
   // Strana sa satnicom iz nacrta koji satnicu nije imao dobija nov raspored iz šablona.
@@ -362,9 +363,9 @@ $("satAdd").onclick = () => {
 
 /* ---------------- format ---------------- */
 function renderFmt() {
-  const on = !!baseOf().formati;
+  const L = baseOf().formati ? fmtList(baseOf()) : [], on = L.length > 1;
   $("fmtBox").hidden = !on;
-  if (on) $("fmtSeg").innerHTML = Object.entries(FORMATI).map(([k, f]) => `<button data-f="${k}" aria-pressed="${k === fmt}">${f.naziv}</button>`).join("");
+  if (on) $("fmtSeg").innerHTML = L.map(k => [k, FORMATI[k]]).map(([k, f]) => `<button data-f="${k}" aria-pressed="${k === fmt}">${f.naziv}</button>`).join("");
 }
 // Tekstovi se prenose u novi format istom razmerom kao dizajn (ono što je kupac upisao ostaje).
 $("fmtSeg").addEventListener("click", e => {
@@ -446,10 +447,6 @@ async function makeFit(p) {
   if (dx > 0) { mirror(dx, dy - blur, -1, 1 + 2 * blur / dh); mirror(dx + 2 * dw, dy - blur, -1, 1 + 2 * blur / dh); }
   if (dy > 0) { mirror(dx - blur, dy, 1 + 2 * blur / dw, -1); mirror(dx - blur, dy + 2 * dh, 1 + 2 * blur / dw, -1); }
   ctx.restore();
-  // svetao veo preko traka, da odraz ne vuče pažnju sa dizajna
-  ctx.fillStyle = "rgba(255,255,255,.15)";
-  if (dx > 0) { ctx.fillRect(0, 0, dx, cv.height); ctx.fillRect(dx + dw, 0, cv.width, cv.height); }
-  if (dy > 0) { ctx.fillRect(0, 0, cv.width, dy); ctx.fillRect(0, dy + dh, cv.width, cv.height); }
   ctx.drawImage(img, dx, dy, dw, dh);
   return URL.createObjectURL(await new Promise(ok => cv.toBlob(ok, "image/jpeg", .9)));
 }

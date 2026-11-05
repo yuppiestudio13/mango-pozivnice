@@ -36,7 +36,8 @@
   function card(t) {
     const w = t.mm[0] * 10, h = t.mm[1] * 10, land = w > h;
     const p = t.strane[0], fo = t.folija && window.FOLIJE && FOLIJE[t.folija.izabrana];
-    const dims = t.formati ? "12,5 × 16,5 ili 15 × 15 cm" : t.strane.length > 1 ? [...new Set(t.strane.map(s => `${s.mm[0] / 10} × ${s.mm[1] / 10}`))].join(" + ") + " cm" : `${t.mm[0] / 10} × ${t.mm[1] / 10} cm`;
+    const FN = { "125x165": "12,5 × 16,5", "150x150": "15 × 15" };
+    const dims = t.formati ? (Array.isArray(t.formati) ? t.formati : Object.keys(FN)).map(k => FN[k]).join(" ili ") + " cm" : t.strane.length > 1 ? [...new Set(t.strane.map(s => `${s.mm[0] / 10} × ${s.mm[1] / 10}`))].join(" + ") + " cm" : `${t.mm[0] / 10} × ${t.mm[1] / 10} cm`;
     const art = p.folija && fo ? `<div style="position:absolute;inset:0;background:${fo.sjaj};-webkit-mask:url('${esc(p.folija)}') 0 0/100% 100% no-repeat;mask:url('${esc(p.folija)}') 0 0/100% 100% no-repeat"></div>` : "";
     const a = document.createElement("a");
     a.className = "g-card" + (land ? " land" : "");

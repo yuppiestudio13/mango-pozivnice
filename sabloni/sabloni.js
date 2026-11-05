@@ -51,10 +51,11 @@ window.SABLONI = [
             { text: "2026.", x: 1480, y: 214, w: 120, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.15 },
             { text: "KARTA PRVE KLASE ZA LET\nU NAŠ NOVI ŽIVOT", x: 302, y: 46, w: 851, font: "Scientia", weight: 400, size: 16.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
             { text: "Kosta Mihić i Danijela Mirković", x: 190, y: 234, w: 1119, font: "Retro Signature", weight: 400, size: 32.0, color: "#45474a", align: "center", ls: 10, lh: 0.8 },
-            { text: "Datum:\n30.8.2026.", x: 283, y: 400, w: 220, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
-            { uloga: "grad", text: "Grad:\nNovi Sad", x: 546, y: 400, w: 220, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
-            { text: "Vreme:\n16:00h", x: 783, y: 400, w: 220, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
-            { uloga: "drzava", text: "Država:\nSrbija", x: 1013, y: 400, w: 220, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+            { text: "Datum:\n30.8.2026.", x: 215, y: 399, w: 221, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+            { text: "Lokacija:\nHotel Moskva", x: 422, y: 399, w: 416, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+            { uloga: "grad", text: "Grad:\nNovi Sad", x: 819, y: 399, w: 145, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+            { text: "Vreme:\n16:00h", x: 975, y: 399, w: 159, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
+            { uloga: "drzava", text: "Država:\nSrbija", x: 1125, y: 399, w: 175, font: "Scientia", weight: 700, size: 10.0, color: "#45474a", align: "center", ls: 10, lh: 1.2 },
             { text: "Save the date!", x: 402, y: 573, w: 688, font: "Retro Signature", weight: 400, size: 40.0, color: "#45474a", align: "center", ls: 10, lh: 0.8 }
           ]
         },

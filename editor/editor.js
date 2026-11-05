@@ -20,6 +20,7 @@ let pages = [];           // tekstovi za svaku stranu šablona
 let pi = 0;               // strana koja je otvorena
 let layers = [];          // tekstovi otvorene strane (= pages[pi])
 let foil = null;          // izabrana folija (rose, gold…) ili null kad šablon nema foliotisak
+let fmt = null;           // format (npr. "125x165") za šablon sa formati: true, ili null
 let vrsta = null;         // vrsta pozivnice (rodjendan, vencanje…) ili null kad šablon nema vrste
 let wmDark = false;       // true = pozadina je tamna, pa je vodeni žig svetao
 let sat = [];             // satnica za svaku stranu: niz ključeva ikonica (sabloni/ikonice.js) ili null
@@ -64,10 +65,12 @@ function nearestWeight(name, w, italic) {
 const PG = () => T.strane[pi];
 function W() { return PG().mm[0] * 10; }
 function H() { return PG().mm[1] * 10; }
-const dims = t => t.strane.length > 1
+const dims = t => t.formati && !fmtLive(t) ? "12,5 × 16,5 ili 15 × 15 cm" : t.strane.length > 1
   ? [...new Set(t.strane.map(s => `${s.mm[0] / 10} × ${s.mm[1] / 10}`))].join(" + ") + " cm"
   : `${t.mm[0] / 10} × ${t.mm[1] / 10} cm`;
 // Svaki tekst prolazi kroz proveru (i onaj iz linka), da u dizajn ne može da uđe ništa osim ispravnih vrednosti.
+// Aktivni šablon u izabranom formatu ima T.mm = format; u listi šablona (original) pišu oba formata.
+const fmtLive = t => t === T && !!fmt;
 function norm(L) {
   const n = (v, d, lo, hi) => Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : d;
   return {
@@ -92,17 +95,39 @@ function defaultPage(s) {
 
 // Sačuvan dizajn: { p: [tekstovi po stranama], f: folija }. Stari oblik: { layers } ili samo niz tekstova.
 // Šablon sa vrstama (rođendan, venčanje…): vrsta menja polja i foliju pojedinih strana. T.base = izvorni šablon.
+// Formati koje kupac bira (dimenzije u mm) i koverta uz njih.
+const FORMATI = { "125x165": { mm: [125, 165], naziv: "12,5 × 16,5 cm" }, "150x150": { mm: [150, 150], naziv: "15 × 15 cm" } };
+// Podrazumevani format = onaj čiji odnos strana je najbliži originalu.
+const fmtOf = t => Object.keys(FORMATI).reduce((a, k) => { const r = m => Math.abs(Math.log((m[0] / m[1]) / (t.strane[0].mm[0] / t.strane[0].mm[1]))); return r(FORMATI[k].mm) < r(FORMATI[a].mm) ? k : a; }, "125x165");
+// Uklapanje originala (b, mm) u format (f, mm): ceo dizajn stane, bez sečenja; razmera s i pomak (0,1 mm).
+function fitOf(b, f) { const s = Math.min(f[0] / b[0], f[1] / b[1]); return { s, ox: (f[0] - b[0] * s) * 5, oy: (f[1] - b[1] * s) * 5, b }; }
+const fitL = (L, F) => ({ ...L, x: Math.round(L.x * F.s + F.ox), y: Math.round(L.y * F.s + F.oy), w: Math.round(L.w * F.s), size: Math.round(L.size * F.s * 2) / 2 });
+const unfitL = (L, F) => ({ ...L, x: (L.x - F.ox) / F.s, y: (L.y - F.oy) / F.s, w: L.w / F.s, size: L.size / F.s });
+// Strane iste veličine kao prva (prednja i zadnja) prate format; ostale (npr. mala kartica) ostaju kakve jesu.
+function withFormat(t, f) {
+  if (!t.formati || !FORMATI[f]) return t;
+  const b = t.strane[0].mm, mm = FORMATI[f].mm;
+  const strane = t.strane.map(s => {
+    if (s.mm[0] !== b[0] || s.mm[1] !== b[1]) return s;
+    const F = fitOf(s.mm, mm);
+    return { ...s, mm, fit: F, polja: s.polja.map(L => fitL(L, F)) };
+  });
+  return { ...t, strane, mm };
+}
+const derive = t => withFormat(withVrsta(t, vrsta), fmt);
 function withVrsta(t, v) {
   if (!t.vrste) return t;
   const V = t.vrste.find(x => x.id === v) || t.vrste[0];
   return { ...t, base: t, strane: t.strane.map(s => V.strane?.[s.id] ? { ...s, ...V.strane[s.id] } : s) };
 }
+const baseOf = () => T.base || T;
 function loadTemplate(t, preset) {
   stopEdit(true);
   sel = null;
   const d = preset || store.get("mango-ed:" + t.id) || {};
   vrsta = t.vrste ? (t.vrste.some(v => v.id === d.v) ? d.v : t.vrste[0].id) : null;
-  T = withVrsta(t, vrsta);
+  fmt = t.formati ? (FORMATI[d.fo] ? d.fo : fmtOf(t)) : null;
+  T = { ...derive(t), base: t };
   const P = Array.isArray(d) ? [d] : d.p || (d.layers ? [d.layers] : null);
   // Strana sa satnicom iz nacrta koji satnicu nije imao dobija nov raspored iz šablona.
   const fresh = (s, i) => !Array.isArray(P?.[i]) || (s.satnica && !Array.isArray(d.s?.[i]));
@@ -136,7 +161,7 @@ function loadTemplate(t, preset) {
   hist = [snap()]; hi = 0;
   document.querySelectorAll(".tpl").forEach(el => el.setAttribute("aria-current", el.dataset.id === t.id));
   try { const u = new URL(location); u.searchParams.set("s", t.id); history.replaceState(null, "", u.pathname + u.search); } catch {}
-  renderPageTabs(); renderVrsta(); renderFoil(); renderTint(); showPage(0); updateTools();
+  renderPageTabs(); renderFmt(); renderVrsta(); renderFoil(); renderTint(); showPage(0); updateTools();
 }
 
 function showPage(i) {
@@ -335,6 +360,24 @@ $("satAdd").onclick = () => {
   toast("Dodat je korak. Izaberite ikonicu, pa kliknite na tekst na poleđini da upišete vreme i opis.");
 };
 
+/* ---------------- format ---------------- */
+function renderFmt() {
+  const on = !!baseOf().formati;
+  $("fmtBox").hidden = !on;
+  if (on) $("fmtSeg").innerHTML = Object.entries(FORMATI).map(([k, f]) => `<button data-f="${k}" aria-pressed="${k === fmt}">${f.naziv}</button>`).join("");
+}
+// Tekstovi se prenose u novi format istom razmerom kao dizajn (ono što je kupac upisao ostaje).
+$("fmtSeg").addEventListener("click", e => {
+  const b = e.target.closest("[data-f]"); if (!b || b.dataset.f === fmt) return;
+  stopEdit(true); pages[pi] = layers;
+  const old = T.strane.map(s => s.fit);
+  fmt = b.dataset.f; T = { ...derive(baseOf()), base: baseOf() };
+  pages = pages.map((P, i) => { const A = old[i], B = T.strane[i].fit; return A && B ? P.map(L => norm({ ...fitL(unfitL(L, A), B), id: L.id })) : P; });
+  layers = pages[pi];
+  renderFmt(); showPage(pi); commit();
+  toast(`Format: ${FORMATI[fmt].naziv}. Dizajn je prilagođen novom formatu.`);
+});
+
 /* ---------------- vrsta pozivnice ---------------- */
 function renderVrsta() {
   const V = (T.base || T).vrste;
@@ -345,7 +388,7 @@ function renderVrsta() {
 $("vrstaSeg").addEventListener("click", e => {
   const b = e.target.closest("[data-v]"); if (!b || b.dataset.v === vrsta) return;
   stopEdit(true);
-  vrsta = b.dataset.v; T = withVrsta(T.base || T, vrsta);
+  vrsta = b.dataset.v; T = { ...derive(baseOf()), base: baseOf() };
   pages = fromTemplate(T); sat = T.strane.map(s => validSat(s, null));
   pins = T.strane.map(s => s.mapa ? validPin(s.mapa, null) : null);
   T.strane.forEach((s, i) => { if (s.mapa) autoPin(i, true); });
@@ -375,10 +418,40 @@ const cmykText = () => tintCmyk().map((v, i) => "CMYK"[i] + v).join(" ");
 // pa svetlije nijanse (npr. mapa sveta) ostaju svetlije i u novoj boji.
 const tintCache = new Map();
 function bgUrl(p) {
+  if (p.fit && (p.fit.ox || p.fit.oy)) {
+    const key = p.pozadina + "|" + p.mm.join("x");
+    if (!tintCache.has(key)) tintCache.set(key, makeFit(p).catch(err => { console.error(err); tintCache.delete(key); return p.pozadina; }));
+    return tintCache.get(key);
+  }
   if (!tint || !T.boja || tint === T.boja.osnovna.toLowerCase()) return Promise.resolve(p.pozadina);
   const key = p.pozadina + "|" + tint;
   if (!tintCache.has(key)) tintCache.set(key, makeTint(p.pozadina, T.boja.osnovna, tint).catch(err => { console.error(err); tintCache.delete(key); return p.pozadina; }));
   return tintCache.get(key);
+}
+// Pozadina u drugom formatu: original ceo, umanjen; prazne trake uz ivice su zamućen odraz ivice originala,
+// pa izgledaju kao blag nastavak pozadine (bez oštrog šava).
+async function makeFit(p) {
+  const img = await loadImg(p.pozadina), F = p.fit, ppu = img.naturalWidth / (F.b[0] * 10);
+  const cv = document.createElement("canvas"); cv.width = Math.round(p.mm[0] * 10 * ppu); cv.height = Math.round(p.mm[1] * 10 * ppu);
+  const ctx = cv.getContext("2d"), dw = img.naturalWidth * F.s, dh = img.naturalHeight * F.s, dx = F.ox * ppu, dy = F.oy * ppu;
+  const blur = Math.round(Math.max(dx, dy) * .35);
+  // osnova = prosečna boja originala (zamućenje inače uvlači prazninu sa ivica platna kao tamnu senku)
+  const one = document.createElement("canvas"); one.width = one.height = 1; one.getContext("2d").drawImage(img, 0, 0, 1, 1);
+  const c = one.getContext("2d").getImageData(0, 0, 1, 1).data;
+  ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`; ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.save(); ctx.filter = `blur(${blur}px)`;
+  // odraz: slika preslikana preko ivice (levo/desno ili gore/dole), pa zamućena
+  const mirror = (tx, ty, sx, sy) => { ctx.save(); ctx.translate(tx, ty); ctx.scale(sx, sy); ctx.drawImage(img, 0, 0, dw, dh); ctx.restore(); };
+  // odraz se crta i malo preko ivica platna, da zamućenje ima šta da uzme
+  if (dx > 0) { mirror(dx, dy - blur, -1, 1 + 2 * blur / dh); mirror(dx + 2 * dw, dy - blur, -1, 1 + 2 * blur / dh); }
+  if (dy > 0) { mirror(dx - blur, dy, 1 + 2 * blur / dw, -1); mirror(dx - blur, dy + 2 * dh, 1 + 2 * blur / dw, -1); }
+  ctx.restore();
+  // svetao veo preko traka, da odraz ne vuče pažnju sa dizajna
+  ctx.fillStyle = "rgba(255,255,255,.15)";
+  if (dx > 0) { ctx.fillRect(0, 0, dx, cv.height); ctx.fillRect(dx + dw, 0, cv.width, cv.height); }
+  if (dy > 0) { ctx.fillRect(0, 0, cv.width, dy); ctx.fillRect(0, dy + dh, cv.width, cv.height); }
+  ctx.drawImage(img, dx, dy, dw, dh);
+  return URL.createObjectURL(await new Promise(ok => cv.toBlob(ok, "image/jpeg", .9)));
 }
 async function makeTint(src, from, to) {
   if (/\.svg(\?|$)/i.test(src)) {
@@ -520,7 +593,7 @@ function renderTemplates() {
     b.className = "tpl"; b.dataset.id = t.id;
     const w = t.mm[0] * 10, h = t.mm[1] * 10;
     const p = t.strane[0], fo = t.folija && FOLIJE[t.folija.izabrana];
-    b.innerHTML = `<div class="thumb" style="aspect-ratio:${w}/${h}"><div class="stage${fo ? " foiled" : ""}" style="width:${w}px;height:${h}px${fo ? ";--foil:" + fo.sjaj : ""}"><img class="bg" src="${p.pozadina}" alt="">${p.folija ? `<div class="foilart" style="-webkit-mask-image:url('${p.folija}');mask-image:url('${p.folija}')"></div>` : ""}<div class="layers"></div></div></div><b>${t.naziv}</b><small>${t.kategorija} · ${dims(t)}${t.papir ? " · " + t.papir : ""}</small>`;
+    b.innerHTML = `<div class="thumb" style="aspect-ratio:${w}/${h}"><div class="stage${fo ? " foiled" : ""}" style="width:${w}px;height:${h}px${fo ? ";--foil:" + fo.sjaj : ""}"><img class="bg" src="${p.mini || p.pozadina}" alt="" loading="lazy">${p.folija ? `<div class="foilart" style="-webkit-mask-image:url('${p.folija}');mask-image:url('${p.folija}')"></div>` : ""}<div class="layers"></div></div></div><b>${t.naziv}</b><small>${t.kategorija} · ${dims(t)}${t.papir ? " · " + t.papir : ""}</small>`;
     const st = b.querySelector(".stage");
     st.querySelector(".layers").append(...fromTemplate(t)[0].map(L => makeLayer(L, false)));
     new ResizeObserver(() => { st.style.transform = `scale(${b.querySelector(".thumb").clientWidth / w})`; }).observe(b.querySelector(".thumb"));
@@ -532,8 +605,8 @@ function renderTemplates() {
 /* ---------------- istorija ---------------- */
 let saveT;
 // Akcije ponekad prave novi niz (layers = layers.filter…), pa ga ovde vraćamo u pages.
-function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fz: 1 }); }
-const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fz: 1 });
+function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1 }); }
+const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1 });
 function commit() {
   const s = snap();
   if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 150) hist.shift(); hi = hist.length - 1; }
@@ -545,10 +618,12 @@ function restore(i) {
   stopEdit(true); hi = i;
   const d = JSON.parse(hist[hi]);
   pages = d.p; foil = d.f; pins = d.m || []; tint = d.b || null; layers = pages[pi];
-  const nv = d.v || null; if (nv !== vrsta) { vrsta = nv; T = withVrsta(T.base || T, vrsta); renderVrsta(); }
+  const nv = d.v || null, nf = d.fo || null;
+  const remake = nv !== vrsta || nf !== fmt;
+  if (remake) { vrsta = nv; fmt = nf; T = { ...derive(baseOf()), base: baseOf() }; renderVrsta(); renderFmt(); }
   sat = T.strane.map((s, k) => validSat(s, d.s?.[k]));
   renderTint(); renderFoil();
-  if (PG().folija !== $("foilart").dataset.src) showPage(pi);
+  if (remake || PG().folija !== $("foilart").dataset.src) showPage(pi);
   else { if (!get(sel)) sel = null; setBg(PG()); renderRoute(); renderAll(); syncProps(); }
   updateTools();
   saveNow();
@@ -947,7 +1022,7 @@ const unb64u = s => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")
 async function encodeDesign() {
   pages[pi] = layers;
   const strip = P => P.map(({ id, ...L }) => L);
-  const data = JSON.stringify(T.strane.length > 1 || foil || tint ? { t: T.id, p: pages.map(strip), f: foil, m: pins, b: tint, v: vrsta, s: sat, fz: 1 } : { t: T.id, l: strip(layers) });
+  const data = JSON.stringify(T.strane.length > 1 || foil || tint || fmt ? { t: T.id, p: pages.map(strip), f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1 } : { t: T.id, l: strip(layers) });
   const raw = new TextEncoder().encode(data);
   if (window.CompressionStream) {
     const buf = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer();
@@ -988,7 +1063,7 @@ async function orderMessage() {
   return `Zdravo! Napravio/la sam pozivnicu u vašem editoru.
 Vrsta: ${e ? "ELEKTRONSKA pozivnica (bez štampe)" : "Štampane pozivnice"}
 Šablon: ${T.naziv}${vrsta ? " · " + (T.base || T).vrste.find(v => v.id === vrsta).naziv : ""} (${T.strane.length > 1 ? T.strane.map(s => `${s.naziv.toLowerCase()} ${s.mm[0] / 10} × ${s.mm[1] / 10} cm`).join(", ") : dims(T)})
-${!e && T.papir ? `Papir: ${T.papir}\n` : ""}${!e && tint ? `Boja pozadine: ${tintName() || "po želji"} (${tint}, ${cmykText()})\n` : ""}${!e && foil ? `Foliotisak: ${FOLIJE[foil].naziv}\n` : ""}${e ? "" : `Broj pozivnica: ${v("oQty") || "—"}\n`}Ime: ${v("oName") || "—"}
+${fmt ? `Format: ${FORMATI[fmt].naziv}\n` : ""}${!e && T.papir ? `Papir: ${T.papir}\n` : ""}${!e && tint ? `Boja pozadine: ${tintName() || "po želji"} (${tint}, ${cmykText()})\n` : ""}${!e && foil ? `Foliotisak: ${FOLIJE[foil].naziv}\n` : ""}${e ? "" : `Broj pozivnica: ${v("oQty") || "—"}\n`}Ime: ${v("oName") || "—"}
 Telefon: ${v("oPhone") || "—"}
 E-mail: ${v("oEmail") || "—"}
 Datum događaja: ${date}
@@ -1021,7 +1096,7 @@ $("send").onclick = async e => {
   if (m) {
     try {
       const d = await decodeDesign(m[1]);
-      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m, b: d.b, v: d.v, s: d.s, fz: d.fz } : { p: [d.l] };
+      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m, b: d.b, v: d.v, s: d.s, fo: d.fo, fz: d.fz } : { p: [d.l] };
       setTimeout(() => toast("Otvoren je dizajn iz linka."), 400);
     } catch (err) { console.error(err); toast("Link do dizajna nije ispravan."); }
   }

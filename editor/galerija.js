@@ -36,13 +36,13 @@
   function card(t) {
     const w = t.mm[0] * 10, h = t.mm[1] * 10, land = w > h;
     const p = t.strane[0], fo = t.folija && window.FOLIJE && FOLIJE[t.folija.izabrana];
-    const dims = t.strane.length > 1 ? [...new Set(t.strane.map(s => `${s.mm[0] / 10} × ${s.mm[1] / 10}`))].join(" + ") + " cm" : `${t.mm[0] / 10} × ${t.mm[1] / 10} cm`;
+    const dims = t.formati ? "12,5 × 16,5 ili 15 × 15 cm" : t.strane.length > 1 ? [...new Set(t.strane.map(s => `${s.mm[0] / 10} × ${s.mm[1] / 10}`))].join(" + ") + " cm" : `${t.mm[0] / 10} × ${t.mm[1] / 10} cm`;
     const art = p.folija && fo ? `<div style="position:absolute;inset:0;background:${fo.sjaj};-webkit-mask:url('${esc(p.folija)}') 0 0/100% 100% no-repeat;mask:url('${esc(p.folija)}') 0 0/100% 100% no-repeat"></div>` : "";
     const a = document.createElement("a");
     a.className = "g-card" + (land ? " land" : "");
     a.href = "editor.html?s=" + encodeURIComponent(t.id);
     a.dataset.grupe = (t.grupe || []).join(" ");
-    a.innerHTML = `<div class="g-desk">${saved(t.id) ? '<span class="g-draft">Vaš nacrt</span>' : ""}<div class="g-paper" style="aspect-ratio:${w}/${h}"><div class="g-stage" style="width:${w}px;height:${h}px"><img src="${esc(t.pozadina)}" alt="" loading="lazy">${art}<div class="g-layers"></div></div></div><span class="g-go">Personalizuj ✦</span></div>
+    a.innerHTML = `<div class="g-desk">${saved(t.id) ? '<span class="g-draft">Vaš nacrt</span>' : ""}<div class="g-paper" style="aspect-ratio:${w}/${h}"><div class="g-stage" style="width:${w}px;height:${h}px"><img src="${esc(t.strane[0].mini || t.pozadina)}" alt="" loading="lazy">${art}<div class="g-layers"></div></div></div><span class="g-go">Personalizuj ✦</span></div>
       <div class="g-meta"><h3>${esc(t.naziv)}</h3><span>${esc(t.kategorija)} · ${dims}${t.papir ? " · " + esc(t.papir) + (fo ? " + foliotisak" : "") : ""}</span></div>`;
     const lay = a.querySelector(".g-layers");
     for (const L of t.polja) {

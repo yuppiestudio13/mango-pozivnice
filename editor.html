@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
 <link href="fontovi/fontovi.css?v=1" rel="stylesheet">
 <link rel="stylesheet" href="stil.css?v=5">
-<link rel="stylesheet" href="editor/editor.css?v=13">
+<link rel="stylesheet" href="editor/editor.css?v=15">
 </head>
 <body>
 
@@ -88,6 +88,7 @@
         <button class="tb" data-act="guides" aria-pressed="true" title="Prikaži bezbednu zonu i vodilje" aria-label="Vodilje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" stroke-dasharray="2 2"/><path d="M12 2v20"/></svg><span class="lbl">Vodilje</span></button>
         <button class="tb" data-act="reset" title="Vrati originalni tekst šablona" aria-label="Vrati šablon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4v6h6"/><path d="M5 15a8 8 0 1 0 1-9L4 10"/></svg><span class="lbl">Vrati šablon</span></button>
         <span class="grow"></span>
+        <button class="tb" data-act="preview" title="Sve strane zajedno, kao gotova pozivnica" aria-label="Pregled"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span class="lbl">Pregled</span></button>
         <button class="tb" data-act="png" title="Preuzmi sliku pripreme sa vodenim žigom" aria-label="Preuzmi pripremu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg><span class="lbl">Priprema</span></button>
         <button class="tb ghost" data-act="eorder"><span class="lbl">E-pozivnica</span></button>
         <button class="tb primary" data-act="order"><span class="lbl">Poruči štampu</span></button>
@@ -219,6 +220,22 @@
   </section>
 </main>
 
+<dialog class="ed-order ed-prev" id="prev" aria-labelledby="prevTitle">
+  <div class="order-in">
+    <button class="x" type="button" data-p="close" aria-label="Zatvori">×</button>
+    <div class="eyebrow" id="prevEyebrow">Pregled</div>
+    <h2 id="prevTitle">Ovako će izgledati vaša pozivnica</h2>
+    <div class="prev-warn" id="prevWarn" hidden></div>
+    <div class="prev-pages" id="prevPages"></div>
+    <dl class="prev-sum" id="prevSum"></dl>
+    <p class="fine">Strane su prikazane u pravom odnosu veličina. Boje na ekranu su približne, a folija na papiru sija jače nego na slici. Vodeni žig ne ide u štampu.</p>
+    <div class="send prev-bar">
+      <button type="button" class="alt" data-p="close">Nazad na uređivanje</button>
+      <button type="button" data-p="order" id="prevGo">Izgleda dobro, poruči</button>
+    </div>
+  </div>
+</dialog>
+
 <dialog class="ed-order" id="order" aria-labelledby="orderTitle">
   <form method="dialog" class="order-in" id="orderForm">
     <button class="x" value="close" aria-label="Zatvori">×</button>
@@ -274,7 +291,7 @@
 <script src="sabloni/uvoz.js?v=3"></script>
 <script src="sabloni/ikonice.js?v=1"></script>
 <script src="sabloni/mesta.js?v=2"></script>
-<script src="editor/editor.js?v=20"></script>
+<script src="editor/editor.js?v=24"></script>
 <script src="js/sajt.js?v=1"></script>
 </body>
 </html>

@@ -63,6 +63,7 @@ function nearestWeight(name, w, italic) {
 
 /* ---------------- šablon i tekstovi ---------------- */
 const PG = () => T.strane[pi];
+const cm = v => String(v / 10).replace(".", ",");   // 125 mm → „12,5“
 function W() { return PG().mm[0] * 10; }
 function H() { return PG().mm[1] * 10; }
 const dims = t => t.formati && !fmtLive(t) ? fmtList(t).map(k => FORMATI[k].naziv.replace(" cm", "")).join(" ili ") + " cm" : t.strane.length > 1
@@ -265,7 +266,7 @@ function renderPageTabs() {
   el.replaceChildren(...T.strane.map((s, k) => {
     const b = document.createElement("button");
     b.setAttribute("role", "tab");
-    b.innerHTML = `<span>${k + 1}</span><b></b><small>${s.mm[0] / 10} × ${s.mm[1] / 10} cm</small>`;
+    b.innerHTML = `<span>${k + 1}</span><b></b><small>${cm(s.mm[0])} × ${cm(s.mm[1])} cm</small>`;
     b.querySelector("b").textContent = s.naziv;
     b.onclick = () => { if (k !== pi) showPage(k); };
     return b;
@@ -547,13 +548,32 @@ const elOf = id => layersEl.querySelector(`[data-id="${id}"]`);
 const get = id => layers.find(L => L.id === id);
 function refresh(L) { const el = elOf(L.id); if (el) styleLayer(el, L); renderList(); }
 
+// Visina slova teksta (u jedinicama šablona): asc = od vrha reda do osnovne linije, up/down = slova iznad/ispod nje.
+const inkCtx = document.createElement("canvas").getContext("2d");
+function inkOf(L) {
+  const txt = (L.upper ? L.text.toLocaleUpperCase("sr") : L.text).replace(/\s+/g, "");
+  if (!txt) return null;
+  const px = L.size * PT;
+  inkCtx.font = `${L.italic ? "italic " : ""}${L.weight} ${px}px "${L.font}"`;
+  const m = inkCtx.measureText(txt);
+  if (!Number.isFinite(m.fontBoundingBoxAscent) || !Number.isFinite(m.actualBoundingBoxAscent)) return null;
+  return { asc: m.fontBoundingBoxAscent, up: m.actualBoundingBoxAscent, down: m.actualBoundingBoxDescent };
+}
 function checkSafe(el, L) {
   const b = PG().bezbedno || 0, h = el.offsetHeight;
   // gledaju se sama slova, ne širina polja (centriran tekst u širokom polju nije preblizu ivice)
   let x0 = L.x, y0 = L.y, x1 = L.x + L.w, y1 = L.y + h;
   const rg = document.createRange(); rg.selectNodeContents(el.firstChild);
   const r = rg.getBoundingClientRect(), sr = stage.getBoundingClientRect();
-  if (r.width && sr.width) { x0 = (r.left - sr.left) / S; x1 = (r.right - sr.left) / S; y0 = (r.top - sr.top) / S; y1 = (r.bottom - sr.top) / S; }
+  if (r.width && sr.width) {
+    x0 = (r.left - sr.left) / S; x1 = (r.right - sr.left) / S; y0 = (r.top - sr.top) / S; y1 = (r.bottom - sr.top) / S;
+    // Gore i dole: stvarna slova, ne visina reda (rukopisni fontovi imaju red mnogo viši od slova).
+    const ink = inkOf(L), lines = [...rg.getClientRects()].filter(q => q.width > 0);
+    if (ink && lines.length) {
+      y0 = (lines[0].top - sr.top) / S + ink.asc - ink.up;
+      y1 = (lines[lines.length - 1].top - sr.top) / S + ink.asc + ink.down;
+    }
+  }
   el.classList.toggle("out", x0 < b - 1 || y0 < b - 1 || x1 > W() - b + 1 || y1 > H() - b + 1);
   const any = layersEl.querySelector(".L.out");
   $("hint").innerHTML = any
@@ -770,7 +790,7 @@ stage.addEventListener("dblclick", e => { const el = e.target.closest(".L"); if 
 
 /* ---------------- tastatura ---------------- */
 document.addEventListener("keydown", e => {
-  if ($("order").open) return;
+  if ($("order").open || $("prev").open) return;
   const mod = e.metaKey || e.ctrlKey;
   const inField = editing || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName);
   if (mod && e.key.toLowerCase() === "z" && !inField) { e.preventDefault(); e.shiftKey ? act("redo") : act("undo"); return; }
@@ -808,8 +828,9 @@ function act(a) {
     case "png-clean": exportPNG(false); break;
     case "pdf": exportPDF(); break;
     case "epoz": exportEPozivnica(); break;
-    case "order": openOrder("stampa"); break;
-    case "eorder": openOrder("e"); break;
+    case "preview": openPreview(null); break;
+    case "order": openPreview("stampa"); break;
+    case "eorder": openPreview("e"); break;
   }
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-act]"); if (b && !b.disabled) act(b.dataset.act); });
@@ -966,18 +987,22 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
       else for (const ch of ln.chars) ctx.fillText(ch.c, ch.x, base);
     }
   }
+  // watermark "blag" = samo dijagonalni žig, bez trake na dnu (pregled pre porudžbine)
   if (watermark) {
     ctx.save();
     const fs = W() / 26;
     ctx.font = `400 ${fs}px "Josefin Sans", sans-serif`;
     ctx.translate(W() / 2, H() / 2); ctx.rotate(-24 * Math.PI / 180);
     const txt = "MANGO POZIVNICE · PRIPREMA     ", tw = ctx.measureText(txt).width, D = Math.hypot(W(), H()), [col, op] = WM();
-    ctx.fillStyle = col; ctx.globalAlpha = op + .03;
-    for (let y = -D / 2; y < D / 2; y += fs * 3.2) for (let x = -D / 2 - ((y / fs) % 2) * tw / 2; x < D / 2; x += tw) ctx.fillText(txt, x, y);
+    const blag = watermark === "blag";
+    ctx.fillStyle = col; ctx.globalAlpha = blag ? op : op + .03;
+    for (let y = -D / 2; y < D / 2; y += fs * (blag ? 5.5 : 3.2)) for (let x = -D / 2 - ((y / fs) % 2) * tw / 2; x < D / 2; x += tw) ctx.fillText(txt, x, y);
     ctx.restore();
-    ctx.fillStyle = "rgba(28,54,39,.78)"; ctx.fillRect(0, H() - fs * 0.9, W(), fs * 0.9);
-    ctx.font = `400 ${fs * 0.34}px "Josefin Sans", sans-serif`; ctx.fillStyle = "#e4cf9f"; ctx.textAlign = "center";
-    ctx.fillText("PRIPREMA · NIJE ZA ŠTAMPU · @MANGO.POZIVNICE", W() / 2, H() - fs * 0.33);
+    if (watermark !== "blag") {
+      ctx.fillStyle = "rgba(28,54,39,.78)"; ctx.fillRect(0, H() - fs * 0.9, W(), fs * 0.9);
+      ctx.font = `400 ${fs * 0.34}px "Josefin Sans", sans-serif`; ctx.fillStyle = "#e4cf9f"; ctx.textAlign = "center";
+      ctx.fillText("PRIPREMA · NIJE ZA ŠTAMPU · @MANGO.POZIVNICE", W() / 2, H() - fs * 0.33);
+    }
   }
   return cv;
 }
@@ -1063,6 +1088,66 @@ async function decodeDesign(s) {
   return JSON.parse(new TextDecoder().decode(bytes));
 }
 async function designLink() { return location.origin + location.pathname + "#d=" + await encodeDesign(); }
+
+/* ---------------- pregled pre porudžbine ---------------- */
+// Sve strane zajedno, u pravom odnosu veličina, sa blagim žigom; ispod je sažetak izbora.
+// kind: "stampa" / "e" = otvoren iz „Poruči“, pa dugme vodi dalje na porudžbinu; null = samo pregled.
+const prev = $("prev");
+let prevKind = null, prevRun = 0;
+async function openPreview(kind) {
+  stopEdit(); select(null);
+  prevKind = kind;
+  const run = ++prevRun;
+  $("prevEyebrow").textContent = kind ? "Pre porudžbine" : "Pregled";
+  $("prevGo").textContent = kind === "e" ? "Izgleda dobro, nastavi" : "Izgleda dobro, poruči";
+  $("prevWarn").hidden = true;
+  $("prevSum").innerHTML = previewSummary();
+  // jedinica: najduža ivica bilo koje strane = 440 px na ekranu (na telefonu manje)
+  const maxMm = Math.max(...T.strane.flatMap(s => s.mm));
+  const pc = $("prevPages");
+  pc.style.setProperty("--n", T.strane.length);
+  pc.innerHTML = T.strane.map((s, k) => `<figure style="--w:${s.mm[0] / maxMm}"><div class="prev-sheet" style="aspect-ratio:${s.mm[0]}/${s.mm[1]}"><span class="prev-load"></span></div><figcaption>${T.strane.length > 1 ? `<b>${k + 1}</b> ${esc(s.naziv)} · ` : ""}${cm(s.mm[0])} × ${cm(s.mm[1])} cm</figcaption></figure>`).join("");
+  if (!prev.open) prev.showModal();
+  document.body.classList.add("busy");
+  const out = [];
+  try {
+    const scale = 900 / (maxMm * 10);
+    await eachPage(async k => {
+      if (run !== prevRun) return;
+      const cv = await renderCanvas(scale, "blag");
+      // posle učitavanja fontova ponovo proveravamo ivice (raspored slova se tada promeni)
+      layers.forEach(L => { const el = elOf(L.id); if (el) checkSafe(el, L); });
+      if (layersEl.querySelector(".L.out")) out.push(k);
+      const sheet = pc.children[k]?.querySelector(".prev-sheet");
+      if (sheet && run === prevRun) { cv.setAttribute("role", "img"); cv.setAttribute("aria-label", T.strane[k].naziv); sheet.replaceChildren(cv); }
+    });
+  } catch (err) { console.error(err); toast("Pregled nije napravljen. Pokušajte ponovo."); }
+  document.body.classList.remove("busy");
+  if (run !== prevRun) return;
+  if (out.length) {
+    const w = $("prevWarn");
+    w.innerHTML = `<b>Proverite pre porudžbine:</b> tekst je preblizu ivice i može biti odsečen pri sečenju papira` +
+      (T.strane.length > 1 ? ` (${out.map(k => `<button type="button" data-p="page" data-k="${k}">${esc(T.strane[k].naziv.toLowerCase())}</button>`).join(", ")}).` : `. <button type="button" data-p="page" data-k="0">Popravite</button>`);
+    w.hidden = false;
+  }
+}
+function previewSummary() {
+  const B = baseOf(), row = (k, v) => `<div><dt>${k}</dt><dd>${v}</dd></div>`;
+  const V = vrsta && B.vrste ? B.vrste.find(v => v.id === vrsta) : null;
+  return row("Šablon", esc(T.naziv) + (V ? " · " + esc(V.naziv) : "")) +
+    (fmt ? row("Format", FORMATI[fmt].naziv) : row("Veličina", T.strane.length > 1 ? T.strane.map(s => `${cm(s.mm[0])} × ${cm(s.mm[1])}`).join(" + ") + " cm" : dims(T))) +
+    (T.papir ? row("Papir", esc(T.papir)) : "") +
+    (tint ? row("Boja pozadine", `<i class="prev-dot" style="background:${tint}"></i>${esc(tintName() || "po želji")}`) : "") +
+    (foil ? row("Foliotisak", `<i class="prev-dot" style="background:${FOLIJE[foil].sjaj}"></i>${esc(FOLIJE[foil].naziv)}`) : "");
+}
+prev.addEventListener("click", e => {
+  if (e.target === prev) { prevRun++; prev.close(); return; }
+  const b = e.target.closest("[data-p]"); if (!b) return;
+  if (b.dataset.p === "close") { prevRun++; prev.close(); }
+  if (b.dataset.p === "page") { prevRun++; prev.close(); const k = +b.dataset.k; if (k !== pi) showPage(k); layers.forEach(L => { const el = elOf(L.id); if (el) checkSafe(el, L); }); box.scrollIntoView({ behavior: "smooth", block: "center" }); }
+  if (b.dataset.p === "order") { prevRun++; prev.close(); openOrder(prevKind || "stampa"); }
+});
+prev.addEventListener("cancel", () => { prevRun++; });
 
 /* ---------------- porudžbina ---------------- */
 const dlg = $("order");

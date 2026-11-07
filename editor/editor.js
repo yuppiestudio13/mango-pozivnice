@@ -1137,7 +1137,7 @@ function previewSummary() {
   return row("Šablon", esc(T.naziv) + (V ? " · " + esc(V.naziv) : "")) +
     (fmt ? row("Format", FORMATI[fmt].naziv) : row("Veličina", T.strane.length > 1 ? T.strane.map(s => `${cm(s.mm[0])} × ${cm(s.mm[1])}`).join(" + ") + " cm" : dims(T))) +
     (T.papir ? row("Papir", esc(T.papir)) : "") +
-    (tint ? row("Boja pozadine", `<i class="prev-dot" style="background:${tint}"></i>${esc(tintName() || "po želji")}`) : "") +
+    (tint && HEX.test(tint) ? row("Boja pozadine", `<i class="prev-dot" style="background:${tint}"></i>${esc(tintName() || "po želji")}`) : "") +
     (foil ? row("Foliotisak", `<i class="prev-dot" style="background:${FOLIJE[foil].sjaj}"></i>${esc(FOLIJE[foil].naziv)}`) : "");
 }
 prev.addEventListener("click", e => {

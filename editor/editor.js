@@ -1009,9 +1009,9 @@ function act(a) {
       if (foil && !T.folija) defaultFoil();
       pins = T.strane.map(() => null); T.strane.forEach((s, i) => autoPin(i, true)); renderRoute(); renderAll(); syncProps(); commit(); toast(T.strane.length > 1 ? "Vraćen originalni tekst na svim stranama. Prethodnu verziju vraćate sa „Nazad“." : "Vraćen originalni tekst. Prethodnu verziju vraćate sa „Nazad“."); break;
     case "png": exportPNG(true); break;
-    case "png-clean": exportPNG(false); break;
-    case "pdf": exportPDF(); break;
-    case "epoz": exportEPozivnica(); break;
+    case "png-clean": if (isAdmin) exportPNG(false); break;
+    case "pdf": if (isAdmin) exportPDF(); break;
+    case "epoz": if (isAdmin) exportEPozivnica(); break;
     case "preview": openPreview(null); break;
     case "order": openPreview("stampa"); break;
     case "eorder": openPreview("e"); break;
@@ -1422,11 +1422,46 @@ $("send").onclick = async e => {
   if (b.dataset.ch === "copy") toast(await copy(txt) ? "Poruka sa linkom do dizajna je kopirana." : "Kopiranje nije uspelo.");
 };
 
+/* ---------------- admin (Mango): prijava lozinkom ---------------- */
+// U kodu je samo otisak lozinke (PBKDF2 + SHA-256), ne i lozinka. Posle prijave pregledač pamti izvedeni ključ;
+// pri svakom otvaranju proveravamo da njegov otisak odgovara ADMIN.h. Ovo sprečava obične kupce da preuzmu
+// pozivnicu bez žiga; pravu zaštitu (server) dobijamo uz plaćanje karticom.
+const ADMIN = { so: "4ee74e11e674e0581baaafe98ff360f8", it: 310000, h: "be5a38673dadf93c835ff3eb1e58ece24d2b187559daaa6b69c4fba604bd6a8c" };
+let isAdmin = false;
+const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+const unhex = h => Uint8Array.from(h.match(/../g) || [], x => parseInt(x, 16));
+async function adminKey(pass) {
+  const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveBits"]);
+  return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: unhex(ADMIN.so), iterations: ADMIN.it }, k, 256));
+}
+const adminOk = async key => typeof key === "string" && /^[0-9a-f]{64}$/.test(key) && hex(await crypto.subtle.digest("SHA-256", unhex(key))) === ADMIN.h;
+function setAdmin(on) { isAdmin = on; $("app").classList.toggle("admin", on); }
+async function adminLogin() {
+  const d = $("adminLogin"), f = $("adminForm"), inp = $("adminPass"), err = $("adminErr");
+  err.hidden = true; inp.value = ""; d.showModal(); inp.focus();
+  f.onsubmit = async e => {
+    e.preventDefault();
+    if (e.submitter?.value === "close") { d.close(); return; }
+    f.classList.add("busy");
+    const key = await adminKey(inp.value).catch(() => "");
+    f.classList.remove("busy");
+    if (await adminOk(key)) { store.set("mango-admin", key); setAdmin(true); d.close(); toast("Prijavljeni ste. Režim za štampu je uključen."); }
+    else { err.hidden = false; inp.select(); }
+  };
+}
+$("adminOut").onclick = () => { store.del("mango-admin"); setAdmin(false); toast("Odjavljeni ste iz režima za štampu."); };
+
 /* ---------------- start ---------------- */
 (async function init() {
   const qs = new URLSearchParams(location.search);
-  if (qs.has("admin")) qs.get("admin") === "0" ? store.del("mango-admin") : store.set("mango-admin", 1);
-  if (store.get("mango-admin")) $("app").classList.add("admin");
+  // ?admin otvara prijavu, ?admin=0 odjavljuje; parametar se odmah sklanja iz adrese
+  if (qs.has("admin")) {
+    const a = qs.get("admin"); qs.delete("admin");
+    try { history.replaceState(null, "", location.pathname + (qs.toString() ? "?" + qs : "") + location.hash); } catch {}
+    if (a === "0") store.del("mango-admin"); else setTimeout(() => { if (!isAdmin) adminLogin(); }, 300);
+  }
+  const saved = store.get("mango-admin");
+  if (saved && window.crypto?.subtle) adminOk(saved).then(ok => { if (ok) setAdmin(true); else store.del("mango-admin"); });
   fotoInit();
   renderTemplates();
   let preset = null, t = SABLONI.find(x => x.id === qs.get("s")) || SABLONI[0];

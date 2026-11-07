@@ -25,6 +25,14 @@
 
 /* ---- šabloni ---- */
 .tpl-list{display:grid;gap:20px}
+.tpl-cats{position:sticky;top:-24px;z-index:4;margin:-6px -20px 18px;padding:10px 20px 12px;background:var(--paper);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px}
+.tpl-cats button{border:1px solid var(--line);background:none;padding:5px 10px;font:400 .68rem var(--sans);letter-spacing:.06em;cursor:pointer;color:var(--ink);transition:border-color .2s}
+.tpl-cats button:hover{border-color:var(--gold-2)}
+.tpl-cats button small{color:var(--stone);font-size:.6rem;margin-left:2px}
+.tpl-cats button[aria-pressed=true]{background:var(--green);border-color:var(--green);color:var(--ivory)}
+.tpl-cats button[aria-pressed=true] small{color:inherit;opacity:.7}
+.tpl[hidden]{display:none}
+.stage .foto.maska.empty{outline:0}
 .tpl{display:block;width:100%;text-align:left;background:none;border:0;cursor:pointer;font:inherit;color:inherit;padding:0}
 .tpl .thumb{position:relative;overflow:hidden;background:var(--sand);outline:1px solid var(--line);outline-offset:4px;box-shadow:0 8px 18px -12px rgba(28,54,39,.35);transition:outline-color .25s,outline-offset .25s,transform .35s}
 .tpl:hover .thumb{outline-color:var(--gold-2);transform:translateY(-2px)}
@@ -210,6 +218,10 @@ dialog.ed-order::backdrop{background:rgba(16,32,23,.55);backdrop-filter:blur(3px
 .send button.alt{background:none;border:1px solid var(--green);color:var(--green)}
 .send button.alt:hover{background:var(--green);color:var(--ivory)}
 .ed-order .fine{margin-top:14px;font-size:.74rem;color:var(--stone);line-height:1.5}
+
+/* ---- prijava za režim štampe ---- */
+dialog.ed-login{width:min(420px,calc(100vw - 32px))}
+#adminForm.busy{cursor:progress;opacity:.7}
 
 /* ---- pregled pre porudžbine ---- */
 dialog.ed-prev{width:min(1000px,calc(100vw - 32px))}

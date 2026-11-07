@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
 <link href="fontovi/fontovi.css?v=1" rel="stylesheet">
 <link rel="stylesheet" href="stil.css?v=5">
-<link rel="stylesheet" href="editor/editor.css?v=21">
+<link rel="stylesheet" href="editor/editor.css?v=23">
 </head>
 <body>
 
@@ -69,6 +69,7 @@
   <div class="ed-app" id="app">
     <aside class="ed-tpl" aria-label="Šabloni">
       <h3>Šabloni</h3>
+      <div class="tpl-cats" id="tplCats" role="group" aria-label="Prilika"></div>
       <div class="tpl-list" id="tplList"></div>
       <p class="tpl-soon">Uskoro još šablona: venčanja, krštenja, rođendani i pasoš.</p>
     </aside>
@@ -79,6 +80,7 @@
         <button class="tb" data-act="pdf">PDF za štampu (vektor, 3 mm za sečenje)</button>
         <button class="tb" data-act="png-clean">PNG bez žiga</button>
         <button class="tb" data-act="epoz">E-pozivnica bez žiga (sve strane)</button>
+        <button class="tb" id="adminOut" style="margin-left:auto">Odjava</button>
       </div>
       <div class="ed-tools" role="toolbar" aria-label="Alati">
         <button class="tb" data-act="undo" title="Poništi (Ctrl+Z)" aria-label="Poništi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg><span class="lbl">Nazad</span></button>
@@ -241,6 +243,17 @@
   </section>
 </main>
 
+<dialog class="ed-order ed-login" id="adminLogin" aria-labelledby="adminTitle">
+  <form class="order-in" id="adminForm">
+    <button class="x" type="button" onclick="this.closest('dialog').close()" aria-label="Zatvori">×</button>
+    <div class="eyebrow">Samo za Mango</div>
+    <h2 id="adminTitle">Režim za štampu</h2>
+    <div class="of"><div class="f full"><label for="adminPass">Lozinka</label><input id="adminPass" type="password" autocomplete="current-password" required></div></div>
+    <p class="fp-warn" id="adminErr" hidden>Lozinka nije tačna.</p>
+    <div class="send"><button value="login">Prijava</button></div>
+  </form>
+</dialog>
+
 <dialog class="ed-order ed-prev" id="prev" aria-labelledby="prevTitle">
   <div class="order-in">
     <button class="x" type="button" data-p="close" aria-label="Zatvori">×</button>
@@ -362,15 +375,15 @@
 </footer>
 
 <script>const drawer=document.getElementById('drawer');</script>
-<script src="js/cenovnik.js?v=2"></script>
+<script src="js/cenovnik.js?v=3"></script>
 <script src="editor/fontovi.js?v=4"></script>
 <script src="sabloni/sabloni.js?v=16"></script>
-<script src="sabloni/uvoz.js?v=4"></script>
+<script src="sabloni/uvoz.js?v=5"></script>
 <script src="sabloni/ikonice.js?v=1"></script>
 <script src="sabloni/mesta.js?v=2"></script>
 <script src="sabloni/foto-okviri.js?v=2"></script>
-<script src="editor/foto.js?v=1"></script>
-<script src="editor/editor.js?v=40"></script>
+<script src="editor/foto.js?v=2"></script>
+<script src="editor/editor.js?v=42"></script>
 <script src="js/sajt.js?v=1"></script>
 </body>
 </html>

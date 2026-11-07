@@ -112,7 +112,7 @@ function withFormat(t, f) {
   const strane = t.strane.map(s => {
     if (s.mm[0] !== b[0] || s.mm[1] !== b[1]) return s;
     const F = fitOf(s.mm, mm);
-    return { ...s, mm, fit: F, polja: s.polja.map(L => fitL(L, F)) };
+    return { ...s, mm, fit: F, polja: s.polja.map(L => fitL(L, F)), ...(s.foto ? { foto: fitFoto(s.foto, F) } : {}) };
   });
   return { ...t, strane, mm };
 }
@@ -164,6 +164,8 @@ function loadTemplate(t, preset) {
     }
   });
   pins = T.strane.map((s, i) => s.mapa ? validPin(s.mapa, d.m?.[i]) : null);
+  fot = T.strane.map((s, i) => s.foto ? validFoto(d.ph?.[i]) : null); fotoFromLink = !!preset; fotoOn = false;
+  fotoSrc = []; fotoImg = []; if (fotoAny()) fotoLoadSaved();
   T.strane.forEach((s, i) => { if (s.mapa) autoPin(i, true); });
   pi = 0; layers = pages[0];
   hist = [snap()]; hi = 0;
@@ -186,7 +188,7 @@ function showPage(i) {
   Object.assign($("safe").style, { left: b + "px", top: b + "px", right: b + "px", bottom: b + "px" });
   $("gv").style.left = W() / 2 + "px"; $("gh").style.top = H() / 2 + "px";
   $("pages").querySelectorAll("button").forEach((x, k) => x.setAttribute("aria-selected", k === pi));
-  renderRoute(); renderAll(); fit(); syncProps();
+  renderRoute(); renderFoto(); renderAll(); fit(); syncProps();
 }
 
 /* ---------------- mapa: pribadača ide na upisani grad ---------------- */
@@ -782,7 +784,7 @@ function renderTemplates() {
     b.className = "tpl"; b.dataset.id = t.id;
     const w = t.mm[0] * 10, h = t.mm[1] * 10;
     const p = t.strane[0], fo = t.folija && FOLIJE[t.folija.izabrana];
-    b.innerHTML = `<div class="thumb" style="aspect-ratio:${w}/${h}"><div class="stage${fo ? " foiled" : ""}" style="width:${w}px;height:${h}px${fo ? ";--foil:" + fo.sjaj : ""}"><img class="bg" src="${p.mini || p.pozadina}" alt="" loading="lazy">${p.folija ? `<div class="foilart" style="-webkit-mask-image:url('${p.folija}');mask-image:url('${p.folija}')"></div>` : ""}<div class="layers"></div></div></div><b>${t.naziv}</b><small>${t.kategorija} · ${dims(t)}${t.papir ? " · " + t.papir : ""}</small>`;
+    b.innerHTML = `<div class="thumb" style="aspect-ratio:${w}/${h}"><div class="stage${fo ? " foiled" : ""}" style="width:${w}px;height:${h}px${fo ? ";--foil:" + fo.sjaj : ""}"><img class="bg" src="${p.mini || p.pozadina}" alt="" loading="lazy">${p.foto ? fotoThumb(p.foto) : ""}${p.folija ? `<div class="foilart" style="-webkit-mask-image:url('${p.folija}');mask-image:url('${p.folija}')"></div>` : ""}<div class="layers"></div></div></div><b>${t.naziv}</b><small>${t.kategorija} · ${dims(t)}${t.papir ? " · " + t.papir : ""}${t.strane.some(s => s.foto) ? " · sa fotografijom" : ""}</small>`;
     const st = b.querySelector(".stage");
     st.querySelector(".layers").append(...fromTemplate(t)[0].map(L => makeLayer(L, false)));
     new ResizeObserver(() => { st.style.transform = `scale(${b.querySelector(".thumb").clientWidth / w})`; }).observe(b.querySelector(".thumb"));
@@ -794,8 +796,8 @@ function renderTemplates() {
 /* ---------------- istorija ---------------- */
 let saveT;
 // Akcije ponekad prave novi niz (layers = layers.filter…), pa ga ovde vraćamo u pages.
-function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1, pr }); }
-const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1, pr });
+function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1, pr, ph: fot }); }
+const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1, pr, ph: fot });
 function commit() {
   const s = snap();
   if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 150) hist.shift(); hi = hist.length - 1; }
@@ -813,9 +815,10 @@ function restore(i) {
   if (remake) { vrsta = nv; fmt = nf; T = { ...derive(baseOf()), base: baseOf() }; renderVrsta(); renderFmt(); }
   fixKov(); if (dlg.open) renderCfg();
   sat = T.strane.map((s, k) => validSat(s, d.s?.[k]));
+  fot = T.strane.map((s, k) => s.foto ? validFoto(d.ph?.[k]) : null);
   renderTint(); renderFoil();
   if (remake || PG().folija !== $("foilart").dataset.src) showPage(pi);
-  else { if (!get(sel)) sel = null; setBg(PG()); renderRoute(); renderAll(); syncProps(); }
+  else { if (!get(sel)) sel = null; setBg(PG()); renderRoute(); renderFoto(); renderAll(); syncProps(); }
   updateTools();
   saveNow();
 }
@@ -896,6 +899,16 @@ stage.addEventListener("pointerdown", e => {
   }
   const el = e.target.closest(".L");
   const touch = e.pointerType === "touch";
+  // fotografija: prazan okvir = izbor fotografije; puna = prevlačenje (prstom tek kad je dodirnuta, da stranica može da se skroluje)
+  if (!el && fotoHit(e)) {
+    if (touch && !(fotoOn && fotoHas(pi))) { tap = { foto: true, x: e.clientX, y: e.clientY }; return; }
+    e.preventDefault(); stopEdit(); select(null);
+    if (!fotoHas(pi)) { fotoPick(); return; }
+    fotoSetOn(true);
+    drag = { mode: "foto", sx: e.clientX, sy: e.clientY, F0: { ...fot[pi] }, moved: false };
+    try { stage.setPointerCapture(e.pointerId); } catch {} return;
+  }
+  fotoSetOn(false);
   // prstom: neizabran tekst se bira tek na dodir (ne na prevlačenje), da stranica može da se skroluje
   if (touch && (!el || (sel !== el.dataset.id && editing !== el.dataset.id))) { tap = { id: el ? el.dataset.id : null, x: e.clientX, y: e.clientY }; return; }
   if (!el) { stopEdit(); select(null); return; }
@@ -919,6 +932,7 @@ stage.addEventListener("pointermove", e => {
     pins[pi] = { ...drag.P0, x: c(drag.P0.x + dx, x0, x1), y: c(drag.P0.y + dy, y0, y1) };
     renderRoute(); return;
   }
+  if (drag.mode === "foto") { fotoPan(drag, e); return; }
   const L = get(drag.id), o = drag.L0, snap = 7 / S;
   if (drag.mode === "move") {
     let x = o.x + dx, y = o.y + dy;
@@ -943,12 +957,14 @@ stage.addEventListener("pointermove", e => {
 function endDrag() {
   if (!drag) return;
   const d = drag; drag = null;
+  if (d.mode === "foto") { if (d.moved) commit(); return; }
   if (d.mode === "pin") { if (d.moved) { commit(); toast("Pribadača je pomerena. Ostaje tu dok ne upišete drugi grad."); } return; }
   $("gv").classList.remove("on"); $("gh").classList.remove("on");
   if (d.moved) { commit(); renderList(); }
   else if (d.was && d.mode === "move") startEdit(d.id);
 }
 stage.addEventListener("pointerup", e => {
+  if (tap?.foto) { tap = null; stopEdit(); select(null); if (!fotoHas(pi)) fotoPick(); else { fotoSetOn(true); toast("Sada prevucite fotografiju prstom da je pomerite."); } return; }
   if (tap) { const t = tap; tap = null; if (!t.id) stopEdit(); select(t.id); }
   endDrag();
 });
@@ -1123,7 +1139,7 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
   ctx.scale(scale, scale);
   const p = PG(), fx = L => !!foil && (!!T.folija || !!L.fo);   // da li tekst ide u foliotisak
   if (mode === "folija") { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W(), H()); }
-  else { const bg = await loadImg(await bgUrl(p)); ctx.drawImage(bg, 0, 0, W(), H()); wmDark = isDark(bg); }
+  else { const bg = await loadImg(await bgUrl(p)); ctx.drawImage(bg, 0, 0, W(), H()); wmDark = isDark(bg); await fotoDraw(ctx, pi); }
   const route = routeSVG(pi), tl = tlSVG(pi);
   for (const src of mode === "stampa" ? [] : [p.folija, mapOf(pi), route && svgUrl(route), tl && svgUrl(tl)].filter(Boolean)) {
     const art = await loadImg(src);
@@ -1250,7 +1266,7 @@ const unb64u = s => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")
 async function encodeDesign() {
   pages[pi] = layers;
   const strip = P => P.map(({ id, ...L }) => L);
-  const data = JSON.stringify(true ? { t: T.id, p: pages.map(strip), f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1, pr } : { t: T.id, l: strip(layers) });
+  const data = JSON.stringify(true ? { t: T.id, p: pages.map(strip), f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1, pr, ph: fot } : { t: T.id, l: strip(layers) });
   const raw = new TextEncoder().encode(data);
   if (window.CompressionStream) {
     const buf = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer();
@@ -1314,6 +1330,7 @@ function previewSummary() {
     (fmt ? row("Format", FORMATI[fmt].naziv) : row("Veličina", T.strane.length > 1 ? T.strane.map(s => `${cm(s.mm[0])} × ${cm(s.mm[1])}`).join(" + ") + " cm" : dims(T))) +
     (T.papir ? row("Papir", esc(T.papir)) : "") +
     (tint && HEX.test(tint) ? row("Boja pozadine", `<i class="prev-dot" style="background:${tint}"></i>${esc(tintName() || "po želji")}`) : "") +
+    (fotoAny() ? row("Fotografija", T.strane.some((s, k) => fotoHas(k)) ? "dodata" : '<span class="warn">nije dodata</span>') : "") +
     (foil ? row("Foliotisak", `<i class="prev-dot" style="background:${FOLIJE[foil].sjaj}"></i>${esc(FOLIJE[foil].naziv)}`) : "");
 }
 prev.addEventListener("click", e => {
@@ -1362,7 +1379,7 @@ ${sablon}
 Cena: ${din(ePoz().cena)}${ePoz().stara ? ` (akcija, umesto ${din(ePoz().stara)})` : ""}
 ${fmt ? `Format: ${FORMATI[fmt].naziv}\n` : ""}${kontakt}
 
-Moj dizajn: ${await designLink()}`;
+${fotoPoruka()}Moj dizajn: ${await designLink()}`;
   const C = cena(), ft = foilTexts();
   const folija = isPasos() ? `Foliotisak: ${FOLIJE[foil].naziv} (sav tekst i crtež)\n`
     : pr.st === "fol" ? `Foliotisak: ${FOLIJE[foil].naziv}\nU foliji: ${ft.length ? ft.map(t => `„${t}“`).join(", ") : "— (nije označen nijedan tekst)"}\n` : "";
@@ -1382,8 +1399,11 @@ UKUPNO: ${din(C.total)} (${din(C.per)} po komadu)
 
 ${kontakt}
 
-Moj dizajn: ${await designLink()}`;
+${fotoPoruka()}Moj dizajn: ${await designLink()}`;
 }
+const fotoPoruka = () => !fotoAny() ? "" : T.strane.some((s, k) => fotoHas(k))
+  ? "Fotografija: šaljem je odmah posle ove poruke (u linku je samo njen položaj).\n\n"
+  : "Fotografija: nisam je dodao/la, šaljem je posle ove poruke.\n\n";
 async function copy(txt) { try { await navigator.clipboard.writeText(txt); return true; } catch { return false; } }
 $("send").onclick = async e => {
   const b = e.target.closest("button"); if (!b) return;
@@ -1403,13 +1423,14 @@ $("send").onclick = async e => {
   const qs = new URLSearchParams(location.search);
   if (qs.has("admin")) qs.get("admin") === "0" ? store.del("mango-admin") : store.set("mango-admin", 1);
   if (store.get("mango-admin")) $("app").classList.add("admin");
+  fotoInit();
   renderTemplates();
   let preset = null, t = SABLONI.find(x => x.id === qs.get("s")) || SABLONI[0];
   const m = location.hash.match(/#d=([\w-]+)/);
   if (m) {
     try {
       const d = await decodeDesign(m[1]);
-      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m, b: d.b, v: d.v, s: d.s, fo: d.fo, fz: d.fz, pr: d.pr } : { p: [d.l] };
+      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m, b: d.b, v: d.v, s: d.s, fo: d.fo, fz: d.fz, pr: d.pr, ph: d.ph } : { p: [d.l] };
       setTimeout(() => toast("Otvoren je dizajn iz linka."), 400);
     } catch (err) { console.error(err); toast("Link do dizajna nije ispravan."); }
   }

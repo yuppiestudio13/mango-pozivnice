@@ -39,11 +39,14 @@
     const FN = { "125x165": "12,5 × 16,5", "150x150": "15 × 15" };
     const dims = t.formati ? (Array.isArray(t.formati) ? t.formati : Object.keys(FN)).map(k => FN[k]).join(" ili ") + " cm" : t.strane.length > 1 ? [...new Set(t.strane.map(s => `${s.mm[0] / 10} × ${s.mm[1] / 10}`))].join(" + ") + " cm" : `${t.mm[0] / 10} × ${t.mm[1] / 10} cm`;
     const art = p.folija && fo ? `<div style="position:absolute;inset:0;background:${fo.sjaj};-webkit-mask:url('${esc(p.folija)}') 0 0/100% 100% no-repeat;mask:url('${esc(p.folija)}') 0 0/100% 100% no-repeat"></div>` : "";
+    // okvir za fotografiju kupca (sabloni/foto-okviri.js): svetla podloga sa fotoaparatom
+    const F = p.foto, rad = F && (F.oblik === "krug" ? "50%" : F.oblik === "luk" ? `${F.w / 2}px ${F.w / 2}px 0 0` : (F.r || 0) + "px");
+    const foto = F ? `<div style="position:absolute;left:${F.x}px;top:${F.y}px;width:${F.w}px;height:${F.h}px;border-radius:${rad};background:#e9e3da;${F.okvir ? `box-shadow:0 0 0 ${F.okvir[1]}px ${F.okvir[0]};` : ""}display:grid;place-items:center;color:#8a8070"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="width:${Math.min(F.w, F.h) * .3}px"><path d="M4 8h3l1.6-2.2h6.8L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.6"/></svg></div>` : "";
     const a = document.createElement("a");
     a.className = "g-card" + (land ? " land" : "");
     a.href = "editor.html?s=" + encodeURIComponent(t.id);
     a.dataset.grupe = (t.grupe || []).join(" ");
-    a.innerHTML = `<div class="g-desk">${saved(t.id) ? '<span class="g-draft">Vaš nacrt</span>' : ""}<div class="g-paper" style="aspect-ratio:${w}/${h}"><div class="g-stage" style="width:${w}px;height:${h}px"><img src="${esc(t.strane[0].mini || t.pozadina)}" alt="" loading="lazy">${art}<div class="g-layers"></div></div></div><span class="g-go">Personalizuj ✦</span></div>
+    a.innerHTML = `<div class="g-desk">${saved(t.id) ? '<span class="g-draft">Vaš nacrt</span>' : ""}<div class="g-paper" style="aspect-ratio:${w}/${h}"><div class="g-stage" style="width:${w}px;height:${h}px"><img src="${esc(t.strane[0].mini || t.pozadina)}" alt="" loading="lazy">${foto}${art}<div class="g-layers"></div></div></div><span class="g-go">Personalizuj ✦</span></div>
       <div class="g-meta"><h3>${esc(t.naziv)}</h3><span>${esc(t.kategorija)} · ${dims}${t.papir ? " · " + esc(t.papir) + (fo ? " + foliotisak" : "") : ""}</span></div>`;
     const lay = a.querySelector(".g-layers");
     for (const L of t.polja) {

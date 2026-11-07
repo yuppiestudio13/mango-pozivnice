@@ -369,3 +369,24 @@ dialog.ed-order.wide{width:min(1060px,calc(100vw - 32px))}
 .sat-grid button:hover{border-color:var(--line)}
 .sat-grid button[aria-pressed=true]{border-color:var(--green)}
 .sat-grid svg{width:38px;height:34px}
+
+/* ---- fotografija kupca u okviru šablona (editor/foto.js) ---- */
+.stage .foto{position:absolute;overflow:hidden;background:#ece7df}
+.stage .foto.empty{background:#e9e3da}
+.stage .foto[hidden],.stage .foto-preko[hidden]{display:none}
+.stage .foto img{position:absolute;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.stage .foto .foto-add{display:none}
+.stage .foto.empty{background:rgba(255,255,255,.55);outline:calc(3px * var(--k,1)) dashed rgba(28,54,39,.45);outline-offset:calc(-8px * var(--k,1));display:grid;place-items:center;color:#1c3627}
+.stage .foto.empty img{display:none}
+.stage .foto.empty>svg{width:28%;height:auto;opacity:.55}
+.stage.edit .foto.empty .foto-add{display:flex;flex-direction:column;align-items:center;gap:calc(6px * var(--k,1));font-size:calc(13px * var(--k,1));letter-spacing:.14em;text-transform:uppercase;text-align:center}
+.stage.edit .foto.empty .foto-add svg{width:calc(44px * var(--k,1));height:calc(44px * var(--k,1));opacity:.7}
+.stage.edit .foto.empty .foto-add b{font-weight:500;font-family:var(--sans)}
+.stage .foto-preko{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;user-select:none}
+.stage.edit .foto:not(.empty){cursor:grab}
+.stage.foto-on .foto{outline:calc(2px * var(--k,1)) solid var(--gold,#b8975a);outline-offset:calc(3px * var(--k,1))}
+.stage.foto-on .layers{touch-action:none}
+.foto-pick{width:100%;justify-content:center;margin-bottom:12px}
+.foto-zl{margin-top:4px}
+.foto-acts{margin-top:10px}
+.foil-note.warn{color:#a2442f}

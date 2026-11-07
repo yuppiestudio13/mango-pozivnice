@@ -577,6 +577,9 @@ function cena() {
   const disc = D ? sub * D.pct / 100 : 0;
   return { q, rows, D, disc, total: sub - disc, per: (sub - disc) / q };
 }
+// Cena samo elektronske pozivnice (sa akcijom, ako je postavljena u cenovniku).
+const ePoz = () => { const E = CEN.epozivnica || {}; const sale = E.akcija && E.akcija < E.price; return { cena: sale ? E.akcija : E.price, stara: sale ? E.price : null }; };
+const ePozHtml = () => { const E = ePoz(); return E.cena ? (E.stara ? `<s>${din(E.stara)}</s> ` : "") + din(E.cena) : ""; };
 const foilTexts = () => { pages[pi] = layers; return pages.flatMap(P => P.filter(L => L.fo && L.text.trim()).map(L => L.text.replace(/\s*\n\s*/g, " / "))); };
 // Kad kupac prvi put izabere foliju: na svakoj strani u foliju ide najveći tekst (obično imena).
 function defaultFoil() {
@@ -1106,7 +1109,10 @@ function foilGradient(ctx) {
   return g;
 }
 // mode: "kompozit" = kako izgleda (pregled), "stampa" = samo ono što ide u kolor štampu,
-// "folija" = crno na belom, sve što ide u foliotisak (tekst + crtež sa sloja folije).
+// "folija" = crno na belom, sve što ide u foliotisak (tekst + crtež sa sloja folije),
+// "priprema" = priprema za štampu: kolor štampa, a sve što ide u foliju u tamnosivoj (FOLIJA_PRIPREMA),
+// isto kao u Mango PDF-ovima od dizajnera.
+const FOLIJA_PRIPREMA = "#45474a";
 async function renderCanvas(scale, watermark, mode = "kompozit") {
   stopEdit(true);
   await Promise.all(layers.map(L => document.fonts.load(`${L.italic ? "italic " : ""}${L.weight} 40px "${L.font}"`, L.text || "A").catch(() => {})));
@@ -1126,7 +1132,7 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
       const off = document.createElement("canvas"); off.width = cv.width; off.height = cv.height;
       const o = off.getContext("2d"); o.scale(scale, scale);
       o.drawImage(art, 0, 0, W(), H());
-      o.globalCompositeOperation = "source-in"; o.fillStyle = foilGradient(o); o.fillRect(0, 0, W(), H());
+      o.globalCompositeOperation = "source-in"; o.fillStyle = mode === "priprema" ? FOLIJA_PRIPREMA : foilGradient(o); o.fillRect(0, 0, W(), H());
       ctx.drawImage(off, 0, 0, W(), H());
     }
   }
@@ -1137,7 +1143,7 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
     if (!L.text.trim()) continue;
     const px = L.size * PT;
     ctx.font = `${L.italic ? "italic " : ""}${L.weight} ${px}px "${L.font}"`;
-    ctx.fillStyle = mode === "folija" ? "#000" : fx(L) ? foilGradient(ctx) : L.color; ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = mode === "folija" ? "#000" : fx(L) ? (mode === "priprema" ? FOLIJA_PRIPREMA : foilGradient(ctx)) : L.color; ctx.textBaseline = "alphabetic";
     const asc = ctx.measureText("Hg").fontBoundingBoxAscent ?? px * 0.8;
     const lsPx = L.ls / 1000 * px;
     const node = t.firstChild; if (!node) continue;
@@ -1219,23 +1225,21 @@ async function exportEPozivnica() {
   } catch (err) { console.error(err); toast("E-pozivnica nije napravljena."); }
   document.body.classList.remove("busy");
 }
-// Za šablon sa folijom svaka strana daje dve stranice PDF-a: kolor štampu i crni sloj za foliotisak.
+// Priprema za štampu: jedna stranica PDF-a za svaku stranu pozivnice, u pravoj veličini.
+// Sve što ide u foliotisak je u tamnosivoj #45474a (isto kao u Mango PDF-ovima od dizajnera).
 async function exportPDF() {
   document.body.classList.add("busy");
   try {
     if (!window.jspdf) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
     let pdf = null;
-    const add = (cv, [w, h]) => {
-      const o = w > h ? "landscape" : "portrait";
+    await eachPage(async () => {
+      const cv = await renderCanvas(300 / 254, false, foil ? "priprema" : "kompozit"), [w, h] = PG().mm, o = w > h ? "landscape" : "portrait";
       if (!pdf) pdf = new jspdf.jsPDF({ orientation: o, unit: "mm", format: [w, h] }); else pdf.addPage([w, h], o);
       pdf.addImage(cv.toDataURL("image/jpeg", 0.96), "JPEG", 0, 0, w, h);
-    };
-    await eachPage(async () => {
-      if (foil) { add(await renderCanvas(300 / 254, false, "stampa"), PG().mm); add(await renderCanvas(300 / 254, false, "folija"), PG().mm); }
-      else add(await renderCanvas(300 / 254, false), PG().mm);
     });
+    pdf.setProperties({ title: `Mango · ${T.naziv}`, subject: foil ? `Foliotisak: ${FOLIJE[foil].naziv} (sve u tamnosivoj #45474a)` : "Digitalna štampa" });
     pdf.save(`mango-${T.id}-stampa.pdf`);
-    if (foil) toast(`PDF: za svaku stranu kolor štampa, pa crni sloj za foliju (${FOLIJE[foil].naziv}).`);
+    toast(foil ? `PDF: ${T.strane.length} ${T.strane.length === 1 ? "stranica" : "stranice"}. Sve u tamnosivoj ide u foliju (${FOLIJE[foil].naziv}).` : `PDF: ${T.strane.length} ${T.strane.length === 1 ? "stranica" : "stranice"}.`);
   } catch (err) { console.error(err); toast("PDF nije napravljen."); }
   document.body.classList.remove("busy");
 }
@@ -1335,6 +1339,7 @@ function syncKind() {
   const e = dlg.querySelector("input[name=kind]:checked").value === "e";
   $("cfg").hidden = $("cContactH").hidden = $("cBar").hidden = e; $("eNote").hidden = !e;
   dlg.classList.toggle("wide", !e);
+  $("ePrice").innerHTML = ePozHtml();
   $("orderTitle").textContent = e ? "Elektronska pozivnica" : "Pošaljite nam svoj dizajn";
   $("oEmail").required = e;
 }
@@ -1354,6 +1359,7 @@ Napomena: ${v("oNote") || "—"}`;
   if (e) return `Zdravo! Napravio/la sam pozivnicu u vašem editoru.
 Vrsta: ELEKTRONSKA pozivnica (bez štampe)
 ${sablon}
+Cena: ${din(ePoz().cena)}${ePoz().stara ? ` (akcija, umesto ${din(ePoz().stara)})` : ""}
 ${fmt ? `Format: ${FORMATI[fmt].naziv}\n` : ""}${kontakt}
 
 Moj dizajn: ${await designLink()}`;

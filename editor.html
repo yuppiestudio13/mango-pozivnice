@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
 <link href="fontovi/fontovi.css?v=1" rel="stylesheet">
 <link rel="stylesheet" href="stil.css?v=5">
-<link rel="stylesheet" href="editor/editor.css?v=19">
+<link rel="stylesheet" href="editor/editor.css?v=20">
 </head>
 <body>
 
@@ -247,7 +247,7 @@
     <h2 id="orderTitle">Pošaljite nam svoj dizajn</h2>
     <div class="kind">
       <label><input type="radio" name="kind" value="stampa" checked><b>Štampane pozivnice</b><small>Birate papir, štampu i dodatke i odmah vidite cenu. Elektronska verzija je gratis.</small></label>
-      <label><input type="radio" name="kind" value="e"><b>Samo elektronska</b><small>Bez štampe. Pozivnicu bez vodenog žiga dobijate na e-mail, spremnu za Viber i WhatsApp.</small></label>
+      <label><input type="radio" name="kind" value="e"><b>Samo elektronska <span class="kind-price" id="ePrice"></span></b><small>Bez štampe. Pozivnicu bez vodenog žiga dobijate na e-mail, spremnu za Viber i WhatsApp.</small></label>
     </div>
 
     <div class="cfg" id="cfg">
@@ -311,7 +311,7 @@
       <div class="f"><label for="oDate">Datum događaja</label><input id="oDate" type="date"></div>
       <div class="f full"><label for="oNote">Napomena</label><textarea id="oNote" placeholder="Rok, posebne želje…"></textarea></div>
     </div>
-    <div class="enote" id="eNote" hidden><b>Plaćanje karticom stiže uskoro.</b> Tada će se elektronska pozivnica sama poslati na vaš e-mail čim platite. Do tada nam pošaljite poruku. Javićemo vam cenu i podatke za uplatu, a pozivnicu bez žiga šaljemo istog dana.</div>
+    <div class="enote" id="eNote" hidden><b>Plaćanje karticom stiže uskoro.</b> Tada će se elektronska pozivnica sama poslati na vaš e-mail čim platite. Do tada nam pošaljite poruku. Javićemo vam podatke za uplatu, a pozivnicu bez žiga šaljemo istog dana.</div>
     <div class="cfg-bar" id="cBar"><span>Ukupno <b id="bTotal">0 din</b></span><small id="bPer"></small></div>
     <div class="send" id="send">
       <button type="button" data-ch="viber">Viber</button>
@@ -345,13 +345,13 @@
 </footer>
 
 <script>const drawer=document.getElementById('drawer');</script>
-<script src="js/cenovnik.js?v=1"></script>
+<script src="js/cenovnik.js?v=2"></script>
 <script src="editor/fontovi.js?v=3"></script>
 <script src="sabloni/sabloni.js?v=16"></script>
 <script src="sabloni/uvoz.js?v=3"></script>
 <script src="sabloni/ikonice.js?v=1"></script>
 <script src="sabloni/mesta.js?v=2"></script>
-<script src="editor/editor.js?v=28"></script>
+<script src="editor/editor.js?v=29"></script>
 <script src="js/sajt.js?v=1"></script>
 </body>
 </html>

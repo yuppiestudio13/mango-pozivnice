@@ -29,5 +29,8 @@ window.CENOVNIK = {
   fixed: [                // jednokratni troškovi, bez obzira na količinu
     { name: "Grafička priprema i provera", note: "pregledamo dizajn, doteramo ga za štampu i šaljemo vam na uvid", price: 1000 },
   ],
+  // Samo elektronska pozivnica (bez štampe). Uz štampane pozivnice je gratis.
+  // akcija: akcijska cena (npr. 1500) ili null; dok je postavljena, stara cena se prikazuje precrtana.
+  epozivnica: { name: "Elektronska pozivnica", price: 2000, akcija: null },
   discounts: [],          // popusti na količinu, npr. { from: 100, pct: 5 } (trenutno nema)
 };

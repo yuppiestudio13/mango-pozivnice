@@ -139,6 +139,8 @@ input[type=range]{width:100%;accent-color:var(--green);height:22px}
 .sw.tint{width:34px;height:34px}
 .sw-pick[aria-pressed=true]{box-shadow:0 0 0 2px var(--paper),0 0 0 3.5px var(--green)}
 .foil-box output{font-family:var(--serif);color:var(--green);letter-spacing:0;text-transform:none}
+.fp-warn{margin-top:8px;padding:8px 10px;border-left:3px solid #a2442f;background:#f6e6df;font-size:.74rem;line-height:1.45;color:#6f2e1f}
+.fp-warn[hidden]{display:none}
 .foil-note{margin-top:10px;font-size:.74rem;line-height:1.5;color:var(--stone)}
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .acts .tb{border-color:var(--line);justify-content:center;background:var(--paper)}

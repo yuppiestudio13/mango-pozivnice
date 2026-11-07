@@ -1032,6 +1032,9 @@ function syncProps() {
   if (part) $("pFoil").style.setProperty("--foil", FOLIJE[foil].sjaj);
   if (document.activeElement !== $("pText")) $("pText").value = L.text;
   $("fpName").textContent = L.font; $("fpName").style.fontFamily = `"${L.font}", serif`;
+  const nf = fali(L);
+  $("fpWarn").hidden = !nf.length;
+  if (nf.length) $("fpWarn").textContent = `Font ${L.font} nema slova ${nf.join(" ")}, pa ih ne možemo odštampati u ovom fontu. Izaberite drugi font.`;
   const f = FONT[L.font] || { w: [400], i: [] };
   const ws = L.italic && f.i.length ? f.i : f.w;
   const names = { 300: "Tanak", 400: "Normalan", 500: "Srednji", 600: "Polu-debeo", 700: "Debeo" };
@@ -1083,6 +1086,9 @@ function renderList() {
 
 /* ---------------- birač fonta ---------------- */
 let fpCat = "sve";
+const NEMA = window.FONT_NEMA || {};
+// Slova iz teksta kojih nema u fontu (npr. č, ć, đ u nekim kaligrafskim fontovima).
+const fali = L => [...new Set([...(L.upper ? L.text.toLocaleUpperCase("sr") : L.text)].filter(c => (NEMA[L.font] || "").includes(c)))];
 function closeFontPicker() { $("fp").hidden = true; $("fpBtn").setAttribute("aria-expanded", false); }
 $("fpBtn").onclick = () => {
   const open = $("fp").hidden;
@@ -1097,7 +1103,8 @@ const fio = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersectin
 function renderFontList() {
   const q = $("fpSearch").value.trim().toLowerCase(), cyr = $("fpCyr").checked, cur = get(sel)?.font;
   const used = new Set(layers.map(L => L.font));
-  const list = FONTOVI.filter(([n, c, cy]) =>
+  // fontovi kojima fale naša slova (FONT_NEMA) se ne nude, osim ako ih dizajn već koristi
+  const list = FONTOVI.filter(([n, c, cy]) => (!NEMA[n] || used.has(n)) &&
     (fpCat === "sve" || (fpCat === "koriste" ? used.has(n) : c === fpCat)) && (!cyr || cy) && (!q || n.toLowerCase().includes(q)));
   fio.disconnect();
   $("fpList").replaceChildren(...list.map(([n, c, cy]) => {
@@ -1108,7 +1115,7 @@ function renderFontList() {
     fio.observe(b);
     return b;
   }));
-  $("fpCount").textContent = `${list.length} od ${FONTOVI.length}`;
+  $("fpCount").textContent = `${list.length} od ${FONTOVI.length - Object.keys(NEMA).length}`;
 }
 
 /* ---------------- izvoz (PNG / PDF) ---------------- */

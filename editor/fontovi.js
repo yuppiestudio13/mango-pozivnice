@@ -151,9 +151,9 @@ window.FONTOVI=[
 ["Sevillana", "ukrasni", 0, "400", ""],
 ["Ruslan Display", "ukrasni", 1, "400", ""],
 ["Raleway Dots", "ukrasni", 0, "400", ""],
-["Train One", "ukrasni", 1, "400", ""],
+["Train One", "ukrasni", 0, "400", ""],
 ["Underdog", "ukrasni", 1, "400", ""],
-["Jost", "sans", 1, "300,400,500,600,700", "300,400,500,600,700"],
+["Jost", "sans", 0, "300,400,500,600,700", "300,400,500,600,700"],
 ["Montserrat", "sans", 1, "300,400,500,600,700", "300,400,500,600,700"],
 ["Raleway", "sans", 1, "300,400,500,600,700", "300,400,500,600,700"],
 ["Josefin Sans", "sans", 0, "300,400,500,600,700", "300,400,500,600,700"],
@@ -215,3 +215,7 @@ window.FONTOVI=[
 ["Seymour One", "deciji", 1, "400", ""],
 ["Marmelad", "deciji", 1, "400", ""]
 ];
+
+/* Fontovi kojima fale naša slova (provereno u samim fajlovima fontova, 2026-11-07).
+   Ne nude se u izboru fontova; ako ih stari dizajn koristi, editor upozori. */
+window.FONT_NEMA = {"Monsieur La Doulaise": "čćđČĆĐ","Mrs Saint Delafield": "čćđČĆĐ","Herr Von Muellerhoff": "čćđČĆĐ","Niconne": "čćđČĆĐ","Euphoria Script": "čćđČĆĐ","Princess Sofia": "čćđČĆĐ","Miss Fajardose": "čćđČĆĐ","Dr Sugiyama": "čćđČĆĐ","Mrs Sheppards": "čćđČĆĐ","Mr De Haviland": "čćđČĆĐ","Shadows Into Light": "đĐ","Zeyada": "đĐ","Seaweed Script": "čćđČĆĐ","Alice": "čćšžđČĆŠŽĐ","Rosarivo": "čćšžđČĆŠŽĐ","Sail": "čćđČĆĐ","Sevillana": "čćđČĆĐ","Train One": "čćđČĆĐ","Lato": "čđČĐ","Julius Sans One": "čćđČĆĐ","Philosopher": "čćČĆ","Urbanist": "đĐ","Fredoka": "čćđČĆĐ","Sniglet": "čćđČĆĐ","Lilita One": "čćđČĆĐ"};

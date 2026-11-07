@@ -549,11 +549,18 @@ function refresh(L) { const el = elOf(L.id); if (el) styleLayer(el, L); renderLi
 
 function checkSafe(el, L) {
   const b = PG().bezbedno || 0, h = el.offsetHeight;
-  el.classList.toggle("out", L.x < b - 1 || L.y < b - 1 || L.x + L.w > W() - b + 1 || L.y + h > H() - b + 1);
+  // gledaju se sama slova, ne širina polja (centriran tekst u širokom polju nije preblizu ivice)
+  let x0 = L.x, y0 = L.y, x1 = L.x + L.w, y1 = L.y + h;
+  const rg = document.createRange(); rg.selectNodeContents(el.firstChild);
+  const r = rg.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+  if (r.width && sr.width) { x0 = (r.left - sr.left) / S; x1 = (r.right - sr.left) / S; y0 = (r.top - sr.top) / S; y1 = (r.bottom - sr.top) / S; }
+  el.classList.toggle("out", x0 < b - 1 || y0 < b - 1 || x1 > W() - b + 1 || y1 > H() - b + 1);
   const any = layersEl.querySelector(".L.out");
   $("hint").innerHTML = any
     ? '<span class="warn">Crveni okvir: tekst je preblizu ivice i može biti odsečen pri sečenju papira. Pomerite ga unutar isprekidane linije.</span>'
-    : 'Kliknite na tekst da ga izaberete, ponovo kliknite da kucate. Prevucite tekst da ga pomerite. Fino pomeranje: <kbd>← ↑ → ↓</kbd>';
+    : matchMedia("(pointer:coarse)").matches
+      ? 'Dodirnite tekst da ga izaberete, dodirnite ga ponovo da kucate. Izabrani tekst prevucite prstom da ga pomerite.'
+      : 'Kliknite na tekst da ga izaberete, ponovo kliknite da kucate. Prevucite tekst da ga pomerite. Fino pomeranje: <kbd>← ↑ → ↓</kbd>';
 }
 
 function fit() {
@@ -637,12 +644,27 @@ function select(id) {
   sel = id;
   layersEl.querySelectorAll(".L").forEach(el => el.classList.toggle("sel", el.dataset.id === id));
   closeFontPicker(); syncProps(); renderList();
+  sheetFor(id);
 }
+/* telefon: panel odozdo; izabrani tekst ostaje vidljiv iznad panela */
+const mob = () => matchMedia("(max-width:980px)").matches;
+function sheetFor(id) {
+  document.body.classList.toggle("has-sheet", !!id && mob());
+  if (!id || !mob()) return;
+  requestAnimationFrame(() => {
+    const el = elOf(id); if (!el) return;
+    const r = el.getBoundingClientRect(), top = $("pSel").getBoundingClientRect().top;
+    const hd = (document.querySelector("header")?.getBoundingClientRect().bottom || 0) + 8;
+    if (r.bottom > top - 12) scrollBy({ top: Math.min(r.bottom - top + 24, r.top - hd), behavior: "smooth" });
+    else if (r.top < hd) scrollBy({ top: r.top - hd, behavior: "smooth" });
+  });
+}
+$("sheetX").addEventListener("click", () => { stopEdit(); select(null); });
 function startEdit(id) {
   const el = elOf(id); if (!el) return;
   select(id); editing = id;
   const t = el.firstChild;
-  el.classList.add("editing");
+  el.classList.add("editing"); document.body.classList.add("typing");
   try { t.contentEditable = "plaintext-only"; } catch { t.contentEditable = "true"; }
   if (t.contentEditable !== "plaintext-only") t.contentEditable = "true";
   t.focus();
@@ -657,7 +679,7 @@ function readText(t) {
 function stopEdit(silent) {
   if (!editing) return;
   const el = elOf(editing), L = get(editing);
-  editing = null;
+  editing = null; document.body.classList.remove("typing");
   if (el) { const t = el.firstChild; t.contentEditable = "false"; el.classList.remove("editing"); if (L) { t.textContent = L.text; styleLayer(el, L); } }
   getSelection().removeAllRanges();
   if (!silent) { commit(); syncProps(); renderList(); }
@@ -677,14 +699,18 @@ layersEl.addEventListener("paste", e => {
 layersEl.addEventListener("focusout", e => { if (editing && e.target.classList.contains("t")) stopEdit(); });
 
 /* ---------------- prevlačenje i menjanje veličine ---------------- */
-let drag = null;
+let drag = null, tap = null;
 stage.addEventListener("pointerdown", e => {
+  tap = null;
   if (e.target.id === "pinH") {
     e.preventDefault(); stopEdit(); select(null);
     drag = { mode: "pin", sx: e.clientX, sy: e.clientY, P0: { ...pins[pi] }, moved: false };
-    e.target.setPointerCapture(e.pointerId); return;
+    try { e.target.setPointerCapture(e.pointerId); } catch {} return;
   }
   const el = e.target.closest(".L");
+  const touch = e.pointerType === "touch";
+  // prstom: neizabran tekst se bira tek na dodir (ne na prevlačenje), da stranica može da se skroluje
+  if (touch && (!el || (sel !== el.dataset.id && editing !== el.dataset.id))) { tap = { id: el ? el.dataset.id : null, x: e.clientX, y: e.clientY }; return; }
   if (!el) { stopEdit(); select(null); return; }
   const id = el.dataset.id, L = get(id);
   if (editing === id) return;                     // dozvoli selektovanje teksta dok se kuca
@@ -693,9 +719,10 @@ stage.addEventListener("pointerdown", e => {
   select(id);
   const mode = e.target.classList.contains("h") ? [...e.target.classList].find(c => c !== "h") : "move";
   drag = { id, mode, sx: e.clientX, sy: e.clientY, L0: { ...L }, h0: el.offsetHeight, moved: false, was };
-  el.setPointerCapture(e.pointerId);
+  try { el.setPointerCapture(e.pointerId); } catch {}
 });
 stage.addEventListener("pointermove", e => {
+  if (tap && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > 10) tap = null;
   if (!drag) return;
   const dx = (e.clientX - drag.sx) / S, dy = (e.clientY - drag.sy) / S;
   if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 3) return;
@@ -734,8 +761,11 @@ function endDrag() {
   if (d.moved) { commit(); renderList(); }
   else if (d.was && d.mode === "move") startEdit(d.id);
 }
-stage.addEventListener("pointerup", endDrag);
-stage.addEventListener("pointercancel", endDrag);
+stage.addEventListener("pointerup", e => {
+  if (tap) { const t = tap; tap = null; if (!t.id) stopEdit(); select(t.id); }
+  endDrag();
+});
+stage.addEventListener("pointercancel", () => { tap = null; endDrag(); });
 stage.addEventListener("dblclick", e => { const el = e.target.closest(".L"); if (el && editing !== el.dataset.id) startEdit(el.dataset.id); });
 
 /* ---------------- tastatura ---------------- */

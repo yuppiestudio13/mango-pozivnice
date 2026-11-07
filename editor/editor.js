@@ -6,7 +6,6 @@
 const CONFIG = {
   phone: "381600000000",       // Viber/WhatsApp broj (bez + i nule), isti kao u kalkulatoru
   instagram: "mango.pozivnice",
-  minQty: 30,
 };
 
 const PT = 3.5278;              // 1 pt u jedinicama šablona (0,1 mm)
@@ -84,6 +83,7 @@ function norm(L) {
     color: /^#[0-9a-f]{6}$/i.test(L.color) ? L.color.toLowerCase() : "#1c3627",
     align: ["left", "center", "right"].includes(L.align) ? L.align : "center",
     uloga: ["grad", "drzava", "tl"].includes(L.uloga) ? L.uloga : undefined,
+    ...(L.fo ? { fo: true } : {}),          // tekst ide u foliotisak (kad kupac izabere štampu sa folijom)
     ...(L.uloga === "tl" ? { k: n(L.k, 0, 0, 9) | 0, deo: L.deo === "o" ? "o" : "v" } : {}),
   };
 }
@@ -134,8 +134,14 @@ function loadTemplate(t, preset) {
   // Strana sa satnicom iz nacrta koji satnicu nije imao dobija nov raspored iz šablona.
   const fresh = (s, i) => !Array.isArray(P?.[i]) || (s.satnica && !Array.isArray(d.s?.[i]));
   pages = T.strane.map((s, i) => fresh(s, i) ? defaultPage(s) : P[i].map(L => norm({ ...L, id: undefined })));
+  // Nacrt sačuvan u formatu koji šablon više ne nudi: tekstovi se prenose u sadašnji format.
+  if (P && d.fo && d.fo !== fmt && FORMATI[d.fo]) {
+    const O = withFormat(t, d.fo);
+    pages = pages.map((Pg, i) => { const A = O.strane[i]?.fit, B = T.strane[i].fit; return A && B && !fresh(T.strane[i], i) ? Pg.map(L => norm({ ...fitL(unfitL(L, A), B), id: L.id })) : Pg; });
+  }
   sat = T.strane.map((s, i) => validSat(s, fresh(s, i) ? null : d.s?.[i]));
-  foil = t.folija ? (FOLIJE[d.f] && t.folija.boje.includes(d.f) ? d.f : t.folija.izabrana) : null;
+  pr = validPr(t, d.pr); fixKov();
+  foil = t.folija ? (FOLIJE[d.f] && t.folija.boje.includes(d.f) ? d.f : t.folija.izabrana) : pr.st === "fol" ? pr.fb : null;
   tint = t.boja ? validTint(t, d.b) : null;
   // Nacrt iz vremena zamenskih fontova: polje koje odgovara polju iz šablona dobija font, veličinu i mesto iz šablona
   // (tekst kupca ostaje), ostala samo novi font u srazmernoj veličini. fz = nacrt je već prebačen.
@@ -376,7 +382,8 @@ $("fmtSeg").addEventListener("click", e => {
   fmt = b.dataset.f; T = { ...derive(baseOf()), base: baseOf() };
   pages = pages.map((P, i) => { const A = old[i], B = T.strane[i].fit; return A && B ? P.map(L => norm({ ...fitL(unfitL(L, A), B), id: L.id })) : P; });
   layers = pages[pi];
-  renderFmt(); showPage(pi); commit();
+  if (pr.kov) pr.kov = null;      // koverta prelazi na onu koja ide uz novi format
+  fixKov(); renderFmt(); showPage(pi); commit();
   toast(`Format: ${FORMATI[fmt].naziv}. Dizajn je prilagođen novom formatu.`);
 });
 
@@ -430,24 +437,22 @@ function bgUrl(p) {
   if (!tintCache.has(key)) tintCache.set(key, makeTint(p.pozadina, T.boja.osnovna, tint).catch(err => { console.error(err); tintCache.delete(key); return p.pozadina; }));
   return tintCache.get(key);
 }
-// Pozadina u drugom formatu: original ceo, umanjen; prazne trake uz ivice su zamućen odraz ivice originala,
-// pa izgledaju kao blag nastavak pozadine (bez oštrog šava).
+// Pozadina u drugom formatu: original ceo, umanjen; prazne trake uz ivice dobijaju boju same ivice originala
+// (drugi format se nudi samo za šablone čija ivica je čista, pa traka izgleda kao nastavak papira).
 async function makeFit(p) {
   const img = await loadImg(p.pozadina), F = p.fit, ppu = img.naturalWidth / (F.b[0] * 10);
   const cv = document.createElement("canvas"); cv.width = Math.round(p.mm[0] * 10 * ppu); cv.height = Math.round(p.mm[1] * 10 * ppu);
   const ctx = cv.getContext("2d"), dw = img.naturalWidth * F.s, dh = img.naturalHeight * F.s, dx = F.ox * ppu, dy = F.oy * ppu;
-  const blur = Math.round(Math.max(dx, dy) * .35);
-  // osnova = prosečna boja originala (zamućenje inače uvlači prazninu sa ivica platna kao tamnu senku)
-  const one = document.createElement("canvas"); one.width = one.height = 1; one.getContext("2d").drawImage(img, 0, 0, 1, 1);
-  const c = one.getContext("2d").getImageData(0, 0, 1, 1).data;
-  ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`; ctx.fillRect(0, 0, cv.width, cv.height);
-  ctx.save(); ctx.filter = `blur(${blur}px)`;
-  // odraz: slika preslikana preko ivice (levo/desno ili gore/dole), pa zamućena
-  const mirror = (tx, ty, sx, sy) => { ctx.save(); ctx.translate(tx, ty); ctx.scale(sx, sy); ctx.drawImage(img, 0, 0, dw, dh); ctx.restore(); };
-  // odraz se crta i malo preko ivica platna, da zamućenje ima šta da uzme
-  if (dx > 0) { mirror(dx, dy - blur, -1, 1 + 2 * blur / dh); mirror(dx + 2 * dw, dy - blur, -1, 1 + 2 * blur / dh); }
-  if (dy > 0) { mirror(dx - blur, dy, 1 + 2 * blur / dw, -1); mirror(dx - blur, dy + 2 * dh, 1 + 2 * blur / dw, -1); }
-  ctx.restore();
+  const W = img.naturalWidth, H = img.naturalHeight, k = Math.max(2, Math.round(Math.min(W, H) * .01));
+  // prosečna boja tankog pojasa uz ivicu originala
+  const edge = (sx, sy, sw, sh) => {
+    const one = document.createElement("canvas"); one.width = one.height = 1;
+    const c1 = one.getContext("2d"); c1.drawImage(img, sx, sy, sw, sh, 0, 0, 1, 1);
+    const c = c1.getImageData(0, 0, 1, 1).data; return `rgb(${c[0]},${c[1]},${c[2]})`;
+  };
+  const band = (col, x, y, w, h) => { ctx.fillStyle = col; ctx.fillRect(x, y, w, h); };
+  if (dx > 0) { band(edge(0, 0, k, H), 0, 0, Math.ceil(dx) + 1, cv.height); band(edge(W - k, 0, k, H), Math.floor(dx + dw) - 1, 0, cv.width, cv.height); }
+  if (dy > 0) { band(edge(0, 0, W, k), 0, 0, cv.width, Math.ceil(dy) + 1); band(edge(0, H - k, W, k), 0, Math.floor(dy + dh) - 1, cv.width, cv.height); }
   ctx.drawImage(img, dx, dy, dw, dh);
   return URL.createObjectURL(await new Promise(ok => cv.toBlob(ok, "image/jpeg", .9)));
 }
@@ -503,20 +508,172 @@ $("tintSw").addEventListener("input", e => { if (e.target.id === "tintPick") { e
 $("tintSw").addEventListener("change", e => { if (e.target.id === "tintPick") { renderTint(); commit(); } });
 
 /* ---------------- foliotisak ---------------- */
+// Šablon sa folijom (pasoš): sav tekst i crtež su u foliji. Ostali: folija samo na tekstovima koje kupac označi (L.fo).
 function renderFoil() {
-  const on = !!foil;
-  $("foilBox").hidden = !on; $("pgColor").hidden = on;
-  stage.classList.toggle("foiled", on);
+  const on = !!foil, all = on && !!T.folija;
+  $("foilBox").hidden = !on;
+  stage.classList.toggle("foiled", all);
+  stage.classList.toggle("partfoil", on && !all);
+  if (on) stage.style.setProperty("--foil", FOLIJE[foil].sjaj);
+  syncProps();
   if (!on) return;
-  stage.style.setProperty("--foil", FOLIJE[foil].sjaj);
   $("oFoil").textContent = FOLIJE[foil].naziv;
-  $("foilPaper").textContent = T.papir ? `Papir: ${T.papir}.` : "";
-  $("foilSw").innerHTML = T.folija.boje.map(k => `<button class="sw foil" style="background:${FOLIJE[k].sjaj}" data-f="${k}" aria-label="${FOLIJE[k].naziv}" title="${FOLIJE[k].naziv}" aria-pressed="${k === foil}"></button>`).join("");
+  $("foilNote").textContent = all ? "Sav tekst i crtež štampaju se folijom." + (T.papir ? ` Papir: ${T.papir}.` : "")
+    : "U foliji su samo tekstovi koje označite: kliknite tekst, pa „Ovaj tekst ide u foliotisak“. Papir: 350g, mat štampa.";
+  $("foilSw").innerHTML = (T.folija ? T.folija.boje : Object.keys(FOLIJE)).map(k => `<button class="sw foil" style="background:${FOLIJE[k].sjaj}" data-f="${k}" aria-label="${FOLIJE[k].naziv}" title="${FOLIJE[k].naziv}" aria-pressed="${k === foil}"></button>`).join("");
 }
 $("foilSw").addEventListener("click", e => {
   const b = e.target.closest("[data-f]"); if (!b || b.dataset.f === foil) return;
-  foil = b.dataset.f; renderFoil(); commit();
+  setFoilColor(b.dataset.f);
 });
+
+/* ---------------- štampa, dodaci i cena ---------------- */
+// Cene su u js/cenovnik.js (isti cenovnik koristi i kalkulator).
+// pr = izbor kupca: q količina, pap papir, st štampa ("dig" digitalna / "fol" mat + foliotisak), fb boja folije,
+// kov koverta ("" = bez, null = ona koja ide uz format), ex ostali dodaci, kb boja koverte, pb boja i motiv pečata.
+const CEN = window.CENOVNIK;
+const papir = id => CEN.papers.find(x => x.id === id);
+const dodatak = id => CEN.extras.find(x => x.id === id);
+const PAPIRI = ["350", "hrap", "sedef"];
+const OSTALO = ["paus", "pecat", "avion", "vez"];
+const isPasos = () => !!baseOf().folija;   // pasoš/boarding: uvek 350g, mat štampa i foliotisak
+const din = n => Math.round(n).toLocaleString("sr-RS") + " din";
+let pr = null;
+function validPr(t, v) {
+  v = v && typeof v === "object" ? v : {};
+  const str = (x, n) => typeof x === "string" ? x.slice(0, n) : "";
+  return {
+    q: Number.isFinite(+v.q) && +v.q > 0 ? Math.min(5000, Math.round(+v.q)) : 80,
+    pap: PAPIRI.includes(v.pap) ? v.pap : "350",
+    st: v.st === "fol" ? "fol" : "dig",
+    fb: FOLIJE[v.fb] ? v.fb : "gold",
+    kov: v.kov === "" || dodatak(v.kov)?.group === "kov" ? v.kov : null,
+    ex: Array.isArray(v.ex) ? [...new Set(v.ex.filter(x => OSTALO.includes(x)))] : [],
+    kb: str(v.kb, 60), pb: str(v.pb, 80),
+  };
+}
+// Koverte koje odgovaraju formatu (bez izbora formata: sve).
+function kovList() {
+  const f = fmt && CEN.formats.find(x => x.id === fmt.split("x")[0]);
+  return f ? f.kov : CEN.extras.filter(x => x.group === "kov").map(x => x.id);
+}
+function fixKov() { if (pr.kov === null || (pr.kov && !kovList().includes(pr.kov))) pr.kov = kovList()[0] || ""; }
+const exOk = id => id === "avion" || id === "vez" ? isPasos() && (id !== "vez" || pr.ex.includes("avion")) : true;
+// Dvostrana štampa: šablon ima prednju i zadnju stranu iste veličine.
+const dvostrana = () => !isPasos() && T.strane.filter(s => s.mm[0] === T.strane[0].mm[0] && s.mm[1] === T.strane[0].mm[1]).length > 1;
+const curPapir = () => isPasos() ? papir("pasos") : pr.st === "fol" ? papir("folio") : papir(pr.pap);
+const minQty = () => curPapir().minQty || CEN.minQty;
+const stampaNaziv = () => isPasos() ? "Pasoš: 350g papir, mat štampa + foliotisak" : pr.st === "fol" ? "350g papir, mat štampa + foliotisak" : papir(pr.pap).name + ", digitalna štampa";
+function cena() {
+  const P = curPapir(), q = Math.max(pr.q, minQty()), rows = [];
+  rows.push({ n: stampaNaziv(), u: P.price, t: P.price * q });
+  if (dvostrana() && P.duplex) rows.push({ n: "Dvostrana štampa", u: P.duplex, t: P.duplex * q });
+  if (pr.kov) { const K = dodatak(pr.kov); rows.push({ n: K.name, u: K.price, t: K.price * q }); }
+  for (const id of OSTALO) if (pr.ex.includes(id) && exOk(id)) { const X = dodatak(id); rows.push({ n: X.name, u: X.price, t: X.price * q }); }
+  for (const F of CEN.fixed || []) rows.push({ n: F.name, t: F.price });
+  const sub = rows.reduce((a, r) => a + r.t, 0), D = (CEN.discounts || []).filter(d => q >= d.from).sort((a, b) => b.from - a.from)[0];
+  const disc = D ? sub * D.pct / 100 : 0;
+  return { q, rows, D, disc, total: sub - disc, per: (sub - disc) / q };
+}
+const foilTexts = () => { pages[pi] = layers; return pages.flatMap(P => P.filter(L => L.fo && L.text.trim()).map(L => L.text.replace(/\s*\n\s*/g, " / "))); };
+// Kad kupac prvi put izabere foliju: na svakoj strani u foliju ide najveći tekst (obično imena).
+function defaultFoil() {
+  pages[pi] = layers;
+  pages.forEach(P => { const big = P.filter(L => L.text.trim()).sort((a, b) => b.size - a.size)[0]; if (big) big.fo = true; });
+}
+function setFoilColor(k) {
+  foil = k; if (!T.folija) pr.fb = k;
+  renderFoil(); commit(); if (dlg.open) renderCfg();
+}
+function setStampa(st) {
+  if (isPasos() || st === pr.st) return;
+  pr.st = st;
+  if (st === "fol") { pr.pap = "350"; foil = pr.fb; pages[pi] = layers; if (!pages.some(P => P.some(L => L.fo))) defaultFoil(); }
+  else foil = null;
+  renderFoil(); renderAll(); syncProps(); commit(); renderCfg();
+}
+
+const ch = (type, name, val, on, title, note, price, dis) =>
+  `<label class="ch${dis ? " dis" : ""}"><input type="${type}" name="${name}" value="${val}"${on ? " checked" : ""}${dis ? " disabled" : ""}><span><b>${title}</b>${note ? `<small>${note}</small>` : ""}</span><em>${price}</em></label>`;
+const perKom = n => n ? `${n} din/kom` : "uključeno";
+function renderCfg() {
+  if (!pr) return;
+  const pasos = isPasos(), fol = pasos || pr.st === "fol";
+  if (document.activeElement !== $("cQty")) $("cQty").value = pr.q;
+  $("cQty").min = minQty();
+  $("cQtyHint").textContent = pr.q < minQty() ? `Najmanja porudžbina je ${minQty()} kom, pa cenu računamo za ${minQty()} kom.` : `Najmanja porudžbina je ${minQty()} kom${pasos ? " za pasoš pozivnice" : ""}.`;
+  // papir
+  $("cPaper").innerHTML = pasos
+    ? ch("radio", "cpap", "pasos", true, papir("pasos").name, papir("pasos").note, perKom(papir("pasos").price))
+    : PAPIRI.map(id => { const P = papir(id); return ch("radio", "cpap", id, pr.pap === id, P.name, fol && id !== "350" ? "Foliotisak ide samo na 350g papir" : P.note, fol ? (id === "350" ? "u ceni folije" : "—") : perKom(P.price), fol && id !== "350"); }).join("");
+  // štampa
+  const dup = dvostrana() ? `<p class="cfg-hint">Prednja i zadnja strana: dvostrana štampa +${papir("350").duplex} din/kom, uz foliotisak +${papir("folio").duplex} din/kom.</p>` : "";
+  $("cPrint").innerHTML = (pasos
+    ? ch("radio", "cst", "fol", true, "Mat štampa + foliotisak", "Uvek uz pasoš pozivnice: sav tekst i crtež su u foliji.", "uključeno")
+    : ch("radio", "cst", "dig", pr.st === "dig", "Digitalna štampa", "Štampa u boji, tekst u boji koju ste izabrali.", "uključeno") +
+      ch("radio", "cst", "fol", pr.st === "fol", "Mat štampa + foliotisak", "Izabrani tekst se otiskuje folijom koja sija. Samo na 350g papiru.", `+${papir("folio").price - papir("350").price} din/kom`)) + dup;
+  $("cFoil").hidden = !fol;
+  if (fol) {
+    const boje = pasos ? baseOf().folija.boje : Object.keys(FOLIJE), cur = foil || pr.fb;
+    $("cFoilName").textContent = FOLIJE[cur].naziv;
+    $("cFoilSw").innerHTML = boje.map(k => `<button type="button" class="sw foil" style="background:${FOLIJE[k].sjaj}" data-f="${k}" aria-label="${FOLIJE[k].naziv}" title="${FOLIJE[k].naziv}" aria-pressed="${k === cur}"></button>`).join("");
+    pages[pi] = layers;
+    $("cTexts").innerHTML = pasos ? `<p class="cfg-hint" style="margin:0">Sav tekst je u foliji.</p>` : T.strane.map((S, k) => {
+      const items = pages[k].map((L, j) => L.text.trim() ? `<label class="tx"><input type="checkbox" data-k="${k}" data-j="${j}"${L.fo ? " checked" : ""}><span>${esc((L.upper ? L.text.toLocaleUpperCase("sr") : L.text).replace(/\s*\n\s*/g, " / ").slice(0, 70))}</span></label>` : "").join("");
+      return (T.strane.length > 1 ? `<div class="tx-h">${esc(S.naziv)}</div>` : "") + items;
+    }).join("");
+    $("cTexts").previousElementSibling.hidden = pasos;
+    $("cLook").hidden = pasos;
+  }
+  // dodaci
+  const kovs = kovList();
+  $("cKov").innerHTML = ch("radio", "ckov", "", !pr.kov, "Bez koverte", "", "") +
+    kovs.map(id => { const K = dodatak(id); return ch("radio", "ckov", id, pr.kov === id, K.name, K.note, perKom(K.price)); }).join("");
+  $("cKovColorF").hidden = !pr.kov;
+  if (document.activeElement !== $("cKovColor")) $("cKovColor").value = pr.kb;
+  $("cExtra").innerHTML = OSTALO.filter(id => id !== "avion" && id !== "vez" || pasos).map(id => {
+    const X = dodatak(id), dis = !exOk(id) && id === "vez";
+    return ch("checkbox", "cex", id, pr.ex.includes(id) && exOk(id), X.name, dis ? "Uz akrilni aviončić" : X.note, `+${X.price} din/kom`, dis);
+  }).join("");
+  $("cSealF").hidden = !pr.ex.includes("pecat");
+  if (document.activeElement !== $("cSeal")) $("cSeal").value = pr.pb;
+  renderSum();
+}
+function renderSum() {
+  const C = cena();
+  $("sWhat").textContent = `${T.naziv} · ${C.q} kom${fmt ? " · " + FORMATI[fmt].naziv : ""}`;
+  $("sRows").innerHTML = C.rows.map(r => `<div class="r"><span>${esc(r.n)}${r.u ? `<small>${C.q} × ${r.u} din</small>` : "<small>jednom po porudžbini</small>"}</span><span>${din(r.t)}</span></div>`).join("") +
+    (C.D ? `<div class="r"><span>Popust ${C.D.pct}%</span><span>−${din(C.disc)}</span></div>` : "");
+  $("sTotal").textContent = $("bTotal").textContent = din(C.total);
+  $("sPer").textContent = $("bPer").textContent = `${din(C.per)} po komadu`;
+}
+$("cfg").addEventListener("change", e => {
+  const t = e.target;
+  if (t.name === "cpap" && !isPasos() && pr.st !== "fol") pr.pap = t.value;
+  else if (t.name === "cst") return setStampa(t.value);
+  else if (t.name === "ckov") pr.kov = t.value;
+  else if (t.name === "cex") {
+    pr.ex = pr.ex.filter(x => x !== t.value);
+    if (t.checked) pr.ex.push(t.value);
+    if (t.value === "avion" && !t.checked) pr.ex = pr.ex.filter(x => x !== "vez");
+  } else if (t.matches("#cTexts input")) {
+    pages[pi] = layers;
+    const L = pages[+t.dataset.k][+t.dataset.j]; if (!L) return;
+    if (t.checked) L.fo = true; else delete L.fo;
+    if (+t.dataset.k === pi) refresh(L);
+    syncProps(); commitSoon(); return;
+  } else return;
+  renderCfg(); commitSoon();
+});
+$("cfg").addEventListener("click", e => {
+  const b = e.target.closest(".sw[data-f]"); if (b) { setFoilColor(b.dataset.f); return; }
+  if (e.target.id === "cLook") { dlg.close(); box.scrollIntoView({ behavior: "smooth", block: "center" }); toast("Tekstovi u foliji imaju sjaj. Kad završite, kliknite „Poruči štampu“."); }
+});
+$("cQty").addEventListener("input", e => { pr.q = Math.max(0, Math.min(5000, Math.round(+e.target.value) || 0)); renderCfg(); commitSoon(); });
+$("cQty").addEventListener("blur", () => { if (pr.q < minQty()) { pr.q = minQty(); renderCfg(); commitSoon(); } });
+document.querySelectorAll(".q-b").forEach(b => b.onclick = () => { pr.q = Math.max(minQty(), Math.min(5000, (Math.max(pr.q, minQty()) + +b.dataset.q))); renderCfg(); commitSoon(); });
+$("cKovColor").addEventListener("input", e => { pr.kb = e.target.value.slice(0, 60); commitSoon(); });
+$("cSeal").addEventListener("input", e => { pr.pb = e.target.value.slice(0, 80); commitSoon(); });
 
 /* ---------------- crtanje ---------------- */
 function styleLayer(el, L, live = true) {
@@ -524,6 +681,7 @@ function styleLayer(el, L, live = true) {
   const t = el.firstChild;
   el.style.left = L.x + "px"; el.style.top = L.y + "px"; el.style.width = L.w + "px";
   el.style.textAlign = L.align;
+  el.classList.toggle("fo", !!L.fo);
   Object.assign(t.style, {
     fontFamily: `"${L.font}", serif`, fontWeight: L.weight, fontStyle: L.italic ? "italic" : "normal",
     fontSize: L.size * PT + "px", color: L.color, letterSpacing: L.ls / 1000 + "em",
@@ -629,8 +787,8 @@ function renderTemplates() {
 /* ---------------- istorija ---------------- */
 let saveT;
 // Akcije ponekad prave novi niz (layers = layers.filter…), pa ga ovde vraćamo u pages.
-function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1 }); }
-const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1 });
+function snap() { pages[pi] = layers; return JSON.stringify({ p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1, pr }); }
+const saveNow = () => store.set("mango-ed:" + T.id, { p: pages, f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1, pr });
 function commit() {
   const s = snap();
   if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 150) hist.shift(); hi = hist.length - 1; }
@@ -642,9 +800,11 @@ function restore(i) {
   stopEdit(true); hi = i;
   const d = JSON.parse(hist[hi]);
   pages = d.p; foil = d.f; pins = d.m || []; tint = d.b || null; layers = pages[pi];
+  pr = validPr(baseOf(), d.pr);
   const nv = d.v || null, nf = d.fo || null;
   const remake = nv !== vrsta || nf !== fmt;
   if (remake) { vrsta = nv; fmt = nf; T = { ...derive(baseOf()), base: baseOf() }; renderVrsta(); renderFmt(); }
+  fixKov(); if (dlg.open) renderCfg();
   sat = T.strane.map((s, k) => validSat(s, d.s?.[k]));
   renderTint(); renderFoil();
   if (remake || PG().folija !== $("foilart").dataset.src) showPage(pi);
@@ -823,6 +983,7 @@ function act(a) {
     case "centerH": if (L) { L.x = Math.round(W() / 2 - L.w / 2); refresh(L); commit(); } break;
     case "guides": { const b = document.querySelector("[data-act=guides]"), on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", on); stage.classList.toggle("guides", on); break; }
     case "reset": stopEdit(true); pages = fromTemplate(T); sat = T.strane.map(s => validSat(s, null)); layers = pages[pi]; sel = null;
+      if (foil && !T.folija) defaultFoil();
       pins = T.strane.map(() => null); T.strane.forEach((s, i) => autoPin(i, true)); renderRoute(); renderAll(); syncProps(); commit(); toast(T.strane.length > 1 ? "Vraćen originalni tekst na svim stranama. Prethodnu verziju vraćate sa „Nazad“." : "Vraćen originalni tekst. Prethodnu verziju vraćate sa „Nazad“."); break;
     case "png": exportPNG(true); break;
     case "png-clean": exportPNG(false); break;
@@ -840,6 +1001,12 @@ function syncProps() {
   const L = get(sel);
   $("pNone").hidden = !!L; $("pSel").hidden = !L;
   if (!L) return;
+  // folija: kod pasoša je sav tekst u foliji; inače kupac bira za svaki tekst
+  const part = !!foil && !T.folija, inFoil = !!foil && (!!T.folija || !!L.fo);
+  $("pgFoil").hidden = !part; $("pgColor").hidden = inFoil;
+  $("pFoil").setAttribute("aria-pressed", !!L.fo);
+  $("oFoilL").textContent = part && L.fo ? FOLIJE[foil].naziv : "";
+  if (part) $("pFoil").style.setProperty("--foil", FOLIJE[foil].sjaj);
   if (document.activeElement !== $("pText")) $("pText").value = L.text;
   $("fpName").textContent = L.font; $("fpName").style.fontFamily = `"${L.font}", serif`;
   const f = FONT[L.font] || { w: [400], i: [] };
@@ -866,6 +1033,7 @@ function setProp(k, v, now) {
   now ? commit() : commitSoon();
 }
 $("pText").addEventListener("input", e => setProp("text", e.target.value));
+$("pFoil").onclick = () => { const L = get(sel); if (!L) return; if (L.fo) delete L.fo; else L.fo = true; refresh(L); syncProps(); commit(); if (dlg.open) renderCfg(); };
 $("pWeight").onchange = e => setProp("weight", +e.target.value, true);
 $("pItalic").onclick = () => setProp("italic", !get(sel).italic, true);
 $("pUpper").onclick = () => setProp("upper", !get(sel).upper, true);
@@ -943,7 +1111,7 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
   cv.width = Math.round(W() * scale); cv.height = Math.round(H() * scale);
   const ctx = cv.getContext("2d");
   ctx.scale(scale, scale);
-  const p = PG(), foiled = !!foil;
+  const p = PG(), fx = L => !!foil && (!!T.folija || !!L.fo);   // da li tekst ide u foliotisak
   if (mode === "folija") { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W(), H()); }
   else { const bg = await loadImg(await bgUrl(p)); ctx.drawImage(bg, 0, 0, W(), H()); wmDark = isDark(bg); }
   const route = routeSVG(pi), tl = tlSVG(pi);
@@ -959,13 +1127,13 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
     }
   }
   const sr = stage.getBoundingClientRect();
-  const textOn = !(foiled && mode === "stampa");
-  for (const L of textOn ? layers : []) {
+  for (const L of layers) {
+    if (mode === "stampa" && fx(L) || mode === "folija" && !fx(L)) continue;
     const el = elOf(L.id), t = el.firstChild;
     if (!L.text.trim()) continue;
     const px = L.size * PT;
     ctx.font = `${L.italic ? "italic " : ""}${L.weight} ${px}px "${L.font}"`;
-    ctx.fillStyle = mode === "folija" ? "#000" : foiled ? foilGradient(ctx) : L.color; ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = mode === "folija" ? "#000" : fx(L) ? foilGradient(ctx) : L.color; ctx.textBaseline = "alphabetic";
     const asc = ctx.measureText("Hg").fontBoundingBoxAscent ?? px * 0.8;
     const lsPx = L.ls / 1000 * px;
     const node = t.firstChild; if (!node) continue;
@@ -1074,7 +1242,7 @@ const unb64u = s => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")
 async function encodeDesign() {
   pages[pi] = layers;
   const strip = P => P.map(({ id, ...L }) => L);
-  const data = JSON.stringify(T.strane.length > 1 || foil || tint || fmt ? { t: T.id, p: pages.map(strip), f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1 } : { t: T.id, l: strip(layers) });
+  const data = JSON.stringify(true ? { t: T.id, p: pages.map(strip), f: foil, m: pins, b: tint, v: vrsta, s: sat, fo: fmt, fz: 1, pr } : { t: T.id, l: strip(layers) });
   const raw = new TextEncoder().encode(data);
   if (window.CompressionStream) {
     const buf = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer();
@@ -1154,14 +1322,15 @@ const dlg = $("order");
 function openOrder(kind) {
   stopEdit();
   dlg.querySelector(`input[name=kind][value="${kind}"]`).checked = true;
-  syncKind();
+  syncKind(); renderCfg();
   const d = store.get("mango-ed:kontakt");
   if (d) ["oName", "oPhone", "oEmail"].forEach(k => { if (!$(k).value && d[k]) $(k).value = d[k]; });
   dlg.showModal();
 }
 function syncKind() {
   const e = dlg.querySelector("input[name=kind]:checked").value === "e";
-  $("fQty").hidden = e; $("eNote").hidden = !e;
+  $("cfg").hidden = $("cContactH").hidden = $("cBar").hidden = e; $("eNote").hidden = !e;
+  dlg.classList.toggle("wide", !e);
   $("orderTitle").textContent = e ? "Elektronska pozivnica" : "Pošaljite nam svoj dizajn";
   $("oEmail").required = e;
 }
@@ -1172,14 +1341,36 @@ async function orderMessage() {
   const e = dlg.querySelector("input[name=kind]:checked").value === "e";
   const date = v("oDate") ? new Date(v("oDate")).toLocaleDateString("sr-Latn-RS") : "—";
   store.set("mango-ed:kontakt", { oName: v("oName"), oPhone: v("oPhone"), oEmail: v("oEmail") });
-  return `Zdravo! Napravio/la sam pozivnicu u vašem editoru.
-Vrsta: ${e ? "ELEKTRONSKA pozivnica (bez štampe)" : "Štampane pozivnice"}
-Šablon: ${T.naziv}${vrsta ? " · " + (T.base || T).vrste.find(v => v.id === vrsta).naziv : ""} (${T.strane.length > 1 ? T.strane.map(s => `${s.naziv.toLowerCase()} ${s.mm[0] / 10} × ${s.mm[1] / 10} cm`).join(", ") : dims(T)})
-${fmt ? `Format: ${FORMATI[fmt].naziv}\n` : ""}${!e && T.papir ? `Papir: ${T.papir}\n` : ""}${!e && tint ? `Boja pozadine: ${tintName() || "po želji"} (${tint}, ${cmykText()})\n` : ""}${!e && foil ? `Foliotisak: ${FOLIJE[foil].naziv}\n` : ""}${e ? "" : `Broj pozivnica: ${v("oQty") || "—"}\n`}Ime: ${v("oName") || "—"}
+  const sablon = `Šablon: ${T.naziv}${vrsta ? " · " + (T.base || T).vrste.find(v => v.id === vrsta).naziv : ""} (${T.strane.length > 1 ? T.strane.map(s => `${s.naziv.toLowerCase()} ${cm(s.mm[0])} × ${cm(s.mm[1])} cm`).join(", ") : dims(T)})`;
+  const kontakt = `Ime: ${v("oName") || "—"}
 Telefon: ${v("oPhone") || "—"}
 E-mail: ${v("oEmail") || "—"}
 Datum događaja: ${date}
-Napomena: ${v("oNote") || "—"}
+Napomena: ${v("oNote") || "—"}`;
+  if (e) return `Zdravo! Napravio/la sam pozivnicu u vašem editoru.
+Vrsta: ELEKTRONSKA pozivnica (bez štampe)
+${sablon}
+${fmt ? `Format: ${FORMATI[fmt].naziv}\n` : ""}${kontakt}
+
+Moj dizajn: ${await designLink()}`;
+  const C = cena(), ft = foilTexts();
+  const folija = isPasos() ? `Foliotisak: ${FOLIJE[foil].naziv} (sav tekst i crtež)\n`
+    : pr.st === "fol" ? `Foliotisak: ${FOLIJE[foil].naziv}\nU foliji: ${ft.length ? ft.map(t => `„${t}“`).join(", ") : "— (nije označen nijedan tekst)"}\n` : "";
+  const kov = pr.kov ? `${dodatak(pr.kov).name}${pr.kb.trim() ? `, boja: ${pr.kb.trim()}` : ""}` : "bez koverte";
+  const ost = OSTALO.filter(id => pr.ex.includes(id) && exOk(id)).map(id => dodatak(id).name + (id === "pecat" && pr.pb.trim() ? ` (${pr.pb.trim()})` : ""));
+  return `Zdravo! Napravio/la sam pozivnicu u vašem editoru.
+Vrsta: Štampane pozivnice
+${sablon}
+${fmt ? `Format: ${FORMATI[fmt].naziv}\n` : ""}Količina: ${C.q} kom
+Papir i štampa: ${stampaNaziv()}${dvostrana() ? ", dvostrana" : ""}
+${folija}${tint ? `Boja pozadine: ${tintName() || "po želji"} (${tint}, ${cmykText()})\n` : ""}Koverta: ${kov}
+Dodaci: ${ost.length ? ost.join(", ") : "—"}
+
+Cena (okvirno):
+${C.rows.map(r => `· ${r.n}: ${r.u ? `${C.q} × ${r.u} din = ` : ""}${din(r.t)}`).join("\n")}${C.D ? `\n· Popust ${C.D.pct}%: −${din(C.disc)}` : ""}
+UKUPNO: ${din(C.total)} (${din(C.per)} po komadu)
+
+${kontakt}
 
 Moj dizajn: ${await designLink()}`;
 }
@@ -1188,8 +1379,8 @@ $("send").onclick = async e => {
   const b = e.target.closest("button"); if (!b) return;
   const isE = dlg.querySelector("input[name=kind]:checked").value === "e";
   if (isE && !$("oEmail").checkValidity() || isE && !$("oEmail").value) { $("oEmail").focus(); toast("Upišite e-mail na koji šaljemo pozivnicu."); return; }
-  const qty = +$("oQty").value;
-  if (!isE && qty && qty < CONFIG.minQty) { $("oQty").focus(); toast(`Najmanja porudžbina je ${CONFIG.minQty} pozivnica.`); return; }
+  if (!isE && pr.q < minQty()) { pr.q = minQty(); renderCfg(); commitSoon(); }
+  if (!isE && !isPasos() && pr.st === "fol" && !foilTexts().length) { toast("Izabrali ste foliotisak, a nijedan tekst nije označen za foliju. Označite bar jedan tekst."); $("cTexts").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
   const txt = await orderMessage(), enc = encodeURIComponent(txt);
   if (b.dataset.ch === "whatsapp") window.open(`https://wa.me/${CONFIG.phone}?text=${enc}`, "_blank");
   if (b.dataset.ch === "viber") { await copy(txt); location.href = `viber://forward?text=${enc}`; toast("Poruka je kopirana i otvara se Viber."); }
@@ -1208,7 +1399,7 @@ $("send").onclick = async e => {
   if (m) {
     try {
       const d = await decodeDesign(m[1]);
-      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m, b: d.b, v: d.v, s: d.s, fo: d.fo, fz: d.fz } : { p: [d.l] };
+      t = SABLONI.find(x => x.id === d.t) || t; preset = d.p ? { p: d.p, f: d.f, m: d.m, b: d.b, v: d.v, s: d.s, fo: d.fo, fz: d.fz, pr: d.pr } : { p: [d.l] };
       setTimeout(() => toast("Otvoren je dizajn iz linka."), 400);
     } catch (err) { console.error(err); toast("Link do dizajna nije ispravan."); }
   }

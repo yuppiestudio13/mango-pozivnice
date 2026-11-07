@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
 <link href="fontovi/fontovi.css?v=1" rel="stylesheet">
 <link rel="stylesheet" href="stil.css?v=5">
-<link rel="stylesheet" href="editor/editor.css?v=15">
+<link rel="stylesheet" href="editor/editor.css?v=18">
 </head>
 <body>
 
@@ -144,6 +144,10 @@
           <span class="lab">Veličina <output id="oSize"></output></span>
           <div class="row"><input type="range" id="pSize" min="5" max="150" step="0.5" aria-label="Veličina"><input class="num" type="number" id="pSizeN" min="4" max="200" step="0.5" aria-label="Veličina u pt"></div>
         </div>
+        <div class="pg" id="pgFoil" hidden>
+          <span class="lab">Foliotisak <output id="oFoilL"></output></span>
+          <button class="tb fo-tog" id="pFoil" aria-pressed="false"><i class="fo-dot"></i><span>Ovaj tekst ide u foliotisak</span></button>
+        </div>
         <div class="pg" id="pgColor">
           <span class="lab">Boja</span>
           <div class="swatches" id="pColors"></div>
@@ -201,7 +205,7 @@
       <div class="pg foil-box" id="foilBox" hidden>
         <span class="lab">Foliotisak <output id="oFoil"></output></span>
         <div class="swatches" id="foilSw"></div>
-        <p class="foil-note">Sav tekst i crtež štampaju se folijom. <span id="foilPaper"></span></p>
+        <p class="foil-note" id="foilNote">Sav tekst i crtež štampaju se folijom. <span id="foilPaper"></span></p>
       </div>
 
       <div class="pg">
@@ -242,25 +246,79 @@
     <div class="eyebrow">Poslednji korak</div>
     <h2 id="orderTitle">Pošaljite nam svoj dizajn</h2>
     <div class="kind">
-      <label><input type="radio" name="kind" value="stampa" checked><b>Štampane pozivnice</b><small>Pregledamo pripremu, javimo cenu i štampamo na papiru po izboru. Elektronska verzija je gratis.</small></label>
+      <label><input type="radio" name="kind" value="stampa" checked><b>Štampane pozivnice</b><small>Birate papir, štampu i dodatke i odmah vidite cenu. Elektronska verzija je gratis.</small></label>
       <label><input type="radio" name="kind" value="e"><b>Samo elektronska</b><small>Bez štampe. Pozivnicu bez vodenog žiga dobijate na e-mail, spremnu za Viber i WhatsApp.</small></label>
     </div>
+
+    <div class="cfg" id="cfg">
+      <div class="cfg-opts">
+        <section class="cfg-s">
+          <h3><span>1</span>Količina</h3>
+          <div class="cfg-qty">
+            <button type="button" class="q-b" data-q="-10" aria-label="Manje za 10">−</button>
+            <input id="cQty" type="number" inputmode="numeric" min="30" step="5" aria-label="Broj pozivnica">
+            <button type="button" class="q-b" data-q="10" aria-label="Više za 10">+</button>
+            <span class="cfg-unit">kom</span>
+          </div>
+          <p class="cfg-hint" id="cQtyHint"></p>
+        </section>
+
+        <section class="cfg-s" id="cPaperS">
+          <h3><span>2</span>Papir</h3>
+          <div class="cfg-ch" id="cPaper"></div>
+        </section>
+
+        <section class="cfg-s">
+          <h3><span id="cPrintN">3</span>Štampa</h3>
+          <div class="cfg-ch" id="cPrint"></div>
+          <div class="cfg-foil" id="cFoil" hidden>
+            <span class="lab">Boja folije <output id="cFoilName"></output></span>
+            <div class="swatches" id="cFoilSw"></div>
+            <span class="lab" style="margin-top:16px">Koji tekst ide u foliotisak</span>
+            <div class="cfg-texts" id="cTexts"></div>
+            <button type="button" class="cfg-look" id="cLook">Pogledaj foliju na pozivnici →</button>
+          </div>
+        </section>
+
+        <section class="cfg-s">
+          <h3><span id="cExtraN">4</span>Dodaci</h3>
+          <span class="lab">Koverta</span>
+          <div class="cfg-ch" id="cKov"></div>
+          <div class="f cfg-sub" id="cKovColorF" hidden><label for="cKovColor">Boja koverte</label><input id="cKovColor" placeholder="npr. krem, bela, zelena" maxlength="60"></div>
+          <span class="lab" style="margin-top:18px">Ostalo</span>
+          <div class="cfg-ch" id="cExtra"></div>
+          <div class="f cfg-sub" id="cSealF" hidden><label for="cSeal">Boja i motiv pečata</label><input id="cSeal" placeholder="npr. zlatni, inicijali A&amp;J" maxlength="80"></div>
+          <p class="cfg-hint">Pogledajte <a href="koverte.html" target="_blank" rel="noopener">boje koverti</a> i <a href="pecati.html" target="_blank" rel="noopener">pečate</a>.</p>
+        </section>
+      </div>
+
+      <aside class="cfg-sum" aria-label="Vaša ponuda">
+        <div class="eyebrow">Vaša ponuda</div>
+        <p class="cfg-what" id="sWhat"></p>
+        <div class="cfg-rows" id="sRows"></div>
+        <div class="cfg-total"><span>Ukupno</span><b id="sTotal">0 din</b></div>
+        <p class="cfg-per" id="sPer"></p>
+        <p class="cfg-fine">Cena je okvirna, poštarina nije uključena. Izrada traje do 14 radnih dana od uplate avansa od 50%, a ostatak plaćate pouzećem.</p>
+      </aside>
+    </div>
+
+    <h3 class="cfg-h" id="cContactH"><span id="cContactN">5</span>Vaši podaci</h3>
     <div class="of">
       <div class="f"><label for="oName">Ime i prezime</label><input id="oName" autocomplete="name" placeholder="Ana Petrović"></div>
       <div class="f"><label for="oPhone">Telefon</label><input id="oPhone" type="tel" autocomplete="tel" placeholder="06x xxx xxxx"></div>
       <div class="f" id="fEmail"><label for="oEmail">E-mail</label><input id="oEmail" type="email" autocomplete="email" placeholder="ana@primer.rs"></div>
-      <div class="f" id="fQty"><label for="oQty">Broj pozivnica</label><input id="oQty" type="number" min="30" step="5" placeholder="npr. 80"></div>
       <div class="f"><label for="oDate">Datum događaja</label><input id="oDate" type="date"></div>
-      <div class="f full"><label for="oNote">Napomena</label><textarea id="oNote" placeholder="Papir, koverte, pečat, rok…"></textarea></div>
+      <div class="f full"><label for="oNote">Napomena</label><textarea id="oNote" placeholder="Rok, posebne želje…"></textarea></div>
     </div>
     <div class="enote" id="eNote" hidden><b>Plaćanje karticom stiže uskoro.</b> Tada će se elektronska pozivnica sama poslati na vaš e-mail čim platite. Do tada nam pošaljite poruku. Javićemo vam cenu i podatke za uplatu, a pozivnicu bez žiga šaljemo istog dana.</div>
+    <div class="cfg-bar" id="cBar"><span>Ukupno <b id="bTotal">0 din</b></span><small id="bPer"></small></div>
     <div class="send" id="send">
       <button type="button" data-ch="viber">Viber</button>
       <button type="button" data-ch="whatsapp">WhatsApp</button>
       <button type="button" data-ch="instagram">Instagram</button>
       <button type="button" class="alt" data-ch="copy">Kopiraj poruku</button>
     </div>
-    <p class="fine">U poruci je link do vašeg dizajna. Preko njega vidimo tačno ono što ste napravili. Okvirnu cenu štampe proverite u <a href="kalkulator.html" style="border-bottom:1px solid">kalkulatoru</a>.</p>
+    <p class="fine">U poruci je link do vašeg dizajna i svi izbori sa cenom. Preko linka vidimo tačno ono što ste napravili.</p>
   </form>
 </dialog>
 
@@ -286,12 +344,13 @@
 </footer>
 
 <script>const drawer=document.getElementById('drawer');</script>
+<script src="js/cenovnik.js?v=1"></script>
 <script src="editor/fontovi.js?v=3"></script>
 <script src="sabloni/sabloni.js?v=16"></script>
 <script src="sabloni/uvoz.js?v=3"></script>
 <script src="sabloni/ikonice.js?v=1"></script>
 <script src="sabloni/mesta.js?v=2"></script>
-<script src="editor/editor.js?v=25"></script>
+<script src="editor/editor.js?v=27"></script>
 <script src="js/sajt.js?v=1"></script>
 </body>
 </html>

@@ -150,41 +150,17 @@
   </div>
 </footer>
 
+<script src="js/cenovnik.js?v=1"></script>
 <script src="sabloni/sabloni.js?v=16"></script>
 <script src="sabloni/uvoz.js?v=3"></script>
 <script>
 /* =========================================================
-   CENOVNIK – ovde menjaš cene (probne vrednosti)
+   KALKULATOR – cene se menjaju u js/cenovnik.js
    ========================================================= */
 const CONFIG = {
   phone: "381600000000",          // broj za Viber/WhatsApp (bez + i nule)
   instagram: "mango.pozivnice",
-  minQty: 30,                     // važi za sve, osim ako papir ima svoj minQty (pasoš = 40)
-  formats: [            // kov = koja koverta ide uz format
-    { id:"125", name:"12,5 × 16,5 cm", note:"uspravna, koverta 13 × 17 cm", price:0, kov:["kov13"] },
-    { id:"150", name:"15 × 15 cm",     note:"kvadratna, koverta 15 × 15 cm", price:0, kov:["kov15","kov15v"] },
-  ],
-  papers: [              // duplex = doplata za dvostranu štampu (null = nije moguće)
-    { id:"350",   name:"350g papir",      note:"gladak, mat",                    price:60,  duplex:20 },
-    { id:"hrap",  name:"Hrapavi papir",   note:"izražena tekstura",              price:80,  duplex:20 },
-    { id:"sedef", name:"Sedefasti papir", note:"blagi biserni sjaj",             price:80,  duplex:20 },
-    { id:"folio", name:"Foliotisak",      note:"zlatni, rose gold, srebrni ili crveni", price:130, duplex:30 },
-    { id:"pasos", name:"Boarding pass / pasoš", note:"350g papir + mat štampa + foliotisak", price:200, duplex:null, minQty:40 },
-  ],
-  extras: [               // group = može samo jedno iz grupe; needs = ide samo uz drugi dodatak
-    { id:"dvo",    name:"Dvostrana štampa",       note:"+20 din, uz foliotisak +30 din", price:20 },
-    { id:"kov13",  name:"Koverta 13 × 17 cm",     note:"za format 12,5 × 16,5, boja po želji", price:40, group:"kov" },
-    { id:"kov15",  name:"Koverta 15 × 15 cm",     note:"standardno pismo, boja po želji", price:50, group:"kov" },
-    { id:"kov15v", name:"Koverta 15 × 15 cm, na vađenje", note:"pozivnica se izvlači, boja po želji", price:50, group:"kov" },
-    { id:"pecat",  name:"Voštani pečat",          note:"boja i motiv po izboru", price:30 },
-    { id:"paus",   name:"Paus papir",             note:"omot",                  price:50 },
-    { id:"avion",  name:"Akrilni zlatni aviončić", note:"za pasoš i boarding",  price:30 },
-    { id:"vez",    name:"Naše vezivanje",         note:"uz aviončić",           price:20, needs:"avion" },
-  ],
-  fixed: [                // jednokratni troškovi, bez obzira na količinu
-    { name:"Priprema za štampu", price:1000 },
-  ],
-  discounts: [],          // popusti na količinu (trenutno nema)
+  ...window.CENOVNIK,             // cene su u js/cenovnik.js (isti cenovnik koristi i editor)
 };
 
 /* šabloni dolaze iz sabloni/sabloni.js (isti kao u editoru) */

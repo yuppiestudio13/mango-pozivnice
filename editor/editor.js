@@ -1241,22 +1241,19 @@ async function exportEPozivnica() {
   } catch (err) { console.error(err); toast("E-pozivnica nije napravljena."); }
   document.body.classList.remove("busy");
 }
-// Priprema za štampu: jedna stranica PDF-a za svaku stranu pozivnice, u pravoj veličini.
-// Sve što ide u foliotisak je u tamnosivoj #45474a (isto kao u Mango PDF-ovima od dizajnera).
+// Priprema za štampu: vektorski PDF (editor/stampa-pdf.js), jedna stranica po strani + 3 mm za sečenje.
+// Biblioteke (js/vendor/mango-pdf.js, ~800 KB) se učitavaju tek ovde, pa ne usporavaju sajt kupcima.
 async function exportPDF() {
   document.body.classList.add("busy");
+  toast("Pravim vektorski PDF za štampu…");
   try {
-    if (!window.jspdf) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
-    let pdf = null;
-    await eachPage(async () => {
-      const cv = await renderCanvas(300 / 254, false, foil ? "priprema" : "kompozit"), [w, h] = PG().mm, o = w > h ? "landscape" : "portrait";
-      if (!pdf) pdf = new jspdf.jsPDF({ orientation: o, unit: "mm", format: [w, h] }); else pdf.addPage([w, h], o);
-      pdf.addImage(cv.toDataURL("image/jpeg", 0.96), "JPEG", 0, 0, w, h);
-    });
-    pdf.setProperties({ title: `Mango · ${T.naziv}`, subject: foil ? `Foliotisak: ${FOLIJE[foil].naziv} (sve u tamnosivoj #45474a)` : "Digitalna štampa" });
-    pdf.save(`mango-${T.id}-stampa.pdf`);
-    toast(foil ? `PDF: ${T.strane.length} ${T.strane.length === 1 ? "stranica" : "stranice"}. Sve u tamnosivoj ide u foliju (${FOLIJE[foil].naziv}).` : `PDF: ${T.strane.length} ${T.strane.length === 1 ? "stranica" : "stranice"}.`);
-  } catch (err) { console.error(err); toast("PDF nije napravljen."); }
+    if (!window.MangoPDF) await loadScript("js/vendor/mango-pdf.js?v=5");
+    if (!window.stampaPDF) await loadScript("editor/stampa-pdf.js?v=8");
+    const r = await stampaPDF();
+    const n = `${r.strane} ${r.strane === 1 ? "stranica" : "stranice"}`;
+    toast(r.missing ? `PDF je napravljen (${n}), ali font nema ova slova: ${[...new Set(r.znaci.map(z => z.split(" ")[0]))].join(" ")}. U PDF-u ih nema, promenite font tog teksta.`
+      : foil ? `Vektorski PDF: ${n}, 3 mm za sečenje. Sve u tamnosivoj ide u foliju (${FOLIJE[foil].naziv}).` : `Vektorski PDF: ${n}, 3 mm za sečenje.`);
+  } catch (err) { console.error(err); toast("PDF nije napravljen. Pogledajte konzolu."); }
   document.body.classList.remove("busy");
 }
 

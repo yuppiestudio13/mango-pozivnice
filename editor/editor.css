@@ -235,7 +235,7 @@ dialog.ed-prev{width:min(1000px,calc(100vw - 32px))}
 /* ---- porudžbina: štampa, dodaci i cena ---- */
 dialog.ed-order.wide{width:min(1060px,calc(100vw - 32px))}
 .cfg{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start;margin-bottom:26px}
-.cfg[hidden],.cfg-h[hidden],.cfg-bar[hidden],.cfg-sub[hidden],.cfg-foil[hidden]{display:none}
+.cfg [hidden],.cfg[hidden],.cfg-h[hidden],.cfg-bar[hidden],.cfg-sub[hidden],.cfg-foil[hidden]{display:none!important}
 .cfg-s{padding:20px 0;border-top:1px solid var(--line)}
 .cfg-s:first-child{border-top:0;padding-top:4px}
 .cfg-s h3,.cfg-h{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-family:var(--serif);font-weight:400;font-size:1.3rem;color:var(--green)}

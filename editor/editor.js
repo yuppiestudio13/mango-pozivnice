@@ -557,8 +557,10 @@ function kovList() {
   const f = fmt && CEN.formats.find(x => x.id === fmt.split("x")[0]);
   return f ? f.kov : CEN.extras.filter(x => x.group === "kov").map(x => x.id);
 }
-function fixKov() { if (pr.kov === null || (pr.kov && !kovList().includes(pr.kov))) pr.kov = kovList()[0] || ""; }
-const exOk = id => id === "avion" || id === "vez" ? isPasos() && (id !== "vez" || pr.ex.includes("avion")) : true;
+// Pasoš pozivnice se ne pakuju u koverte; uz njih ide samo akrilni aviončić (i naše vezivanje).
+function fixKov() { if (isPasos()) { pr.kov = ""; return; } if (pr.kov === null || (pr.kov && !kovList().includes(pr.kov))) pr.kov = kovList()[0] || ""; }
+const SAMO_PASOS = ["avion", "vez"];
+const exOk = id => isPasos() ? SAMO_PASOS.includes(id) && (id !== "vez" || pr.ex.includes("avion")) : !SAMO_PASOS.includes(id);
 // Dvostrana štampa: šablon ima prednju i zadnju stranu iste veličine.
 const dvostrana = () => !isPasos() && T.strane.filter(s => s.mm[0] === T.strane[0].mm[0] && s.mm[1] === T.strane[0].mm[1]).length > 1;
 const curPapir = () => isPasos() ? papir("pasos") : pr.st === "fol" ? papir("folio") : papir(pr.pap);
@@ -627,15 +629,17 @@ function renderCfg() {
   }
   // dodaci
   const kovs = kovList();
+  $("cKovLab").hidden = $("cKov").hidden = $("cOstLab").hidden = pasos;
+  $("cPasosNote").hidden = !pasos;
   $("cKov").innerHTML = ch("radio", "ckov", "", !pr.kov, "Bez koverte", "", "") +
     kovs.map(id => { const K = dodatak(id); return ch("radio", "ckov", id, pr.kov === id, K.name, K.note, perKom(K.price)); }).join("");
-  $("cKovColorF").hidden = !pr.kov;
+  $("cKovColorF").hidden = !pr.kov || pasos;
   if (document.activeElement !== $("cKovColor")) $("cKovColor").value = pr.kb;
-  $("cExtra").innerHTML = OSTALO.filter(id => id !== "avion" && id !== "vez" || pasos).map(id => {
+  $("cExtra").innerHTML = OSTALO.filter(id => SAMO_PASOS.includes(id) === pasos).map(id => {
     const X = dodatak(id), dis = !exOk(id) && id === "vez";
     return ch("checkbox", "cex", id, pr.ex.includes(id) && exOk(id), X.name, dis ? "Uz akrilni aviončić" : X.note, `+${X.price} din/kom`, dis);
   }).join("");
-  $("cSealF").hidden = !pr.ex.includes("pecat");
+  $("cSealF").hidden = !pr.ex.includes("pecat") || pasos;
   if (document.activeElement !== $("cSeal")) $("cSeal").value = pr.pb;
   renderSum();
 }
@@ -1363,7 +1367,7 @@ Vrsta: Štampane pozivnice
 ${sablon}
 ${fmt ? `Format: ${FORMATI[fmt].naziv}\n` : ""}Količina: ${C.q} kom
 Papir i štampa: ${stampaNaziv()}${dvostrana() ? ", dvostrana" : ""}
-${folija}${tint ? `Boja pozadine: ${tintName() || "po želji"} (${tint}, ${cmykText()})\n` : ""}Koverta: ${kov}
+${folija}${tint ? `Boja pozadine: ${tintName() || "po želji"} (${tint}, ${cmykText()})\n` : ""}${isPasos() ? "Pakovanje: bez koverte (pasoš)" : `Koverta: ${kov}`}
 Dodaci: ${ost.length ? ost.join(", ") : "—"}
 
 Cena (okvirno):

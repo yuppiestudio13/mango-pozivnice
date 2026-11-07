@@ -9,19 +9,6 @@
    ========================================================= */
 window.FOTO_SABLONI = [
   {
-    od: "safari-bela-pozadina", id: "safari-luk-foto", naziv: "Safari luk sa fotografijom",
-    strane: { s1: {
-      foto: { x: 265, y: 130, w: 770, h: 440, oblik: "luk", okvir: ["#ffffff", 9] },
-      polja: {
-        0: { y: 588, size: 11, lh: 1.2 },
-        4: { y: 726, size: 23 },
-        3: { y: 842, size: 11, lh: 1.2 },
-        2: { y: 994, size: 11 },
-        1: { y: 1104, size: 10, lh: 1.2 },
-      },
-    } },
-  },
-  {
     od: "uros1", id: "dzungla-foto", naziv: "Džungla sa fotografijom",
     strane: { s1: {
       foto: { x: 420, y: 205, w: 410, h: 410, oblik: "krug", okvir: ["#517f6b", 7] },

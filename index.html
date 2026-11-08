@@ -7,8 +7,8 @@
 <script>document.documentElement.classList.add('js')</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Great+Vibes&family=Parisienne&family=Italianno&family=Allura&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="stil.css?v=6">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&family=Bodoni+Moda&family=Alex+Brush&family=Lora&family=Nunito+Sans:wght@600;900&family=Pinyon+Script&family=Great+Vibes&family=Parisienne&family=Italianno&family=Allura&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="stil.css?v=7">
 </head>
 <body>
 
@@ -50,26 +50,44 @@
 </div>
 
 <main>
-<section class="hero" style="padding:0">
-  <div class="copy">
+<section class="hero-live" aria-label="Mango pozivnice">
+  <div class="hl-top">
     <div class="eyebrow">Pozivnice iz Novog Sada</div>
-    <h1 class="h-xl">Papir koji<br>čuva <em>trenutak</em></h1>
-    <p class="lead">Pozivnice za venčanja, krštenja, rođendane i punoletstva. Biran papir, foliotisak, voštani pečati i koverte u boji po vašoj želji.</p>
+    <h1 class="h-xl">Pozivnica sa vašim <em>imenima</em></h1>
+  </div>
+  <div class="hl-desk" aria-hidden="true">
+    <div class="hl-card hl-back">
+      <img src="slike/hero-plavi-akvarel.jpg" alt="" width="758" height="1000" fetchpriority="high">
+      <div class="t sans" style="left:23.84%;top:11.58%;width:51.92%;font-size:2.4cqw;letter-spacing:.178em;font-weight:600">S RADOŠĆU VAS POZIVAMO
+NA VENČANJE</div>
+      <div class="t lora x" data-k="n1" style="left:18.56%;top:26.3%;width:61.36%;font-size:7.9cqw;letter-spacing:.219em">JELENA</div>
+      <div class="t lora" style="left:42.08%;top:33.94%;width:15.12%;font-size:3.53cqw;letter-spacing:.204em">I</div>
+      <div class="t lora x" data-k="n2" style="left:20.48%;top:37.33%;width:57.44%;font-size:7.9cqw;letter-spacing:.238em">MARKO</div>
+      <div class="t sans x" data-k="dug" style="left:22.36%;top:55.27%;width:54.88%;font-size:2.4cqw;letter-spacing:.172em;font-weight:900">22. JUN 2027.</div>
+      <div class="t sans x" data-k="mesto2" style="left:28.68%;top:63.45%;width:42.16%;font-size:2.4cqw;letter-spacing:.177em;font-weight:600">HOTEL MORAVA
+BEOGRAD</div>
+    </div>
+    <div class="hl-card hl-front">
+      <img src="slike/hero-plavo-cvece.jpg" alt="" width="758" height="1000" fetchpriority="high">
+      <div class="t bod" style="left:23.5%;top:18.2%;width:52.4%;font-size:2.4cqw;letter-spacing:.174em">S RADOŠĆU VAS POZIVAMO
+NA VENČANJE</div>
+      <div class="t bod x" data-k="n1" style="left:14.2%;top:31.2%;width:66.6%;font-size:10.02cqw;letter-spacing:.348em">JELENA</div>
+      <div class="t amp" style="left:33.6%;top:35%;width:27.9%;font-size:26.67cqw">&amp;</div>
+      <div class="t bod x" data-k="n2" style="left:19.2%;top:48.7%;width:57.6%;font-size:10.02cqw;letter-spacing:.324em">MARKO</div>
+      <div class="t bod x" data-k="mes" style="left:32.4%;top:69.7%;width:14.8%;font-size:2.82cqw">JUN</div>
+      <div class="t bod x" data-k="dan" style="left:43.4%;top:67.8%;width:13.3%;font-size:6.63cqw">22</div>
+      <div class="t bod x" data-k="god" style="left:52.6%;top:69.7%;width:12.8%;font-size:2.96cqw">2027</div>
+      <div class="t bod x" data-k="mesto" style="left:28.4%;top:76.2%;width:42.6%;font-size:2.4cqw;letter-spacing:.137em">HOTEL MORAVA</div>
+      <div class="t bod x" data-k="adresa" style="left:14.5%;top:79.2%;width:70.6%;font-size:2.4cqw;letter-spacing:.159em">KNEZA MILOŠA 12 · BEOGRAD</div>
+    </div>
+  </div>
+  <div class="hl-bottom">
+    <p class="lead">Izaberite dizajn, upišite imena i datum i odmah vidite svoju pozivnicu. Mi je štampamo na biranom papiru, sa foliotiskom i voštanim pečatom po želji.</p>
     <div class="actions">
       <a class="btn" href="radionica.html">Napravi svoju pozivnicu</a>
       <a class="link" href="#kolekcije">Pogledaj kolekcije <span>→</span></a>
     </div>
     <div class="facts"><div><b>1000+</b><span>izrađenih pozivnica</span></div><div><b>4</b><span>godine sa vama</span></div><div><b>14</b><span>radnih dana izrade</span></div></div>
-  </div>
-  <div class="stage-wrap" id="hero-slides" aria-roledescription="karusel" aria-label="Izdvojene pozivnice">
-    <div class="slide on" data-cap="Wedding passport · naš najprodavaniji model"><img src="slike/hero-1.jpg" alt="Mint venčana pasoš pozivnica sa zlatnim aviončićem i boarding kartom, na bordo pasošima" fetchpriority="high"></div>
-    <div class="slide" data-cap="Birthday passport u tamnozelenoj boji"><img src="slike/hero-2.jpg" alt="Tamnozelene rođendanske pasoš pozivnice sa zlatnim foliotiskom i aviončićima" loading="lazy"></div>
-    <div class="slide" data-cap="Cvetna pozivnica i bakarni voštani pečati"><img src="slike/hero-3.jpg" alt="Venčana pozivnica sa akvarel cvećem na zelenim kovertama sa bakarnim voštanim pečatima" loading="lazy"></div>
-    <div class="slide" data-cap="Pasoš pozivnica za 18. rođendan"><img src="slike/hero-4.jpg" alt="Roze rođendanska pasoš pozivnica za 18. rođendan sa zlatnim brojem i aviončićem" loading="lazy"></div>
-    <div class="slide" data-cap="Zelene koverte i maslinasti pečati"><img src="slike/hero-5.jpg" alt="Venčana pozivnica Maja i Uroš na zelenim kovertama sa maslinastim voštanim pečatima" loading="lazy"></div>
-    <div class="slide" data-cap="Inicijali u zlatotisku na koverti"><img src="slike/hero-6.jpg" alt="Bela koverta sa inicijalima M i S u zlatotisku, u ruci" loading="lazy"></div>
-    <div class="caption" aria-live="polite">Wedding passport · naš najprodavaniji model</div>
-    <div class="dots" role="group" aria-label="Izaberi fotografiju"></div>
   </div>
 </section>
 
@@ -364,19 +382,20 @@ const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 sec.querySelector('.t-list').innerHTML=UTISCI.map(u=>`<figure class="t-card reveal"><blockquote>„${esc(u.tekst)}“</blockquote><figcaption><b>${esc(u.ime)}</b>${u.povod?`<span>${esc(u.povod)}</span>`:''}</figcaption></figure>`).join('');
 sec.hidden=false;})();
 const drawer=document.getElementById('drawer');
-(()=>{const w=document.getElementById('hero-slides');if(!w)return;
-  const sl=[...w.querySelectorAll('.slide')],cap=w.querySelector('.caption'),dots=w.querySelector('.dots');let i=0,t;
-  const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  sl.forEach((_,k)=>{const b=document.createElement('button');b.setAttribute('aria-label','Fotografija '+(k+1));b.onclick=()=>{go(k);run()};dots.appendChild(b)});
-  const bs=[...dots.children];
-  function go(k){sl[i].classList.remove('on');i=(k+sl.length)%sl.length;sl[i].classList.add('on');
-    cap.classList.add('fade');setTimeout(()=>{cap.textContent=sl[i].dataset.cap;cap.classList.remove('fade')},350);
-    bs.forEach((b,n)=>b.setAttribute('aria-current',n===i))}
-  function run(){clearInterval(t);if(!still)t=setInterval(()=>go(i+1),5500)}
-  bs[0].setAttribute('aria-current','true');
-  w.addEventListener('mouseenter',()=>clearInterval(t));w.addEventListener('mouseleave',run);
-  document.addEventListener('visibilitychange',()=>document.hidden?clearInterval(t):run());
-  run();})();
+(()=>{/* hero: imena, datum i mesto na pozivnicama se smenjuju (pretapanje) */
+  const S=[
+    {n1:'JELENA',n2:'MARKO',dan:'22',mes:'JUN',god:'2027',mesto:'HOTEL MORAVA',adresa:'KNEZA MILOŠA 12 · BEOGRAD',dug:'22. JUN 2027.',mesto2:'HOTEL MORAVA\nBEOGRAD'},
+    {n1:'MILICA',n2:'LUKA',dan:'14',mes:'SEP',god:'2027',mesto:'VILA DUNAV',adresa:'SUNČANI KEJ 3 · NOVI SAD',dug:'14. SEPTEMBAR 2027.',mesto2:'VILA DUNAV\nNOVI SAD'},
+    {n1:'ANA',n2:'PETAR',dan:'05',mes:'MAJ',god:'2028',mesto:'SALA ORHIDEJA',adresa:'BULEVAR OSLOBOĐENJA 8 · NIŠ',dug:'5. MAJ 2028.',mesto2:'SALA ORHIDEJA\nNIŠ'},
+    {n1:'SOFIJA',n2:'ĐORĐE',dan:'30',mes:'AVG',god:'2027',mesto:'ETNO SELO',adresa:'ZLATIBOR',dug:'30. AVGUST 2027.',mesto2:'ETNO SELO\nZLATIBOR'}];
+  const els=[...document.querySelectorAll('.hero-live .x')];
+  if(!els.length||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  let i=0;
+  setInterval(()=>{if(document.hidden)return;i=(i+1)%S.length;
+    els.forEach(e=>e.classList.add('out'));
+    setTimeout(()=>{els.forEach(e=>{e.textContent=S[i][e.dataset.k];e.classList.remove('out')})},650);
+  },4200);
+})();
 
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
 document.querySelectorAll('.reveal').forEach((el,i)=>{el.style.transitionDelay=(i%4)*90+'ms';io.observe(el)});

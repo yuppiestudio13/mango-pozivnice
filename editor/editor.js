@@ -1268,7 +1268,7 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
   if (watermark) {
     ctx.save();
     const fs = W() / 26;
-    ctx.font = `400 ${fs}px "Josefin Sans", sans-serif`;
+    ctx.font = `400 ${fs}px "Jost", sans-serif`;
     ctx.translate(W() / 2, H() / 2); ctx.rotate(-24 * Math.PI / 180);
     const txt = "MANGO POZIVNICE · PRIPREMA     ", tw = ctx.measureText(txt).width, D = Math.hypot(W(), H()), [col, op] = WM();
     const blag = watermark === "blag";
@@ -1277,7 +1277,7 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
     ctx.restore();
     if (watermark !== "blag") {
       ctx.fillStyle = "rgba(28,54,39,.78)"; ctx.fillRect(0, H() - fs * 0.9, W(), fs * 0.9);
-      ctx.font = `400 ${fs * 0.34}px "Josefin Sans", sans-serif`; ctx.fillStyle = "#e4cf9f"; ctx.textAlign = "center";
+      ctx.font = `400 ${fs * 0.34}px "Jost", sans-serif`; ctx.fillStyle = "#e4cf9f"; ctx.textAlign = "center";
       ctx.fillText("PRIPREMA · NIJE ZA ŠTAMPU · @MANGO.POZIVNICE", W() / 2, H() - fs * 0.33);
     }
   }

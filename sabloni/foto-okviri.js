@@ -51,3 +51,16 @@ window.FOTO_SABLONI = [
     S.splice(k + 1, 0, t);
   }
 })();
+
+/* Primer-fotografija u praznom okviru (sabloni/primeri, Unsplash licenca): da se u galeriji i editoru vidi
+   kako pozivnica izgleda sa fotografijom. Samo za prikaz – ne ide u štampu, PDF, PNG ni u poruku za porudžbinu;
+   kupac je zameni svojom. Venčanja: mladenci; krštenja: beba; rođendani: devojčica (roze, sirene, duga…) ili dečak.
+   Kad strana ima više okvira, svaki dobija drugu fotografiju iz niza. */
+window.fotoPrimer = (t, j = 0) => {
+  const g = (t?.grupe || []).join(" ") + " " + (t?.kategorija || "") + " " + (t?.id || "") + " " + (t?.naziv || "");
+  const niz = /vencan|venčan/i.test(g) ? ["mladenci", "poljubac", "ruke"]
+    : /krsten|krštenj|beb/i.test(g) ? ["beba", "devojcica", "decak"]
+    : /roze|sirene|duga|princez|vil[ae]|leptir|jednorog/i.test(g) ? ["devojcica", "decak", "beba"]
+    : ["decak", "devojcica", "beba"];
+  return "sabloni/primeri/" + niz[j % niz.length] + ".jpg";
+};

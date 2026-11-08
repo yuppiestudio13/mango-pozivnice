@@ -83,6 +83,7 @@ function norm(L) {
     color: /^#[0-9a-f]{6}$/i.test(L.color) ? L.color.toLowerCase() : "#1c3627",
     align: ["left", "center", "right"].includes(L.align) ? L.align : "center",
     uloga: ["grad", "drzava", "tl"].includes(L.uloga) ? L.uloga : undefined,
+    ...(+L.luk ? { luk: Math.round(n(L.luk, 0, -100, 100)) } : {}),   // savijen tekst: -100 (osmeh) … 100 (luk, pola kruga)
     ...(L.fo ? { fo: true } : {}),          // tekst ide u foliotisak (kad kupac izabere štampu sa folijom)
     ...(L.uloga === "tl" ? { k: n(L.k, 0, 0, 9) | 0, deo: L.deo === "o" ? "o" : "v" } : {}),
   };
@@ -701,8 +702,68 @@ function styleLayer(el, L, live = true) {
     minHeight: Math.min(1, L.lh) + "em",
   });
   if (editing !== L.id && t.textContent !== L.text) t.textContent = L.text;
+  el._L = L;
+  if (L.luk || el.querySelector(".arc")) requestAnimationFrame(() => renderArc(el, L));
   if (live) { el.classList.toggle("sel", sel === L.id); requestAnimationFrame(() => checkSafe(el, L)); }
 }
+
+/* ---------- tekst u luku ----------
+   Tekst se rasporedi kao ravan red (pregledač: font, razmak slova, poravnanje), pa se svako slovo prenese na
+   kružni luk: sredina reda ostaje na mestu, krajevi se spuštaju (luk > 0) ili podižu (luk < 0).
+   luk 100 = pola kruga. Isto računanje koriste ekran, pregled/PNG (renderCanvas) i PDF za štampu (stampa-pdf.js). */
+// Redovi teksta sa položajem i širinom svakog slova (jedinice šablona), tačno kako ih je složio pregledač.
+function charsOf(L, el = elOf(L.id)) {
+  const node = el?.firstChild?.firstChild; if (!node) return [];
+  const er = el.getBoundingClientRect(), k = er.width / L.w; if (!k) return [];
+  const px = L.size * PT, str = node.textContent, r = document.createRange();
+  const lines = []; let cur = null;
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === "\n") { cur = null; continue; }
+    r.setStart(node, i); r.setEnd(node, i + 1);
+    const rc = [...r.getClientRects()].find(q => q.width > 0); if (!rc) continue;
+    const x = L.x + (rc.left - er.left) / k, y = L.y + (rc.top - er.top) / k;
+    if (!cur || Math.abs(y - cur.y) > px * 0.3) { cur = { y, chars: [] }; lines.push(cur); }
+    cur.chars.push({ c: L.upper ? str[i].toLocaleUpperCase("sr") : str[i], x, w: rc.width / k });
+  }
+  lines.forEach(ln => { while (ln.chars.length && /\s/.test(ln.chars[ln.chars.length - 1].c)) ln.chars.pop(); });
+  return lines.filter(ln => ln.chars.length);
+}
+function ascOf(L) {
+  const px = L.size * PT;
+  inkCtx.font = `${L.italic ? "italic " : ""}${L.weight} ${px}px "${L.font}"`;
+  return inkCtx.measureText("Hg").fontBoundingBoxAscent ?? px * 0.8;
+}
+// Slova jednog reda na luku: cx, y = sredina slova na osnovnoj liniji, rot = nagib (radijani), hw = pola širine slova.
+function arcOf(L, ln, base) {
+  const ls = L.ls / 1000 * L.size * PT, hw = ch => Math.max(0, ch.w - ls) / 2;
+  if (!L.luk) return ln.chars.map(ch => ({ ...ch, hw: hw(ch), cx: ch.x + hw(ch), y: base, rot: 0 }));
+  const a = ln.chars[0].x, z = ln.chars[ln.chars.length - 1], b = z.x + 2 * hw(z), xc = (a + b) / 2;
+  const R = Math.max(1, b - a) / (Math.abs(L.luk) / 100 * Math.PI), sg = Math.sign(L.luk);
+  return ln.chars.map(ch => {
+    const t = (ch.x + hw(ch) - xc) / R;
+    return { ...ch, hw: hw(ch), cx: xc + R * Math.sin(t), y: base + sg * R * (1 - Math.cos(t)), rot: sg * t };
+  });
+}
+// Na ekranu: ravan tekst ostaje (providan) zbog izbora i kucanja, a slova na luku su preko njega.
+// Dok kupac kuca, tekst je privremeno ravan.
+function renderArc(el, L) {
+  let a = el.querySelector(".arc");
+  const on = !!L.luk && editing !== L.id && !!L.text.trim();
+  el.classList.toggle("luk", on);
+  if (!on) { a?.remove(); return; }
+  if (!a) { a = document.createElement("span"); a.className = "arc"; a.setAttribute("aria-hidden", "true"); el.appendChild(a); }
+  const asc = ascOf(L), ch = [];
+  for (const ln of charsOf(L, el)) for (const p of arcOf(L, ln, ln.y + asc)) {
+    if (!p.c.trim()) continue;
+    const s = document.createElement("span"); s.className = "ch"; s.textContent = p.c;
+    Object.assign(s.style, { left: p.cx - L.x + "px", top: p.y - L.y + "px", transform: `rotate(${p.rot}rad) translate(${-p.hw}px,${-asc}px)`,
+      fontFamily: `"${L.font}", serif`, fontWeight: L.weight, fontStyle: L.italic ? "italic" : "normal", fontSize: L.size * PT + "px", color: L.color });
+    ch.push(s);
+  }
+  a.replaceChildren(...ch);
+}
+// Font stigne kasnije (Google): slova na luku se ponovo rasporede.
+document.fonts.addEventListener("loadingdone", () => document.querySelectorAll(".L.luk").forEach(el => el._L && renderArc(el, el._L)));
 function makeLayer(L, live = true) {
   const el = document.createElement("div");
   el.className = "L"; el.dataset.id = L.id;
@@ -880,6 +941,7 @@ function startEdit(id) {
   select(id); editing = id;
   const t = el.firstChild;
   el.classList.add("editing"); document.body.classList.add("typing");
+  if (el._L?.luk) renderArc(el, el._L);   // dok se kuca, tekst u luku je privremeno ravan
   try { t.contentEditable = "plaintext-only"; } catch { t.contentEditable = "true"; }
   if (t.contentEditable !== "plaintext-only") t.contentEditable = "true";
   t.focus();
@@ -1069,6 +1131,7 @@ function syncProps() {
   $("pUpper").setAttribute("aria-pressed", !!L.upper);
   $("pSize").value = L.size; $("pSizeN").value = L.size; $("oSize").textContent = L.size + " pt";
   $("pLs").value = L.ls; $("oLs").textContent = L.ls;
+  $("pLuk").value = L.luk || 0; $("oLuk").textContent = !L.luk ? "ravno" : L.luk > 0 ? "luk " + L.luk : "osmeh " + -L.luk;
   $("pLh").value = L.lh; $("oLh").textContent = Math.round(L.lh * 100) + "%";
   document.querySelectorAll("#pAlign button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === L.align));
   const cols = [...new Set([...T.boje, L.color.toLowerCase()])];
@@ -1091,6 +1154,7 @@ $("pUpper").onclick = () => setProp("upper", !get(sel).upper, true);
 $("pSize").oninput = e => setProp("size", +e.target.value);
 $("pSizeN").onchange = e => setProp("size", Math.max(4, Math.min(200, +e.target.value || 12)), true);
 $("pLs").oninput = e => setProp("ls", +e.target.value);
+$("pLuk").oninput = e => setProp("luk", +e.target.value);
 $("pLh").oninput = e => setProp("lh", +e.target.value);
 $("pAlign").onclick = e => { const b = e.target.closest("button"); if (b) setProp("align", b.dataset.v, true); };
 $("pColors").addEventListener("click", e => { const b = e.target.closest(".sw[data-c]"); if (b) setProp("color", b.dataset.c, true); });
@@ -1184,32 +1248,19 @@ async function renderCanvas(scale, watermark, mode = "kompozit") {
       ctx.drawImage(off, 0, 0, W(), H());
     }
   }
-  const sr = stage.getBoundingClientRect();
   for (const L of layers) {
     if (mode === "stampa" && fx(L) || mode === "folija" && !fx(L)) continue;
-    const el = elOf(L.id), t = el.firstChild;
+    const el = elOf(L.id);
     if (!L.text.trim()) continue;
     const px = L.size * PT;
     ctx.font = `${L.italic ? "italic " : ""}${L.weight} ${px}px "${L.font}"`;
     ctx.fillStyle = mode === "folija" ? "#000" : fx(L) ? (mode === "priprema" ? FOLIJA_PRIPREMA : foilGradient(ctx)) : L.color; ctx.textBaseline = "alphabetic";
     const asc = ctx.measureText("Hg").fontBoundingBoxAscent ?? px * 0.8;
     const lsPx = L.ls / 1000 * px;
-    const node = t.firstChild; if (!node) continue;
-    const str = node.textContent, r = document.createRange();
-    const lines = []; let cur = null;
-    for (let i = 0; i < str.length; i++) {
-      if (str[i] === "\n") { cur = null; continue; }
-      r.setStart(node, i); r.setEnd(node, i + 1);
-      const rc = [...r.getClientRects()].find(q => q.width > 0); if (!rc) continue;
-      const x = (rc.left - sr.left) / S, y = (rc.top - sr.top) / S;
-      if (!cur || Math.abs(y - cur.y) > px * 0.3) { cur = { y, chars: [] }; lines.push(cur); }
-      cur.chars.push({ c: L.upper ? str[i].toLocaleUpperCase("sr") : str[i], x });
-    }
-    for (const ln of lines) {
+    for (const ln of charsOf(L, el)) {
       const base = ln.y + asc;
-      while (ln.chars.length && ln.chars[ln.chars.length - 1].c === " ") ln.chars.pop();
-      if (!ln.chars.length) continue;
-      if (Math.abs(lsPx) < 0.01) ctx.fillText(ln.chars.map(c => c.c).join(""), ln.chars[0].x, base);
+      if (L.luk) for (const p of arcOf(L, ln, base)) { ctx.save(); ctx.translate(p.cx, p.y); ctx.rotate(p.rot); ctx.fillText(p.c, -p.hw, 0); ctx.restore(); }
+      else if (Math.abs(lsPx) < 0.01) ctx.fillText(ln.chars.map(c => c.c).join(""), ln.chars[0].x, base);
       else for (const ch of ln.chars) ctx.fillText(ch.c, ch.x, base);
     }
   }
@@ -1280,7 +1331,7 @@ async function exportPDF() {
   toast("Pravim vektorski PDF za štampu…");
   try {
     if (!window.MangoPDF) await loadScript("js/vendor/mango-pdf.js?v=5");
-    if (!window.stampaPDF) await loadScript("editor/stampa-pdf.js?v=8");
+    if (!window.stampaPDF) await loadScript("editor/stampa-pdf.js?v=9");
     const r = await stampaPDF();
     const n = `${r.strane} ${r.strane === 1 ? "stranica" : "stranice"}`;
     toast(r.missing ? `PDF je napravljen (${n}), ali font nema ova slova: ${[...new Set(r.znaci.map(z => z.split(" ")[0]))].join(" ")}. U PDF-u ih nema, promenite font tog teksta.`

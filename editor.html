@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
 <link href="fontovi/fontovi.css?v=1" rel="stylesheet">
 <link rel="stylesheet" href="stil.css?v=5">
-<link rel="stylesheet" href="editor/editor.css?v=23">
+<link rel="stylesheet" href="editor/editor.css?v=24">
 </head>
 <body>
 
@@ -168,6 +168,9 @@
         <div class="pg">
           <span class="lab">Razmak slova <output id="oLs"></output></span>
           <input type="range" id="pLs" min="-60" max="800" step="10" aria-label="Razmak slova">
+          <span class="lab" style="margin-top:12px">Luk <output id="oLuk"></output></span>
+          <input type="range" id="pLuk" min="-100" max="100" step="2" aria-label="Savijanje teksta u luk" list="pLukNula">
+          <datalist id="pLukNula"><option value="0"></option></datalist>
           <span class="lab" style="margin-top:12px">Prored <output id="oLh"></output></span>
           <input type="range" id="pLh" min="0.7" max="2.4" step="0.05" aria-label="Prored">
         </div>
@@ -383,7 +386,7 @@
 <script src="sabloni/mesta.js?v=2"></script>
 <script src="sabloni/foto-okviri.js?v=2"></script>
 <script src="editor/foto.js?v=2"></script>
-<script src="editor/editor.js?v=43"></script>
+<script src="editor/editor.js?v=44"></script>
 <script src="js/sajt.js?v=1"></script>
 </body>
 </html>

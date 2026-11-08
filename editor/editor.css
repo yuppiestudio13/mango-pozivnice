@@ -97,6 +97,10 @@
 .L{position:absolute;cursor:move;touch-action:none;user-select:none;-webkit-user-select:none}
 .L .t{display:block;white-space:pre-wrap;overflow-wrap:break-word;min-height:1em;outline:none}
 .L .t:empty::before{content:"Tekst";opacity:.35}
+.L.luk>.t{color:transparent!important;-webkit-text-fill-color:transparent;background:none!important}
+.L .arc{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none}
+.L .arc .ch{position:absolute;transform-origin:0 0;white-space:pre;line-height:normal}
+.stage.foiled .L .arc .ch,.stage.partfoil .L.fo .arc .ch{background:var(--foil);-webkit-background-clip:text;background-clip:text;color:transparent!important}
 .L::after{content:"";position:absolute;inset:calc(-6px*var(--k));border:calc(1px*var(--k)) dashed transparent;pointer-events:none}
 .stage.edit .L:hover::after{border-color:rgba(168,134,75,.7)}
 .stage.edit .L.sel::after{border:calc(1.5px*var(--k)) solid #a8864b}

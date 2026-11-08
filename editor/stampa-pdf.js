@@ -90,22 +90,8 @@
     if (open) pdf.close();
   }
 
-  // Redovi teksta sa položajem svakog slova, tačno kako ih je rasporedio pregledač (isto kao renderCanvas).
-  function linesOf(L) {
-    const el = elOf(L.id), node = el?.firstChild?.firstChild; if (!node) return [];
-    const sr = stage.getBoundingClientRect(), px = L.size * PT, str = node.textContent, r = document.createRange();
-    const lines = []; let cur = null;
-    for (let i = 0; i < str.length; i++) {
-      if (str[i] === "\n") { cur = null; continue; }
-      r.setStart(node, i); r.setEnd(node, i + 1);
-      const rc = [...r.getClientRects()].find(q => q.width > 0); if (!rc) continue;
-      const x = (rc.left - sr.left) / S, y = (rc.top - sr.top) / S;
-      if (!cur || Math.abs(y - cur.y) > px * 0.3) { cur = { y, chars: [] }; lines.push(cur); }
-      cur.chars.push({ c: L.upper ? str[i].toLocaleUpperCase("sr") : str[i], x });
-    }
-    lines.forEach(ln => { while (ln.chars.length && /\s/.test(ln.chars[ln.chars.length - 1].c)) ln.chars.pop(); });
-    return lines.filter(ln => ln.chars.length);
-  }
+  // Redovi teksta sa položajem svakog slova, tačno kako ih je rasporedio pregledač: charsOf u editor.js
+  const linesOf = L => charsOf(L);
 
   // Znak koga nema u fontu (pregledač ga pozajmi iz drugog fonta) menja se sličnim koji font ima.
   const ALT = { "ʺ": "″\"", "ʹ": "′'", "″": "\"", "′": "'", "‘": "'", "’": "'", "‚": ",", "“": "\"", "”": "\"", "„": "\"", "–": "-", "—": "-", "…": "...", " ": " ", "ʼ": "'" };
@@ -129,6 +115,27 @@
     let any = false;
     for (const ln of linesOf(L)) {
       const base = ln.y + asc;
+      if (L.luk) {
+        // tekst u luku: svako slovo za sebe, zaokrenuto (arcOf u editor.js)
+        for (const q of arcOf(L, ln, base)) {
+          if (!(await covered(L, q.c)) && ALT[q.c]) for (const a of ALT[q.c]) if (await covered(L, a)) { q.c = a; break; }
+          const font = await fontFor(L, q.c.codePointAt(0));
+          if (!font) { missing++; missingCh.add(`${q.c} (${L.font})`); continue; }
+          const k = px / font.unitsPerEm, g = font.layout(fixChars(font, q.c)), co = Math.cos(q.rot), si = Math.sin(q.rot);
+          let pen = -q.hw;
+          g.glyphs.forEach((gl, i) => {
+            const p = g.positions[i];
+            if (!gl.id) { missing++; missingCh.add(`${q.c} (${L.font})`); }
+            const ox = pen + p.xOffset * k, oy = -p.yOffset * k;
+            if (gl.path.commands.length) {
+              drawPath(pdf, gl.path.commands, (x, y) => { const u = ox + x * k, v = oy - y * k; return [BLEED + (q.cx + u * co - v * si) / 10, BLEED + (q.y + u * si + v * co) / 10]; });
+              any = true;
+            }
+            pen += p.xAdvance * k;
+          });
+        }
+        continue;
+      }
       // red se deli na delove sa istim fajlom fonta (Google deli font po pismima: latinica, ćirilica…)
       const runs = [];
       for (const ch of ln.chars) {

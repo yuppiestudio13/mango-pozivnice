@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&family=Ms+Madi&family=Baloo+2&family=Pinyon+Script&family=Great+Vibes&family=Parisienne&family=Italianno&family=Allura&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="fontovi/fontovi.css">
-<link rel="stylesheet" href="stil.css?v=10">
+<link rel="stylesheet" href="stil.css?v=13">
 </head>
 <body>
 
@@ -90,36 +90,26 @@
   <span>Venčanja</span><span>Krštenja</span><span>Rođendani</span><span>Punoletstva</span><span>Pasoš pozivnice</span><span>Boarding karte</span><span>Akril</span><span>Foliotisak</span><span>Voštani pečati</span><span>Plišane koverte</span><span>Sedefasti papir</span><span>Hrapavi papir</span>
 </div></div>
 
-<section class="atelje" id="atelje">
-  <div class="wrap atelje-grid">
-    <div class="atelje-copy reveal">
-      <div class="eyebrow">Novo · Mango Radionica</div>
-      <h2 class="h-lg">Vaša pozivnica,<br><em>vašim rukopisom</em></h2>
-      <p class="lead">Izaberite šablon i upišite imena, datum i mesto. Izaberite jedan od 210 fontova i rasporedite tekst kako vam se dopada. Pripremu vidite odmah, a mi je štampamo na papiru koji izaberete.</p>
-      <ol class="steps">
-        <li><b>01</b><span>Izaberite šablon</span></li>
-        <li><b>02</b><span>Upišite tekst i izaberite font</span></li>
-        <li><b>03</b><span>Pošaljite nam, a mi štampamo</span></li>
-      </ol>
+<section class="stize" id="stize">
+  <div class="wrap stize-grid">
+    <figure class="stize-foto reveal">
+      <img src="slike/hero-6.jpg" alt="Koverte boje slonovače sa zlatnim monogramom M S, u ruci" loading="lazy" width="956" height="1700">
+    </figure>
+    <div class="stize-copy reveal">
+      <div class="eyebrow">Ovako stiže do vas</div>
+      <h2 class="h-lg">Pravi papir,<br><em>u vašim rukama</em></h2>
+      <p class="lead">Na ekranu birate dizajn i tekst, a na vašu adresu stiže pozivnica koju gosti žele da sačuvaju.</p>
+      <ul class="stize-list">
+        <li><b>Debeo, biran papir</b><span>350 g, hrapavi ili sedefasti, glatki ili sa reljefom.</span></li>
+        <li><b>Foliotisak</b><span>Zlato, rose gold, srebro ili crvena, sjaji pod svetlom.</span></li>
+        <li><b>Koverta i voštani pečat</b><span>Koverte u mnogo boja i pečati sa vašim inicijalima.</span></li>
+        <li><b>Spakovano i poslato</b><span>Post Expressom na vašu adresu, u celoj Srbiji.</span></li>
+      </ul>
       <div class="actions">
-        <a class="btn btn-gold" href="radionica.html">Napravi svoju pozivnicu</a>
-        <a class="link" href="editor.html?s=boarding-roza">Probaj boarding pass <span>→</span></a>
+        <a class="btn" href="radionica.html">Napravi svoju pozivnicu</a>
+        <a class="link" href="pozivnice.html">Pogledaj gotove pozivnice <span>→</span></a>
       </div>
     </div>
-    <a class="atelje-demo reveal" href="radionica.html" aria-label="Otvori Mango Radionica">
-      <div class="demo-card">
-        <img src="sabloni/zelenilo.svg" alt="" width="1270" height="1780" loading="lazy">
-        <div class="dt d1">Zajedno sa porodicama</div>
-        <div class="dnames"><span class="dn" id="dn1">Ana</span><span class="damp">&amp;</span><span class="dn" id="dn2">Marko</span><i class="dsel"><i></i><i></i><i></i></i></div>
-        <div class="dt d2">pozivaju vas da budete deo<br>našeg venčanja</div>
-        <div class="dt d3">Subota, 14. jun 2027. · 17 časova</div>
-        <div class="dt d4">Restoran Dunav<br>Novi Sad</div>
-      </div>
-      <div class="demo-fonts" aria-hidden="true">
-        <small>Font</small>
-        <span data-f="Great Vibes">Great Vibes</span><span data-f="Parisienne">Parisienne</span><span data-f="Pinyon Script">Pinyon Script</span><span data-f="Italianno">Italianno</span><span data-f="Allura">Allura</span>
-      </div>
-    </a>
   </div>
 </section>
 
@@ -399,32 +389,6 @@ document.querySelectorAll('[role=tablist]').forEach(list=>{
   tabs.forEach((b,i)=>{b.onclick=()=>pick(b);b.onkeydown=e=>{const d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(d){const n=tabs[(i+d+tabs.length)%tabs.length];pick(n);n.focus()}}});
 });
 
-// ---- Mango Radionica: živi primer ----
-(function(){
-  const card=document.querySelector('.demo-card'); if(!card) return;
-  const n1=document.getElementById('dn1'), n2=document.getElementById('dn2'), names=card.querySelector('.dnames');
-  const fonts=[...document.querySelectorAll('.demo-fonts span')];
-  const pairs=[['Ana','Marko'],['Milica','Stefan'],['Jelena','Luka'],['Sara','Nikola'],['Teodora','Vuk']];
-  let i=0;
-  const setFont=k=>{const f=fonts[k%fonts.length].dataset.f;names.style.setProperty('--df',`"${f}"`);fonts.forEach((x,j)=>x.classList.toggle('on',j===k%fonts.length));};
-  setFont(0);
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const wait=ms=>new Promise(r=>setTimeout(r,ms));
-  async function type(el,txt){for(let c=1;c<=txt.length;c++){el.textContent=txt.slice(0,c);await wait(90)}}
-  async function erase(el){while(el.textContent.length){el.textContent=el.textContent.slice(0,-1);await wait(45)}}
-  let seen=false; new IntersectionObserver(es=>{seen=es[0].isIntersecting}).observe(card);
-  (async function loop(){
-    while(true){
-      await wait(2600); if(!seen||document.hidden) continue;
-      i++; names.classList.add('typing');
-      await erase(n2); await erase(n1);
-      setFont(i);
-      const [a,b]=pairs[i%pairs.length];
-      await type(n1,a); await type(n2,b);
-      names.classList.remove('typing');
-    }
-  })();
-})();
 </script>
 <script src="js/sajt.js?v=2"></script>
 </body>

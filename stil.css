@@ -12,6 +12,7 @@ html{scroll-behavior:smooth}
 body{font-family:var(--sans);font-weight:400;color:var(--ink);background:var(--ivory);line-height:1.7;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 p,li,dd,figcaption{text-wrap:pretty}
+h1,h2,h3,.h-xl,.h-lg{text-wrap:balance}
 img,svg{display:block}
 .wrap{max-width:1240px;margin:0 auto;padding:0 32px}
 @media(max-width:640px){.wrap{padding:0 18px}}
@@ -102,6 +103,26 @@ header nav.right{justify-content:flex-end}
   .hero-live .facts{justify-content:flex-start;gap:40px;margin-top:30px}
 }
 @media(prefers-reduced-motion:reduce){.hl-card .t{transition:none}}
+
+/* ---------- „Ovako stiže do vas” (prvo za telefon) ---------- */
+.stize{background:var(--paper);padding:56px 0 64px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stize-grid{display:grid;gap:34px}
+.stize-foto{margin:0;position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--sand)}
+.stize-foto img{width:100%;height:100%;object-fit:cover;object-position:50% 45%}
+.stize-copy .h-lg{margin:12px 0 16px;color:var(--green)}
+.stize-list{list-style:none;padding:0;margin:26px 0 30px;border-top:1px solid var(--line)}
+.stize-list li{display:grid;gap:2px;padding:14px 0;border-bottom:1px solid var(--line)}
+.stize-list b{font-family:var(--serif);font-weight:500;font-size:1.3rem;color:var(--green);line-height:1.2}
+.stize-list span{font-size:.92rem;font-weight:300;color:var(--stone)}
+.stize .actions{display:flex;flex-direction:column;align-items:flex-start;gap:20px}
+.stize .actions>*{flex:none;white-space:nowrap}
+@media(max-width:899px){.stize .btn{width:100%;text-align:center}.stize .actions{align-items:center}}
+@media(min-width:900px){
+  .stize{padding:100px 0}
+  .stize-grid{grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+  .stize-foto{aspect-ratio:4/5;max-height:720px}
+  .stize .actions{flex-direction:row;align-items:center;gap:34px}
+}
 
 /* ---------- marquee strip ---------- */
 .strip{border-bottom:1px solid var(--line);padding:26px 0;overflow:hidden;white-space:nowrap}

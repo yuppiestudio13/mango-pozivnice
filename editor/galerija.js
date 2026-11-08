@@ -14,6 +14,66 @@
     ["punoletstva", "Punoletstva"],
   ];
   const STRANA = { vencanja: "pozivnice-vencanja.html", boarding: "pozivnice-boarding-pass.html", krstenja: "pozivnice-krstenja.html", rodjendani: "pozivnice-rodjendani.html", punoletstva: "pozivnice-punoletstva.html" };
+  /* Stil šablona za venčanja (podfilteri ispod „Venčanja”); jedan šablon može biti u više grupa. */
+  const STILOVI = [["cvetni", "Cvetni"], ["minimal", "Minimalistički"], ["monogram", "Monogram"], ["datum", "Save the date"], ["cirilica", "Ćirilica"]];
+  const STIL = {
+    "3-svadba": "cvetni",
+    "its-me-milica": "cvetni",
+    "marija1": "cvetni",
+    "martina": "cvetni cirilica",
+    "milica-aleksandra-i-aleksandar": "cvetni cirilica",
+    "natalija": "cvetni cirilica",
+    "eva1": "cvetni",
+    "jovanamilos": "cvetni",
+    "maja-mirko-cirilica2": "cvetni cirilica",
+    "marija-mihajlo": "cvetni cirilica",
+    "marina-anusic-sa-potvrdom": "cvetni",
+    "primer-2-bey-poyadine": "cvetni",
+    "rozi-cvetovi-2": "cvetni cirilica",
+    "zlatno-srce-cvetovi-tekst": "cvetni",
+    "bordo-bozur": "cvetni",
+    "poljski-venac": "cvetni",
+    "bele-ruze": "cvetni",
+    "mg-bele-ruze": "cvetni",
+    "mg-buket-ruza": "cvetni",
+    "mg-ruze-linija": "cvetni",
+    "mg-roze-akvarel": "cvetni",
+    "mg-eukaliptus-venac": "cvetni datum",
+    "mg-eukaliptus-zlato": "cvetni",
+    "mg-roze-monogram": "cvetni monogram",
+    "mg-grancice": "cvetni",
+    "mg-anemone-romb": "cvetni datum",
+    "mg-anemone": "cvetni",
+    "mg-sukulenti": "cvetni",
+    "mg-sukulenti-datum": "cvetni datum",
+    "mg-plavo-cvece": "cvetni",
+    "mg-heksagon-datum": "cvetni datum",
+    "mg-lisce-akvarel": "cvetni",
+    "mg-breskva": "cvetni",
+    "mg-terakota-datum": "cvetni datum",
+    "mg-terakota-traka": "cvetni",
+    "mg-zlatno-datum": "cvetni datum",
+    "mg-zlatno-cvece": "cvetni",
+    "ana-jovan": "minimal datum",
+    "iva-i-vukota": "minimal",
+    "marija-lazar": "minimal monogram",
+    "milica-nov-1-crveno": "minimal cirilica",
+    "natasa-milan": "minimal datum",
+    "primer-9": "minimal datum",
+    "ivanauros": "minimal datum",
+    "jovana-nemanja": "minimal",
+    "ljilja-2": "minimal datum",
+    "martina1": "minimal",
+    "kolaz-par": "minimal",
+    "mg-monogram-linija": "minimal monogram",
+    "mg-monogram-braon": "minimal monogram",
+    "mg-botanicki-tus": "minimal",
+    "mg-plavi-akvarel": "minimal",
+    "mg-pastelni": "minimal datum"
+  };
+  /* Oznaka „Novo” (šabloni dodati 8. 11. 2026); skinuti kad prestanu da budu novi. */
+  const NOVO = new Set(["mg-sukulenti", "mg-sukulenti-datum", "mg-plavo-cvece", "mg-heksagon-datum", "mg-lisce-akvarel", "mg-plavi-akvarel",
+    "mg-breskva", "mg-pastelni", "mg-terakota-datum", "mg-terakota-traka", "mg-zlatno-datum", "mg-zlatno-cvece"]);
   const FONT = Object.fromEntries(FONTOVI.map(([n, c, cy, w, i, own]) => [n, { own: !!own, w: w.split(",").map(Number), i: i ? i.split(",").map(Number) : [] }]));
   const grid = document.getElementById("gGrid"), filt = document.getElementById("gFilter"), empty = document.getElementById("gEmpty");
 
@@ -47,7 +107,8 @@
     a.className = "g-card" + (land ? " land" : "");
     a.href = "editor.html?s=" + encodeURIComponent(t.id);
     a.dataset.grupe = (t.grupe || []).join(" ");
-    a.innerHTML = `<div class="g-desk">${saved(t.id) ? '<span class="g-draft">Vaš nacrt</span>' : ""}<div class="g-paper" style="aspect-ratio:${w}/${h}"><div class="g-stage" style="width:${w}px;height:${h}px"><img src="${esc(t.strane[0].mini || t.pozadina)}" alt="" loading="lazy">${foto}${art}<div class="g-layers"></div></div></div><span class="g-go">Personalizuj ✦</span></div>
+    a.dataset.stil = STIL[t.id] || "";
+    a.innerHTML = `<div class="g-desk">${saved(t.id) ? '<span class="g-draft">Vaš nacrt</span>' : NOVO.has(t.id) ? '<span class="g-draft g-novo">Novo</span>' : ""}<div class="g-paper" style="aspect-ratio:${w}/${h}"><div class="g-stage" style="width:${w}px;height:${h}px"><img src="${esc(t.strane[0].mini || t.pozadina)}" alt="" loading="lazy">${foto}${art}<div class="g-layers"></div></div></div><span class="g-go">Personalizuj ✦</span></div>
       <div class="g-meta"><h3>${esc(t.naziv)}</h3><span>${esc(t.kategorija)} · ${dims}${t.papir ? " · " + esc(t.papir) + (fo ? " + foliotisak" : "") : ""}</span></div>`;
     const lay = a.querySelector(".g-layers");
     for (const L of t.polja) {
@@ -80,11 +141,28 @@
     return b;
   }));
 
-  function show(g) {
+  // podfilteri stila (samo za venčanja): #vencanja/cvetni
+  const sub = document.createElement("div");
+  sub.className = "g-filter g-sub"; sub.setAttribute("role", "group"); sub.setAttribute("aria-label", "Stil");
+  const uVenc = cards.filter(c => c.dataset.grupe.split(" ").includes("vencanja"));
+  sub.append(...[["", "Svi stilovi"], ...STILOVI].map(([s, label]) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.dataset.s = s;
+    b.innerHTML = `${label}<sup>${s ? uVenc.filter(c => c.dataset.stil.split(" ").includes(s)).length : uVenc.length}</sup>`;
+    b.onclick = () => { const h = "vencanja" + (s ? "/" + s : ""); show(h); history.replaceState(null, "", "#" + h); };
+    return b;
+  }));
+  filt.after(sub);
+
+  function show(h) {
+    let [g, s = ""] = h.split("/");
     if (!GRUPE.some(([x]) => x === g)) g = "sve";
+    if (g !== "vencanja" || !STILOVI.some(([x]) => x === s)) s = "";
     filt.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.g === g));
+    sub.hidden = g !== "vencanja";
+    sub.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.s === s));
     let n = 0;
-    for (const c of cards) { const on = g === "sve" || c.dataset.grupe.split(" ").includes(g); c.hidden = !on; n += on; }
+    for (const c of cards) { const on = (g === "sve" || c.dataset.grupe.split(" ").includes(g)) && (!s || c.dataset.stil.split(" ").includes(s)); c.hidden = !on; n += on; }
     empty.hidden = n > 0;
     if (!n) {
       const label = { rodjendani: "dečije rođendane", boarding: "boarding pass i pasoš" }[g] || GRUPE.find(([x]) => x === g)[1].toLowerCase();

@@ -1,6 +1,7 @@
 /* =========================================================
    POZIVNICE – fotografije i podstranice
-   Nova fotografija = jedan red u FOTO: [fajl iz slike/, opis, povodi]
+   Nova fotografija = jedan red u FOTO: [fajl iz slike/, opis, povodi, napravi]
+   napravi (može da se izostavi) = id šablona u editoru ("Napravi sličnu") ili #filter radionice ("Slični dizajni")
    Povodi: vencanja, boarding, krstenja, rodjendani, punoletstva
    ========================================================= */
 window.POVODI = [
@@ -17,31 +18,31 @@ window.POVODI = [
 ];
 
 window.FOTO = [
-  ["cat-vencanja",       "Lučna pozivnica sa krupnim datumom",          "vencanja"],
-  ["bp-vencanje-zeleni", "Venčani pasoš, zeleni sa zlatotiskom",        "vencanja boarding"],
-  ["kol-floral",         "Jesenji buket, akvarel cveće",                "vencanja"],
-  ["bp-rodjendan-roze",  "Pasoš za 18. rođendan, roze",                 "boarding punoletstva"],
-  ["kol-sage",           "Sage i bakarni voštani pečat",                "vencanja"],
-  ["cat-rodjendani",     "Svemirski dečiji rođendan",                   "rodjendani"],
-  ["kol-monogram",       "Monogram sa zaobljenim uglovima",             "vencanja"],
-  ["bp-boarding-card",   "Boarding karta, teget sa zlatotiskom",        "vencanja boarding"],
-  ["cat-krstenja",       "Krštenje, zlatotisak na zelenoj podlozi",     "krstenja"],
-  ["ig-1",               "Kompletan set sa kovertom i pečatom",         "vencanja"],
-  ["bp-vencanje-bordo",  "Venčani pasoš, bordo",                        "vencanja boarding"],
-  ["kol-datum",          "Veliki datum sa zlatnim ivicama",             "vencanja"],
-  ["cat-punoletstva",    "Punoletstvo, zlatotisak na zelenom",          "punoletstva"],
-  ["bp-decji",           "Dečiji rođendanski pasoš sa avionom",         "boarding rodjendani"],
-  ["hero-3",             "Akvarel cveće i bakarni pečati",              "vencanja"],
-  ["bp-rodjendan-krem",  "Pasoš za 18. rođendan, teget i krem",         "boarding punoletstva"],
-  ["ig-6",               "Slonovača i beli pečati",                     "vencanja"],
-  ["bp-vencanje-ruka",   "Venčani pasoš sa zlatnim avionom",            "vencanja boarding"],
-  ["ig-5",               "Zelenilo i bakarni pečati",                   "vencanja"],
-  ["bp-rodjendan-teget", "Pasoši za 18. rođendan, roze i teget",        "boarding punoletstva"],
-  ["hero-5",             "Minimal pozivnica sa zelenim pečatima",       "vencanja"],
-  ["bp-karte",           "Venčane boarding karte sa mapom",             "vencanja boarding"],
-  ["bp-mint",            "Pasoš, mint sa zlatnim avionom",              "boarding"],
+  ["cat-vencanja",       "Lučna pozivnica sa krupnim datumom",          "vencanja", "ana-jovan"],
+  ["bp-vencanje-zeleni", "Venčani pasoš, zeleni sa zlatotiskom",        "vencanja boarding", "boarding-roza"],
+  ["kol-floral",         "Jesenji buket, akvarel cveće",                "vencanja", "marija1"],
+  ["bp-rodjendan-roze",  "Pasoš za 18. rođendan, roze",                 "boarding punoletstva", "boarding-roza"],
+  ["kol-sage",           "Sage i bakarni voštani pečat",                "vencanja", "#vencanja/minimal"],
+  ["cat-rodjendani",     "Svemirski dečiji rođendan",                   "rodjendani", "maksim"],
+  ["kol-monogram",       "Monogram sa zaobljenim uglovima",             "vencanja", "#vencanja/monogram"],
+  ["bp-boarding-card",   "Boarding karta, teget sa zlatotiskom",        "vencanja boarding", "boarding-roza"],
+  ["cat-krstenja",       "Krštenje, zlatotisak na zelenoj podlozi",     "krstenja", "#krstenja"],
+  ["ig-1",               "Kompletan set sa kovertom i pečatom",         "vencanja", "#vencanja/minimal"],
+  ["bp-vencanje-bordo",  "Venčani pasoš, bordo",                        "vencanja boarding", "boarding-roza"],
+  ["kol-datum",          "Veliki datum sa zlatnim ivicama",             "vencanja", "milica-nov-1-crveno"],
+  ["cat-punoletstva",    "Punoletstvo, zlatotisak na zelenom",          "punoletstva", "#punoletstva"],
+  ["bp-decji",           "Dečiji rođendanski pasoš sa avionom",         "boarding rodjendani", "boarding-roza"],
+  ["hero-3",             "Akvarel cveće i bakarni pečati",              "vencanja", "martina"],
+  ["bp-rodjendan-krem",  "Pasoš za 18. rođendan, teget i krem",         "boarding punoletstva", "boarding-roza"],
+  ["ig-6",               "Slonovača i beli pečati",                     "vencanja", "#vencanja/minimal"],
+  ["bp-vencanje-ruka",   "Venčani pasoš sa zlatnim avionom",            "vencanja boarding", "boarding-roza"],
+  ["ig-5",               "Zelenilo i bakarni pečati",                   "vencanja", "natalija"],
+  ["bp-rodjendan-teget", "Pasoši za 18. rođendan, roze i teget",        "boarding punoletstva", "boarding-roza"],
+  ["hero-5",             "Minimal pozivnica sa zelenim pečatima",       "vencanja", "#vencanja/cirilica"],
+  ["bp-karte",           "Venčane boarding karte sa mapom",             "vencanja boarding", "boarding-roza"],
+  ["bp-mint",            "Pasoš, mint sa zlatnim avionom",              "boarding", "boarding-roza"],
   ["pecat-paket",        "Set sa zelenom kovertom i bakarnim pečatima", "vencanja"],
-  ["kol-pasos",          "Rođendanski pasoš, zeleni",                   "boarding"],
-  ["bp-rodjendan-plavi", "Rođendanski pasoš, plavi",                    "boarding"],
-  ["hero",               "Pozivnice sa bakarnim pečatima",              "vencanja"],
+  ["kol-pasos",          "Rođendanski pasoš, zeleni",                   "boarding", "boarding-roza"],
+  ["bp-rodjendan-plavi", "Rođendanski pasoš, plavi",                    "boarding", "boarding-roza"],
+  ["hero",               "Pozivnice sa bakarnim pečatima",              "vencanja", "iva-i-vukota"],
 ];

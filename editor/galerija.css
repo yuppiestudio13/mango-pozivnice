@@ -8,6 +8,11 @@
 .g-filter button:hover{color:var(--ink)}
 .g-filter button[aria-pressed=true]{color:var(--green);border-bottom-color:var(--gold)}
 .g-filter sup{font-size:.56rem;letter-spacing:0;margin-left:5px;color:var(--gold)}
+.g-sub{gap:6px 8px;padding-top:16px}
+.g-sub button{font-size:.6rem;letter-spacing:.16em;border:1px solid var(--line);border-radius:999px;padding:7px 14px 6px}
+.g-sub button[aria-pressed=true]{background:var(--green);color:var(--ivory);border-color:var(--green)}
+.g-sub button[aria-pressed=true] sup{color:var(--gold-2)}
+.g-sub[hidden]{display:none}
 
 .g-wrap{background:var(--sand);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:56px 0 90px;margin-top:34px}
 .g-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:54px 30px}
@@ -29,6 +34,7 @@
 .g-go{position:absolute;left:50%;bottom:18px;transform:translate(-50%,6px);opacity:0;white-space:nowrap;
   font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:var(--green);transition:opacity .35s,transform .35s}
 .g-draft{position:absolute;top:0;right:0;z-index:2;padding:5px 10px 4px;background:var(--green);color:var(--ivory);font-size:.54rem;letter-spacing:.2em;text-transform:uppercase}
+.g-draft.g-novo{background:var(--gold);color:var(--green)}
 .g-card:hover .g-paper,.g-card:focus-visible .g-paper{transform:translateY(-6px);box-shadow:0 1px 2px rgba(40,32,18,.08),0 34px 46px -24px rgba(40,32,18,.55)}
 .g-card:hover .g-go,.g-card:focus-visible .g-go{opacity:1;transform:translate(-50%,0)}
 .g-card:hover .g-desk::before,.g-card:hover .g-desk::after{opacity:1}

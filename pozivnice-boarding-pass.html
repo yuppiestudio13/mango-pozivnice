@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Josefin+Sans:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="stil.css?v=5">
+<link rel="stylesheet" href="stil.css?v=6">
 </head>
 <body data-povod="boarding">
 
@@ -26,7 +26,7 @@
     <button class="burger" aria-label="Meni" onclick="drawer.classList.add('open')"><span></span><span></span><span></span></button>
     <nav><div class="dd"><a href="pozivnice.html" aria-current="page" aria-haspopup="true">Pozivnice</a><div class="dd-menu"><a href="pozivnice-vencanja.html">Venčanja</a><a href="pozivnice-boarding-pass.html" aria-current="page">Boarding pass i pasoš</a><a href="pozivnice-krstenja.html">Krštenja</a><a href="pozivnice-rodjendani.html">Dečiji rođendani</a><a href="pozivnice-punoletstva.html">Punoletstva</a><a class="dd-all" href="pozivnice.html">Sve pozivnice</a></div></div><a href="pecati.html">Pečati</a><a href="koverte.html">Koverte</a></nav>
     <a class="brand" href="index.html"><svg class="logo" viewBox="0 0 330 74" fill="none" stroke="currentColor" stroke-width="7" stroke-miterlimit="2" aria-label="Mango"><path d="M8 66V16l27 38 27-38v50"/><path d="M76 66l25-52 25 52"/><path d="M140 66V16l38 50V16"/><path d="M240 26a25 25 0 1 0 3 22V41h-18"/><path d="M282 16c14 0 23 12 23 26s-10 24-23 24-23-10-23-24 9-26 23-26z"/><path d="M296 14c1-8 7-12 15-12-1 8-7 12-15 12z" fill="currentColor" stroke="none"/><path d="M299 16c6-5 13-5 19 0-6 5-13 5-19 0z" fill="currentColor" stroke="none"/></svg><small>Pozivnice</small></a>
-    <nav class="right"><a class="nav-cta" href="radionica.html">Napravi pozivnicu</a><a href="kalkulator.html">Kalkulator</a><a href="kalkulator.html#porudzbina">Poruči</a></nav>
+    <nav class="right"><a class="nav-cta" href="radionica.html">Napravi pozivnicu</a><a href="index.html#cene">Cenovnik</a><a href="kalkulator.html#porudzbina">Poruči</a></nav>
   </div>
 </header>
 
@@ -94,7 +94,7 @@
       <div>
         <a class="brand" href="index.html"><svg class="logo" viewBox="0 0 330 74" fill="none" stroke="currentColor" stroke-width="7" stroke-miterlimit="2" aria-label="Mango"><path d="M8 66V16l27 38 27-38v50"/><path d="M76 66l25-52 25 52"/><path d="M140 66V16l38 50V16"/><path d="M240 26a25 25 0 1 0 3 22V41h-18"/><path d="M282 16c14 0 23 12 23 26s-10 24-23 24-23-10-23-24 9-26 23-26z"/><path d="M296 14c1-8 7-12 15-12-1 8-7 12-15 12z" fill="currentColor" stroke="none"/><path d="M299 16c6-5 13-5 19 0-6 5-13 5-19 0z" fill="currentColor" stroke="none"/></svg><small>Pozivnice</small></a>
         <p style="margin-top:22px;max-width:300px">Pozivnice za venčanja, krštenja i proslave. Prijavite se za novosti i nove kolekcije.</p>
-        <form class="news" onsubmit="event.preventDefault();this.querySelector('input').value='';this.querySelector('button').textContent='Hvala ✓'">
+        <form class="news">
           <input type="email" placeholder="Vaša e-mail adresa" required aria-label="E-mail">
           <button>Prijava</button>
         </form>
@@ -117,7 +117,7 @@ document.querySelectorAll('[role=tablist]').forEach(list=>{
   tabs.forEach((b,i)=>{b.onclick=()=>pick(b);b.onkeydown=e=>{const d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(d){const n=tabs[(i+d+tabs.length)%tabs.length];pick(n);n.focus()}}});
 });
 </script>
-<script src="js/pozivnice-data.js?v=1"></script>
-<script src="js/sajt.js?v=1"></script>
+<script src="js/pozivnice-data.js?v=2"></script>
+<script src="js/sajt.js?v=2"></script>
 </body>
 </html>

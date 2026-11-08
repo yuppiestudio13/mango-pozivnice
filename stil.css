@@ -506,6 +506,9 @@ header nav a{white-space:nowrap}
 .g-open:hover img{transform:scale(1.04)}
 .g-open:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 .g-grid figcaption{font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--stone);margin-top:10px}
+.g-make{display:inline-block;margin-top:6px;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green);border-bottom:1px solid var(--gold);padding-bottom:2px}
+.g-make span{color:var(--gold)}
+.lb-go{display:inline-block;margin-top:14px;background:var(--gold);border-color:var(--gold);color:var(--green)}.lb-go[hidden]{display:none}
 .g-cta{background:var(--green);color:#cfd8d0;text-align:center;padding:90px 0}
 .g-cta .h-lg{color:var(--ivory);margin:14px 0}
 .g-cta .lead{color:#b9c6bc;margin:0 auto}
@@ -582,3 +585,4 @@ header nav .dd-menu a.dd-all{margin-top:6px;border-top:1px solid rgba(201,171,11
 @media(max-width:640px){.g-tiles{grid-template-columns:repeat(2,1fr);gap:14px}.g-tiles .cat h3{font-size:1.2rem}}
 .g-all{margin-bottom:20px}
 .g-all+.g-count{text-align:left}
+.prod-go{display:inline-block;margin-top:6px;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green);border-bottom:1px solid var(--gold);padding-bottom:2px}

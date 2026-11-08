@@ -11,6 +11,7 @@
 html{scroll-behavior:smooth}
 body{font-family:var(--sans);font-weight:400;color:var(--ink);background:var(--ivory);line-height:1.7;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
+p,li,dd,figcaption{text-wrap:pretty}
 img,svg{display:block}
 .wrap{max-width:1240px;margin:0 auto;padding:0 32px}
 @media(max-width:640px){.wrap{padding:0 18px}}
@@ -19,7 +20,7 @@ img,svg{display:block}
 .h-xl{font-family:var(--serif);font-weight:500;font-size:clamp(2.8rem,6.2vw,5.4rem);line-height:1.02;letter-spacing:-.01em}
 .h-lg{font-family:var(--serif);font-weight:500;font-size:clamp(2.2rem,4.2vw,3.4rem);line-height:1.08}
 .h-xl em,.h-lg em{font-family:var(--script);font-style:italic;font-weight:400;font-size:1em;line-height:1;letter-spacing:0;color:var(--gold)}
-.lead{font-size:1.05rem;font-weight:300;color:var(--stone);max-width:30em}
+.lead{text-wrap:balance;font-size:1.05rem;font-weight:300;color:var(--stone);max-width:30em}
 .link{display:inline-flex;align-items:center;gap:12px;font-size:.74rem;font-weight:400;letter-spacing:.24em;text-transform:uppercase;padding-bottom:6px;border-bottom:1px solid currentColor;transition:gap .3s}
 .link:hover{gap:20px}
 .btn{display:inline-block;background:var(--green);color:var(--ivory);padding:17px 38px;font-size:.74rem;font-weight:400;letter-spacing:.24em;text-transform:uppercase;transition:background .3s}
@@ -72,20 +73,17 @@ header nav.right{justify-content:flex-end}
 }
 
 /* ---------- hero na početnoj: žive pozivnice (prvo za telefon) ---------- */
-.hero-live{display:grid;grid-template-areas:"top" "desk" "bottom";padding:34px 18px 48px;text-align:center;justify-items:center;gap:6px;overflow:hidden}
+.hero-live{display:grid;grid-template-areas:"top" "desk" "bottom";padding:34px 12px 48px;text-align:center;justify-items:center;gap:6px;overflow:hidden}
 .hl-top{grid-area:top}.hl-desk{grid-area:desk}.hl-bottom{grid-area:bottom}
 .hero-live .h-xl{margin:12px 0 0;color:var(--green);font-size:clamp(2.5rem,10.5vw,5.2rem);text-wrap:balance}
-.hl-desk{position:relative;width:min(92vw,520px);aspect-ratio:1/1.02;margin:6px 0 10px}
-.hl-card{position:absolute;width:62%;aspect-ratio:758/1000;container-type:inline-size;background:#fff;box-shadow:0 2px 3px rgba(40,32,18,.08),0 30px 44px -26px rgba(40,32,18,.55)}
+.hl-desk{position:relative;width:min(100%,600px);aspect-ratio:1/.58;margin:14px 0 18px}
+.hl-card{position:absolute;aspect-ratio:1250/1650;container-type:inline-size;background:#fff;box-shadow:0 2px 3px rgba(40,32,18,.08),0 30px 44px -26px rgba(40,32,18,.55)}
 .hl-card img{position:absolute;inset:0;width:100%;height:100%}
-.hl-back{left:4%;top:8%;transform:rotate(-7deg)}
-.hl-front{right:4%;top:2%;transform:rotate(4deg)}
-.hl-card .t{position:absolute;text-align:center;white-space:pre-line;line-height:1.2;transition:opacity .6s ease,filter .6s ease}
+.hl-c{width:37%;left:31.5%;top:1%;z-index:3}
+.hl-l{width:33%;left:0;top:10%;transform:rotate(-5deg);z-index:1}
+.hl-r{width:33%;right:0;top:10%;transform:rotate(5deg);z-index:2}
+.hl-card .t{position:absolute;white-space:pre-line;transition:opacity .6s ease,filter .6s ease}
 .hl-card .t.out{opacity:0;filter:blur(3px)}
-.hl-card .bod{font-family:'Bodoni Moda',Georgia,serif;color:#414141}
-.hl-card .amp{font-family:'Alex Brush',cursive;color:#caa359}
-.hl-card .lora{font-family:'Lora',Georgia,serif;color:#455c6b}
-.hl-card .sans{font-family:'Nunito Sans',system-ui,sans-serif;color:#7b9baa}
 .hl-bottom{display:flex;flex-direction:column;align-items:center;gap:22px;max-width:560px}
 .hl-bottom .lead{margin:0 auto}
 .hl-bottom .actions{display:flex;flex-direction:column;align-items:center;gap:20px}
@@ -96,10 +94,11 @@ header nav.right{justify-content:flex-end}
 @media(min-width:900px){
   .hero-live{grid-template-columns:1fr 1.05fr;grid-template-areas:"top desk" "bottom desk";align-content:center;text-align:left;justify-items:start;gap:0 4%;
     padding:70px max(32px,calc((100vw - 1240px)/2 + 32px));min-height:min(calc(100svh - 128px),820px)}
-  .hl-top{align-self:end}.hl-bottom{align-self:start;align-items:flex-start;margin-top:26px}
-  .hl-desk{justify-self:center;width:min(100%,560px);margin:0}
+  .hl-top{align-self:end;width:100%}.hl-bottom{align-self:start;align-items:flex-start;margin-top:26px;width:100%}
+  .hl-desk{justify-self:center;align-self:center;width:100%;max-width:660px;margin:0}
   .hl-bottom .actions{flex-direction:row;gap:34px}
   .hl-bottom .btn{width:auto}
+  .hl-bottom .lead{margin:0}
   .hero-live .facts{justify-content:flex-start;gap:40px;margin-top:30px}
 }
 @media(prefers-reduced-motion:reduce){.hl-card .t{transition:none}}

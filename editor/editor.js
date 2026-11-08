@@ -166,7 +166,7 @@ function loadTemplate(t, preset) {
     }
   });
   pins = T.strane.map((s, i) => s.mapa ? validPin(s.mapa, d.m?.[i]) : null);
-  fot = T.strane.map((s, i) => s.foto ? validFoto(d.ph?.[i]) : null); fotoFromLink = !!preset; fotoOn = false;
+  fot = T.strane.map((s, i) => fotoValid(s, d.ph?.[i])); fotoFromLink = !!preset; fotoOn = false; fj = 0;
   fotoSrc = []; fotoImg = []; if (fotoAny()) fotoLoadSaved();
   T.strane.forEach((s, i) => { if (s.mapa) autoPin(i, true); });
   pi = 0; layers = pages[0];
@@ -848,7 +848,7 @@ function renderTemplates() {
     b.className = "tpl"; b.dataset.id = t.id;
     const w = t.mm[0] * 10, h = t.mm[1] * 10;
     const p = t.strane[0], fo = t.folija && FOLIJE[t.folija.izabrana];
-    b.innerHTML = `<div class="thumb" style="aspect-ratio:${w}/${h}"><div class="stage${fo ? " foiled" : ""}" style="width:${w}px;height:${h}px${fo ? ";--foil:" + fo.sjaj : ""}"><img class="bg" src="${p.mini || p.pozadina}" alt="" loading="lazy">${p.foto ? fotoThumb(p.foto) : ""}${p.folija ? `<div class="foilart" style="-webkit-mask-image:url('${p.folija}');mask-image:url('${p.folija}')"></div>` : ""}<div class="layers"></div></div></div><b>${t.naziv}</b><small>${t.kategorija} · ${dims(t)}${t.papir ? " · " + t.papir : ""}${t.strane.some(s => s.foto) ? " · sa fotografijom" : ""}</small>`;
+    b.innerHTML = `<div class="thumb" style="aspect-ratio:${w}/${h}"><div class="stage${fo ? " foiled" : ""}" style="width:${w}px;height:${h}px${fo ? ";--foil:" + fo.sjaj : ""}"><img class="bg" src="${p.mini || p.pozadina}" alt="" loading="lazy">${p.foto ? fotoThumb(p.foto, t) : ""}${p.folija ? `<div class="foilart" style="-webkit-mask-image:url('${p.folija}');mask-image:url('${p.folija}')"></div>` : ""}<div class="layers"></div></div></div><b>${t.naziv}</b><small>${t.kategorija} · ${dims(t)}${t.papir ? " · " + t.papir : ""}${t.strane.some(s => s.foto) ? " · sa fotografijom" : ""}</small>`;
     const st = b.querySelector(".stage");
     st.querySelector(".layers").append(...fromTemplate(t)[0].map(L => makeLayer(L, false)));
     new ResizeObserver(() => { st.style.transform = `scale(${b.querySelector(".thumb").clientWidth / w})`; }).observe(b.querySelector(".thumb"));
@@ -901,7 +901,7 @@ function restore(i) {
   if (remake) { vrsta = nv; fmt = nf; T = { ...derive(baseOf()), base: baseOf() }; renderVrsta(); renderFmt(); }
   fixKov(); if (dlg.open) renderCfg();
   sat = T.strane.map((s, k) => validSat(s, d.s?.[k]));
-  fot = T.strane.map((s, k) => s.foto ? validFoto(d.ph?.[k]) : null);
+  fot = T.strane.map((s, k) => fotoValid(s, d.ph?.[k]));
   renderTint(); renderFoil();
   if (remake || PG().folija !== $("foilart").dataset.src) showPage(pi);
   else { if (!get(sel)) sel = null; setBg(PG()); renderRoute(); renderFoto(); renderAll(); syncProps(); }
@@ -988,11 +988,11 @@ stage.addEventListener("pointerdown", e => {
   const touch = e.pointerType === "touch";
   // fotografija: prazan okvir = izbor fotografije; puna = prevlačenje (prstom tek kad je dodirnuta, da stranica može da se skroluje)
   if (!el && fotoHit(e)) {
-    if (touch && !(fotoOn && fotoHas(pi))) { tap = { foto: true, x: e.clientX, y: e.clientY }; return; }
+    if (touch && !(fotoOn && fotoHas(pi, fj))) { tap = { foto: true, x: e.clientX, y: e.clientY }; return; }
     e.preventDefault(); stopEdit(); select(null);
-    if (!fotoHas(pi)) { fotoPick(); return; }
+    if (!fotoHas(pi, fj)) { fotoPick(); return; }
     fotoSetOn(true);
-    drag = { mode: "foto", sx: e.clientX, sy: e.clientY, F0: { ...fot[pi] }, moved: false };
+    drag = { mode: "foto", sx: e.clientX, sy: e.clientY, F0: { ...fotoP(pi, fj) }, moved: false };
     try { stage.setPointerCapture(e.pointerId); } catch {} return;
   }
   fotoSetOn(false);
@@ -1051,7 +1051,7 @@ function endDrag() {
   else if (d.was && d.mode === "move") startEdit(d.id);
 }
 stage.addEventListener("pointerup", e => {
-  if (tap?.foto) { tap = null; stopEdit(); select(null); if (!fotoHas(pi)) fotoPick(); else { fotoSetOn(true); toast("Sada prevucite fotografiju prstom da je pomerite."); } return; }
+  if (tap?.foto) { tap = null; stopEdit(); select(null); if (!fotoHas(pi, fj)) fotoPick(); else { fotoSetOn(true); toast("Sada prevucite fotografiju prstom da je pomerite."); } return; }
   if (tap) { const t = tap; tap = null; if (!t.id) stopEdit(); select(t.id); }
   endDrag();
 });
@@ -1331,7 +1331,7 @@ async function exportPDF() {
   toast("Pravim vektorski PDF za štampu…");
   try {
     if (!window.MangoPDF) await loadScript("js/vendor/mango-pdf.js?v=5");
-    if (!window.stampaPDF) await loadScript("editor/stampa-pdf.js?v=9");
+    if (!window.stampaPDF) await loadScript("editor/stampa-pdf.js?v=10");
     const r = await stampaPDF();
     const n = `${r.strane} ${r.strane === 1 ? "stranica" : "stranice"}`;
     toast(r.missing ? `PDF je napravljen (${n}), ali font nema ova slova: ${[...new Set(r.znaci.map(z => z.split(" ")[0]))].join(" ")}. U PDF-u ih nema, promenite font tog teksta.`

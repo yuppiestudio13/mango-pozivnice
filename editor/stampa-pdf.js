@@ -217,9 +217,9 @@
       const isSvg = /\.svg(\?|$)/i.test(p.pozadina) && !(p.fit && (p.fit.ox || p.fit.oy));
       if (isSvg) await drawSvg(pdf, await svgText(bg), w, h);
       // 1b) fotografija kupca (300 dpi, providno van okvira) i crtež koji ide preko nje
-      const ph = window.fotoRaster && await fotoRaster(pi);
-      if (ph) pdf.addImage(ph.url, "PNG", BLEED + ph.x / 10, BLEED + ph.y / 10, ph.w / 10, ph.h / 10);
-      if (ph && p.foto.preko) pdf.addImage(await loadImg(p.foto.preko), "PNG", BLEED, BLEED, w, h);
+      const ph = (window.fotoRaster && await fotoRaster(pi)) || [];
+      for (const r of ph) pdf.addImage(r.url, "PNG", BLEED + r.x / 10, BLEED + r.y / 10, r.w / 10, r.h / 10);
+      if (ph.length) for (const F of okviri(p)) if (F.preko) pdf.addImage(await loadImg(F.preko), "PNG", BLEED, BLEED, w, h);
       // 2) crteži koji idu u foliju (vektor, tamnosivo)
       const route = routeSVG(pi), tl = tlSVG(pi);
       for (const src of [p.folija, mapOf(pi), route && svgUrl(route), tl && svgUrl(tl)].filter(Boolean))

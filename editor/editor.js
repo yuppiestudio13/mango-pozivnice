@@ -1451,7 +1451,7 @@ $("send").onclick = async e => {
 // U kodu je samo otisak lozinke (PBKDF2 + SHA-256), ne i lozinka. Posle prijave pregledač pamti izvedeni ključ;
 // pri svakom otvaranju proveravamo da njegov otisak odgovara ADMIN.h. Ovo sprečava obične kupce da preuzmu
 // pozivnicu bez žiga; pravu zaštitu (server) dobijamo uz plaćanje karticom.
-const ADMIN = { so: "4ee74e11e674e0581baaafe98ff360f8", it: 310000, h: "be5a38673dadf93c835ff3eb1e58ece24d2b187559daaa6b69c4fba604bd6a8c" };
+const ADMIN = { so: "3396f9dc2456141a2db62af6cc9dd959", it: 310000, h: "a53f931861ab13b46e714aafe7b4ac430e954a096b3f43ce2c1c89cfc346a83f" };
 let isAdmin = false;
 const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
 const unhex = h => Uint8Array.from(h.match(/../g) || [], x => parseInt(x, 16));

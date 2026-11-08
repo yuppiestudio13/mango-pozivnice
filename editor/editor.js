@@ -97,7 +97,8 @@ function defaultPage(s) {
 // Sačuvan dizajn: { p: [tekstovi po stranama], f: folija }. Stari oblik: { layers } ili samo niz tekstova.
 // Šablon sa vrstama (rođendan, venčanje…): vrsta menja polja i foliju pojedinih strana. T.base = izvorni šablon.
 // Formati koje kupac bira (dimenzije u mm) i koverta uz njih.
-const FORMATI = { "125x165": { mm: [125, 165], naziv: "12,5 × 16,5 cm" }, "150x150": { mm: [150, 150], naziv: "15 × 15 cm" } };
+const FORMATI = { "125x165": { mm: [125, 165], naziv: "12,5 × 16,5 cm" }, "150x150": { mm: [150, 150], naziv: "15 × 15 cm" },
+  "165x125": { mm: [165, 125], naziv: "16,5 × 12,5 cm" } };
 // Podrazumevani format = onaj čiji odnos strana je najbliži originalu.
 const fmtList = t => Array.isArray(t.formati) ? t.formati.filter(k => FORMATI[k]) : Object.keys(FORMATI);
 const fmtOf = t => fmtList(t).reduce((a, k) => { const r = m => Math.abs(Math.log((m[0] / m[1]) / (t.strane[0].mm[0] / t.strane[0].mm[1]))); return r(FORMATI[k].mm) < r(FORMATI[a].mm) ? k : a; }, fmtList(t)[0]);
@@ -170,6 +171,8 @@ function loadTemplate(t, preset) {
   pi = 0; layers = pages[0];
   hist = [snap()]; hi = 0;
   document.querySelectorAll(".tpl").forEach(el => el.setAttribute("aria-current", el.dataset.id === t.id));
+  // prvi put: kategorija otvorenog šablona; kasnije ostaje kategorija koju je kupac izabrao
+  if (!tplKat) setTplKat(store.get("mango-ed-kat") || (t.grupe || []).find(g => TPL_KAT.some(c => c[0] === g)) || "sve");
   try { const u = new URL(location); u.searchParams.set("s", t.id); history.replaceState(null, "", u.pathname + u.search); } catch {}
   renderPageTabs(); renderFmt(); renderVrsta(); renderFoil(); renderTint(); showPage(0); updateTools();
 }
@@ -791,7 +794,29 @@ function renderTemplates() {
     b.onclick = () => { if (T.id !== t.id) loadTemplate(t); };
     return b;
   }));
+  renderTplCats();
 }
+// Kategorije iznad liste (da se ne lista svih 50 šablona): prilika iz t.grupe, plus „Sa fotografijom“.
+// Izbor se pamti; prvi put je to prilika šablona koji je otvoren.
+const TPL_KAT = [["vencanja", "Venčanja"], ["rodjendani", "Rođendani"], ["krstenja", "Krštenja"], ["punoletstva", "Punoletstva"],
+  ["boarding", "Pasoš"], ["foto", "Sa fotografijom"], ["sve", "Sve"]];
+const uKat = (t, k) => k === "sve" || (k === "foto" ? t.strane.some(s => s.foto) : (t.grupe || []).includes(k));
+let tplKat = null;
+function renderTplCats() {
+  const L = TPL_KAT.map(([k, n]) => [k, n, SABLONI.filter(t => uKat(t, k)).length]).filter(c => c[2]);
+  $("tplCats").innerHTML = L.map(([k, n, c]) => `<button data-k="${k}" aria-pressed="false">${n} <small>${c}</small></button>`).join("");
+}
+function setTplKat(k, save) {
+  tplKat = TPL_KAT.some(c => c[0] === k) ? k : "sve";
+  $("tplCats").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === tplKat));
+  const byId = Object.fromEntries(SABLONI.map(t => [t.id, t]));
+  $("tplList").querySelectorAll(".tpl").forEach(b => { b.hidden = !uKat(byId[b.dataset.id], tplKat); });
+  if (save) store.set("mango-ed-kat", tplKat);
+}
+$("tplCats").addEventListener("click", e => {
+  const b = e.target.closest("[data-k]"); if (!b) return;
+  setTplKat(b.dataset.k, true); $("tplList").closest(".ed-tpl").scrollTop = 0;
+});
 
 /* ---------------- istorija ---------------- */
 let saveT;

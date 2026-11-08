@@ -1,9 +1,11 @@
 /* =========================================================
    FOTOGRAFIJA KUPCA U OKVIRU ŠABLONA
    Strana šablona može imati okvir za fotografiju (sabloni/foto-okviri.js):
-     foto: { x, y, w, h, oblik: "krug" | "luk" | "ram", r?, okvir?: [boja, debljina], preko? }
+     foto: { x, y, w, h, oblik: "krug" | "luk" | "ram" | "maska", r?, okvir?: [boja, debljina], preko?, maska? }
    (jedinice 0,1 mm; luk = gore polukrug, dole ravno; ram = pravougaonik sa uglom r;
-    preko = PNG crteža koji ide PREKO fotografije, npr. torta ili cvet koji prelazi ivicu okvira)
+    preko = PNG crteža koji ide PREKO fotografije, npr. torta ili cvet koji prelazi ivicu okvira;
+    maska = PNG veličine okvira čija providnost je oblik (bilo kakav: talas, tri prozora, nakrivljen ram) i već
+    izostavlja sve što u dizajnu prelazi preko fotografije – pravi ga sabloni/pdf/_alati/canva_foto.py)
    Kupac doda fotografiju, a editor je sam iseče: lice (ili glavni motiv) ide u sredinu okvira.
    Posle toga je prevlači da je pomeri i zumira klizačem ili točkićem miša.
    Stanje: fot[i] = { x, y, z } po strani: x, y = tačka slike (0–1) koja je u sredini okvira, z = zum (1 = tačno popuni okvir).
@@ -45,6 +47,7 @@ const fotoDpi = i => Math.round(254 / fotoGeom(i).c);
 
 /* ---------- oblik okvira ---------- */
 function fotoRadius(F) {
+  if (F.maska) return "0";
   if (F.oblik === "krug") return "50%";
   if (F.oblik === "luk") return `${F.w / 2}px ${F.w / 2}px ${F.r || 0}px ${F.r || 0}px`;
   return (F.r || 0) + "px";
@@ -58,9 +61,23 @@ function fotoPath(ctx, F) {
   } else if (ctx.roundRect) ctx.roundRect(F.x, F.y, F.w, F.h, F.r || 0);
   else ctx.rect(F.x, F.y, F.w, F.h);
 }
+// CSS za okvir sa maskom (oblik iz PNG-a)
+const fotoMaskCss = F => F.maska ? `-webkit-mask-image:url('${F.maska}');mask-image:url('${F.maska}');-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat` : "";
+// Fotografija isečena okvirom, nacrtana na ctx (pregled, PNG, PDF). Maska: preko pomoćnog platna, pa destination-in.
+async function fotoClipDraw(ctx, i) {
+  const F = T.strane[i].foto, g = fotoGeom(i);
+  if (!F.maska) { ctx.save(); fotoPath(ctx, F); ctx.clip(); ctx.drawImage(fotoImg[i], g.dx, g.dy, g.dw, g.dh); ctx.restore(); return; }
+  const m = await loadImg(F.maska), k = Math.max(1, Math.hypot(ctx.getTransform().a, ctx.getTransform().b));
+  const cv = document.createElement("canvas"); cv.width = Math.ceil(F.w * k); cv.height = Math.ceil(F.h * k);
+  const c = cv.getContext("2d"); c.scale(k, k); c.imageSmoothingQuality = "high";
+  c.drawImage(fotoImg[i], g.dx - F.x, g.dy - F.y, g.dw, g.dh);
+  c.globalCompositeOperation = "destination-in"; c.drawImage(m, 0, 0, F.w, F.h);
+  ctx.drawImage(cv, F.x, F.y, F.w, F.h);
+}
 // Da li je tačka (0,1 mm) u okviru.
 function fotoIn(F, x, y) {
   if (x < F.x || x > F.x + F.w || y < F.y || y > F.y + F.h) return false;
+  if (F.maska) return true;
   if (F.oblik === "krug") return ((x - F.x - F.w / 2) / (F.w / 2)) ** 2 + ((y - F.y - F.h / 2) / (F.h / 2)) ** 2 <= 1;
   if (F.oblik === "luk" && y < F.y + F.w / 2) return Math.hypot(x - F.x - F.w / 2, y - F.y - F.w / 2) <= F.w / 2;
   return true;
@@ -73,7 +90,7 @@ function fotoHit(e) {
 // Prazan okvir (na pozivnici i u listi šablona): svetla podloga sa ikonicom fotoaparata.
 const FOTO_IKONA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 8h3l1.6-2.2h6.8L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.6"/></svg>';
 function fotoThumb(F) {
-  return `<div class="foto empty" style="left:${F.x}px;top:${F.y}px;width:${F.w}px;height:${F.h}px;border-radius:${fotoRadius(F)}">${FOTO_IKONA}</div>` +
+  return `<div class="foto empty${F.maska ? " maska" : ""}" style="left:${F.x}px;top:${F.y}px;width:${F.w}px;height:${F.h}px;border-radius:${fotoRadius(F)};${fotoMaskCss(F)}">${FOTO_IKONA}</div>` +
     (F.preko ? `<img class="foto-preko" src="${F.preko}" alt="">` : "");
 }
 
@@ -87,6 +104,10 @@ function renderFoto() {
   if (F.preko && $("fotoPreko").getAttribute("src") !== F.preko) $("fotoPreko").src = F.preko;
   Object.assign(box.style, { left: F.x + "px", top: F.y + "px", width: F.w + "px", height: F.h + "px", borderRadius: fotoRadius(F),
     boxShadow: F.okvir ? `0 0 0 ${F.okvir[1]}px ${F.okvir[0]}` : "" });
+  for (const p of ["maskImage", "webkitMaskImage"]) box.style[p] = F.maska ? `url('${F.maska}')` : "";
+  for (const p of ["maskSize", "webkitMaskSize"]) box.style[p] = F.maska ? "100% 100%" : "";
+  for (const p of ["maskRepeat", "webkitMaskRepeat"]) box.style[p] = F.maska ? "no-repeat" : "";
+  box.classList.toggle("maska", !!F.maska);
   box.classList.toggle("empty", !has);
   const im = $("fotoImg");
   if (has) {
@@ -180,9 +201,8 @@ function fotoPick() { $("fotoFile").value = ""; $("fotoFile").click(); }
 async function fotoDraw(ctx, i) {
   const F = T.strane[i].foto; if (!F) return;
   if (fotoHas(i)) {
-    const g = fotoGeom(i);
     if (F.okvir) { ctx.save(); fotoPath(ctx, F); ctx.strokeStyle = F.okvir[0]; ctx.lineWidth = F.okvir[1] * 2; ctx.stroke(); ctx.restore(); }
-    ctx.save(); fotoPath(ctx, F); ctx.clip(); ctx.drawImage(fotoImg[i], g.dx, g.dy, g.dw, g.dh); ctx.restore();
+    await fotoClipDraw(ctx, i);
   }
   if (F.preko) ctx.drawImage(await loadImg(F.preko), 0, 0, W(), H());
 }
@@ -193,9 +213,8 @@ async function fotoRaster(i) {
   const x = F.x - m, y = F.y - m, w = F.w + 2 * m, h = F.h + 2 * m;
   const cv = document.createElement("canvas"); cv.width = Math.round(w * k); cv.height = Math.round(h * k);
   const ctx = cv.getContext("2d"); ctx.scale(k, k); ctx.translate(-x, -y);
-  const g = fotoGeom(i);
   if (F.okvir) { ctx.save(); fotoPath(ctx, F); ctx.strokeStyle = F.okvir[0]; ctx.lineWidth = F.okvir[1] * 2; ctx.stroke(); ctx.restore(); }
-  ctx.save(); fotoPath(ctx, F); ctx.clip(); ctx.drawImage(fotoImg[i], g.dx, g.dy, g.dw, g.dh); ctx.restore();
+  await fotoClipDraw(ctx, i);
   return { url: cv.toDataURL("image/png"), x, y, w, h };
 }
 

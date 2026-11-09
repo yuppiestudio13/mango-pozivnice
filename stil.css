@@ -77,12 +77,12 @@ header nav.right{justify-content:flex-end}
 .hero-live{display:grid;grid-template-areas:"top" "desk" "bottom";padding:34px 12px 48px;text-align:center;justify-items:center;gap:6px;overflow:hidden}
 .hl-top{grid-area:top}.hl-desk{grid-area:desk}.hl-bottom{grid-area:bottom}
 .hero-live .h-xl{margin:12px 0 0;color:var(--green);font-size:clamp(2.5rem,10.5vw,5.2rem);text-wrap:balance}
-.hl-desk{position:relative;width:min(100%,600px);aspect-ratio:1/.58;margin:14px 0 18px}
+.hl-desk{position:relative;width:min(100%,640px);aspect-ratio:1/.66;margin:14px 0 18px}
 .hl-card{position:absolute;aspect-ratio:1250/1650;container-type:inline-size;background:#fff;box-shadow:0 2px 3px rgba(40,32,18,.08),0 30px 44px -26px rgba(40,32,18,.55)}
 .hl-card img{position:absolute;inset:0;width:100%;height:100%}
-.hl-c{width:37%;left:31.5%;top:1%;z-index:3}
-.hl-l{width:33%;left:0;top:10%;transform:rotate(-5deg);z-index:1}
-.hl-r{width:33%;right:0;top:10%;transform:rotate(5deg);z-index:2}
+.hl-c{width:41%;left:29.5%;top:1%;z-index:3}
+.hl-l{width:35%;left:0;top:10%;transform:rotate(-5deg);z-index:1}
+.hl-r{width:35%;right:0;top:10%;transform:rotate(5deg);z-index:2}
 .hl-card .t{position:absolute;white-space:pre-line;transition:opacity .6s ease,filter .6s ease}
 .hl-card .t.out{opacity:0;filter:blur(3px)}
 .hl-bottom{display:flex;flex-direction:column;align-items:center;gap:22px;max-width:560px}
@@ -93,15 +93,17 @@ header nav.right{justify-content:flex-end}
 .hero-live .facts b{display:block;font-family:var(--serif);font-weight:500;font-size:2rem;line-height:1;color:var(--green)}
 .hero-live .facts span{display:block;margin-top:6px;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--stone)}
 @media(min-width:900px){
-  .hero-live{grid-template-columns:1fr 1.05fr;grid-template-areas:"top desk" "bottom desk";align-content:center;text-align:left;justify-items:start;gap:0 4%;
+  .hero-live{grid-template-columns:1fr 1.2fr;grid-template-areas:"top desk" "bottom desk";align-content:center;text-align:left;justify-items:start;gap:0 4%;
     padding:70px max(32px,calc((100vw - 1240px)/2 + 32px));min-height:min(calc(100svh - 128px),820px)}
   .hl-top{align-self:end;width:100%}.hl-bottom{align-self:start;align-items:flex-start;margin-top:26px;width:100%}
-  .hl-desk{justify-self:center;align-self:center;width:100%;max-width:660px;margin:0}
+  .hl-desk{justify-self:center;align-self:center;width:100%;max-width:820px;margin:0}
   .hl-bottom .actions{flex-direction:row;gap:34px}
-  .hl-bottom .btn{width:auto}
+  .hl-bottom .btn{width:auto;white-space:nowrap}
+  .hero-live .facts span{white-space:nowrap}
   .hl-bottom .lead{margin:0}
   .hero-live .facts{justify-content:flex-start;gap:40px;margin-top:30px}
 }
+@media(min-width:1240px){.hl-desk{justify-self:start;width:118%;margin-left:-3%}}
 @media(prefers-reduced-motion:reduce){.hl-card .t{transition:none}}
 
 /* ---------- „Ovako stiže do vas” (prvo za telefon) ---------- */

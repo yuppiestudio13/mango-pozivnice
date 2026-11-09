@@ -4,10 +4,11 @@
    ========================================================= */
 window.CENOVNIK = {
   minQty: 30,                     // važi za sve, osim ako papir ima svoj minQty (pasoš = 40)
-  formats: [            // kov = koja koverta ide uz format
+  formats: [            // kov = koja koverta ide uz format; pasos = format samo za boarding pass / pasoš
     { id: "125", name: "12,5 × 16,5 cm", note: "uspravna, koverta 13 × 17 cm", price: 0, kov: ["kov13", "kovplis", "kovstamp"] },
     { id: "150", name: "15 × 15 cm",     note: "kvadratna, koverta 15 × 15 cm", price: 0, kov: ["kov15", "kov15v"] },
     { id: "165", name: "16,5 × 12,5 cm", note: "položena, koverta 13 × 17 cm", price: 0, kov: ["kov13", "kovplis", "kovstamp"], kalk: false },   // kalk: false = ne nudi se u kalkulatoru (ostaje za položene šablone u editoru)
+    { id: "pas", name: "Pasoš 15 × 12 cm + karta 17 × 7 cm", note: "korica pasoša i boarding karta, bez koverte", price: 0, kov: [], pasos: true },   // samo uz papir „Boarding pass / pasoš”
   ],
   papers: [              // duplex = doplata za dvostranu štampu (null = nije moguće / uključeno)
     { id: "350",   name: "350g papir",      note: "gladak, mat",                    price: 60,  duplex: 20 },

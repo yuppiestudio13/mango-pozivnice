@@ -150,7 +150,7 @@
   </div>
 </footer>
 
-<script src="js/cenovnik.js?v=7"></script>
+<script src="js/cenovnik.js?v=8"></script>
 <script src="sabloni/sabloni.js?v=16"></script>
 <script src="sabloni/uvoz.js?v=8"></script>
 <script src="sabloni/uvoz-magnific.js?v=5"></script>
@@ -194,10 +194,14 @@ $("tplSelect").innerHTML = TEMPLATES.map(t=>`<option value="${t.id}">${t.name}${
 const curFormat = () => CONFIG.formats.find(x=>x.id===state.format);
 const kovOk = x => x.group!=="kov" || curFormat().kov.includes(x.id);
 const imaKov = () => CONFIG.extras.some(o=>o.group==="kov" && state.extras.has(o.id));
-let bioPasos = false;
+let bioPasos = false, fmtPrePasosa = "125";
 function refreshExtras(){
   // boarding pass / pasoš: bez koverte i ostalih dodataka, samo akrilni aviončić i naše vezivanje (i obrnuto)
   const pas = state.paper==="pasos";
+  // i format je njihov (korica 15 × 12 + karta 17 × 7 cm); ostali formati se tada ne nude
+  if(pas && !bioPasos){ fmtPrePasosa = state.format; state.format = CONFIG.formats.find(f=>f.pasos).id; }
+  if(!pas && curFormat().pasos) state.format = fmtPrePasosa;
+  CONFIG.formats.filter(f=>f.kalk!==false).forEach(f=>{ const el = $(`format-${f.id}`); el.closest(".choice").hidden = el.disabled = !!f.pasos!==pas; el.checked = f.id===state.format; });
   const pasOk = x => x.id==="dvo" || !!x.pasos===pas;
   if(bioPasos && !pas && !imaKov() && !state.extras.has("paus")) state.extras.add(curFormat().kov[0]);
   bioPasos = pas;

@@ -4,9 +4,12 @@
 --
 -- Pravila pristupa:
 --  · kupac (anon, sa sajta) može SAMO da upiše novu porudžbinu, ne vidi ničije podatke;
---  · prijavljeni admin (authenticated) vidi, menja i briše sve.
--- U Supabase → Authentication → Sign In / Providers isključiti "Allow new users to sign up",
--- tako da je jedini prijavljeni korisnik nalog koji ručno napravimo za Mango.
+--  · samo prijavljeni nalog označen kao admin (app_metadata.role = 'admin') vidi, menja i briše sve;
+--    običan prijavljeni korisnik ne vidi ništa, čak i ako se neko sam registruje.
+-- U Supabase → Authentication → Sign In / Providers isključiti i "Allow new users to sign up" (dodatna zaštita).
+-- Admin nalog: Authentication → Users → Add user, pa jednom u SQL Editoru (upisati pravi email):
+--   update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}' where email = 'MANGO-ADMIN-EMAIL';
+-- app_metadata korisnik ne može sam da menja. Posle ove izmene admin treba jednom da se odjavi i ponovo prijavi.
 -- =========================================================
 
 create table if not exists public.narudzbine (
@@ -54,13 +57,13 @@ create policy "kupac upisuje" on public.narudzbine
   with check (status = 'nova' and izvor = 'editor' and beleska is null);
 
 drop policy if exists "admin cita" on public.narudzbine;
-create policy "admin cita" on public.narudzbine for select to authenticated using (true);
+create policy "admin cita" on public.narudzbine for select to authenticated using (((select auth.jwt()) -> 'app_metadata' ->> 'role') = 'admin');
 drop policy if exists "admin upisuje" on public.narudzbine;
-create policy "admin upisuje" on public.narudzbine for insert to authenticated with check (true);
+create policy "admin upisuje" on public.narudzbine for insert to authenticated with check (((select auth.jwt()) -> 'app_metadata' ->> 'role') = 'admin');
 drop policy if exists "admin menja" on public.narudzbine;
-create policy "admin menja" on public.narudzbine for update to authenticated using (true) with check (true);
+create policy "admin menja" on public.narudzbine for update to authenticated using (((select auth.jwt()) -> 'app_metadata' ->> 'role') = 'admin') with check (((select auth.jwt()) -> 'app_metadata' ->> 'role') = 'admin');
 drop policy if exists "admin brise" on public.narudzbine;
-create policy "admin brise" on public.narudzbine for delete to authenticated using (true);
+create policy "admin brise" on public.narudzbine for delete to authenticated using (((select auth.jwt()) -> 'app_metadata' ->> 'role') = 'admin');
 
 grant insert on public.narudzbine to anon;
 grant select, insert, update, delete on public.narudzbine to authenticated;

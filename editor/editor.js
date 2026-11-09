@@ -859,15 +859,17 @@ function renderTemplates() {
 }
 // Kategorije iznad liste (da se ne lista svih 50 šablona): prilika iz t.grupe, plus „Sa fotografijom“.
 // Izbor se pamti; prvi put je to prilika šablona koji je otvoren.
-const TPL_KAT = [["vencanja", "Venčanja"], ["rodjendani", "Rođendani"], ["krstenja", "Krštenja"], ["punoletstva", "Punoletstva"],
-  ["boarding", "Pasoš"], ["foto", "Sa fotografijom"], ["sve", "Sve"]];
-const uKat = (t, k) => k === "sve" || (k === "foto" ? t.strane.some(s => s.foto) : (t.grupe || []).includes(k));
+const TPL_KAT = [["vencanja", "Venčanja"], ["rodjendani", "Rođendani"], ["boarding", "Boarding pass"], ["foto", "Sa fotografijom"], ["sve", "Sve"]];
+// „Rođendani” obuhvataju i punoletstva i krštenja (kao u radionici)
+const KAT_GRUPE = { rodjendani: ["rodjendani", "krstenja", "punoletstva"] };
+const uKat = (t, k) => k === "sve" || (k === "foto" ? t.strane.some(s => s.foto) : (t.grupe || []).some(g => (KAT_GRUPE[k] || [k]).includes(g)));
 let tplKat = null;
 function renderTplCats() {
   const L = TPL_KAT.map(([k, n]) => [k, n, SABLONI.filter(t => uKat(t, k)).length]).filter(c => c[2]);
   $("tplCats").innerHTML = L.map(([k, n, c]) => `<button data-k="${k}" aria-pressed="false">${n} <small>${c}</small></button>`).join("");
 }
 function setTplKat(k, save) {
+  if (k === "krstenja" || k === "punoletstva") k = "rodjendani";
   tplKat = TPL_KAT.some(c => c[0] === k) ? k : "sve";
   $("tplCats").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === tplKat));
   const byId = Object.fromEntries(SABLONI.map(t => [t.id, t]));

@@ -8,14 +8,19 @@
   const GRUPE = [
     ["sve", "Svi dizajni"],
     ["vencanja", "Venčanja"],
-    ["boarding", "Boarding pass i pasoš"],
-    ["krstenja", "Krštenja"],
-    ["rodjendani", "Dečiji rođendani"],
-    ["punoletstva", "Punoletstva"],
+    ["rodjendani", "Rođendani"],
+    ["boarding", "Boarding pass"],
   ];
+  /* Kartica „Rođendani” obuhvata i punoletstva i krštenja (podfilteri ispod nje); stari linkovi #krstenja i #punoletstva vode tamo. */
+  const U_KARTICI = { rodjendani: ["rodjendani", "krstenja", "punoletstva"] };
+  const STARO = { krstenja: "rodjendani/krstenja", punoletstva: "rodjendani/punoletstva" };
   const STRANA = { vencanja: "pozivnice-vencanja.html", boarding: "pozivnice-boarding-pass.html", krstenja: "pozivnice-krstenja.html", rodjendani: "pozivnice-rodjendani.html", punoletstva: "pozivnice-punoletstva.html" };
   /* Stil šablona za venčanja (podfilteri ispod „Venčanja”); jedan šablon može biti u više grupa. */
   const STILOVI = [["cvetni", "Cvetni"], ["minimal", "Minimalistički"], ["monogram", "Monogram"], ["datum", "Save the date"], ["cirilica", "Ćirilica"]];
+  const PODFILTERI = {
+    vencanja: [["", "Svi stilovi"], ...STILOVI],
+    rodjendani: [["", "Svi"], ["decji", "Dečiji"], ["punoletstva", "Punoletstva"], ["krstenja", "Krštenja"]],
+  };
   const STIL = {
     "3-svadba": "cvetni",
     "its-me-milica": "cvetni",
@@ -108,7 +113,8 @@
     a.className = "g-card" + (land ? " land" : "");
     a.href = "editor.html?s=" + encodeURIComponent(t.id);
     a.dataset.grupe = (t.grupe || []).join(" ");
-    a.dataset.stil = STIL[t.id] || "";
+    const gr = t.grupe || [];
+    a.dataset.stil = [STIL[t.id] || "", ...gr, gr.includes("rodjendani") && !gr.includes("punoletstva") ? "decji" : ""].join(" ").trim();
     a.innerHTML = `<div class="g-desk">${saved(t.id) ? '<span class="g-draft">Vaš nacrt</span>' : NOVO.has(t.id) ? '<span class="g-draft g-novo">Novo</span>' : ""}<div class="g-paper" style="aspect-ratio:${w}/${h}"><div class="g-stage" style="width:${w}px;height:${h}px"><img src="${esc(t.strane[0].mini || t.pozadina)}" alt="" loading="lazy">${foto}${art}<div class="g-layers"></div></div></div><span class="g-go">Personalizuj ✦</span></div>
       <div class="g-meta"><h3>${esc(t.naziv)}</h3><span>${esc(t.kategorija)} · ${dims}${t.papir ? " · " + esc(t.papir) + (fo ? " + foliotisak" : "") : ""}</span></div>`;
     const lay = a.querySelector(".g-layers");
@@ -133,40 +139,47 @@
   const cards = SABLONI.map(card);
   grid.append(...cards);
 
-  function count(g) { return g === "sve" ? cards.length : cards.filter(c => c.dataset.grupe.split(" ").includes(g)).length; }
+  const uGrupi = (c, g) => g === "sve" || c.dataset.grupe.split(" ").some(x => (U_KARTICI[g] || [g]).includes(x));
+  const imaTag = (c, t) => c.dataset.stil.split(" ").includes(t);
   filt.append(...GRUPE.map(([g, label]) => {
     const b = document.createElement("button");
     b.type = "button"; b.dataset.g = g;
-    b.innerHTML = `${label}<sup>${count(g)}</sup>`;
+    b.innerHTML = `${label}<sup>${cards.filter(c => uGrupi(c, g)).length}</sup>`;
     b.onclick = () => { show(g); history.replaceState(null, "", g === "sve" ? location.pathname : "#" + g); };
     return b;
   }));
 
-  // podfilteri stila (samo za venčanja): #vencanja/cvetni
-  const sub = document.createElement("div");
-  sub.className = "g-filter g-sub"; sub.setAttribute("role", "group"); sub.setAttribute("aria-label", "Stil");
-  const uVenc = cards.filter(c => c.dataset.grupe.split(" ").includes("vencanja"));
-  sub.append(...[["", "Svi stilovi"], ...STILOVI].map(([s, label]) => {
-    const b = document.createElement("button");
-    b.type = "button"; b.dataset.s = s;
-    b.innerHTML = `${label}<sup>${s ? uVenc.filter(c => c.dataset.stil.split(" ").includes(s)).length : uVenc.length}</sup>`;
-    b.onclick = () => { const h = "vencanja" + (s ? "/" + s : ""); show(h); history.replaceState(null, "", "#" + h); };
-    return b;
-  }));
-  filt.after(sub);
+  // podfilteri: stil za venčanja (#vencanja/cvetni), vrsta proslave za rođendane (#rodjendani/krstenja)
+  const subs = {};
+  let prev = filt;
+  for (const [g, lista] of Object.entries(PODFILTERI)) {
+    const sub = document.createElement("div");
+    sub.className = "g-filter g-sub"; sub.setAttribute("role", "group"); sub.setAttribute("aria-label", g === "vencanja" ? "Stil" : "Vrsta proslave");
+    const uG = cards.filter(c => uGrupi(c, g));
+    sub.append(...lista.map(([t, label]) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.dataset.s = t;
+      b.innerHTML = `${label}<sup>${t ? uG.filter(c => imaTag(c, t)).length : uG.length}</sup>`;
+      b.onclick = () => { const h = g + (t ? "/" + t : ""); show(h); history.replaceState(null, "", "#" + h); };
+      return b;
+    }));
+    prev.after(sub); prev = sub; subs[g] = sub;
+  }
 
   function show(h) {
-    let [g, s = ""] = h.split("/");
+    let [g, s = ""] = (STARO[h] || h).split("/");
     if (!GRUPE.some(([x]) => x === g)) g = "sve";
-    if (g !== "vencanja" || !STILOVI.some(([x]) => x === s)) s = "";
+    if (!(PODFILTERI[g] || []).some(([x]) => x && x === s)) s = "";
     filt.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.g === g));
-    sub.hidden = g !== "vencanja";
-    sub.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.s === s));
+    for (const [k, sub] of Object.entries(subs)) {
+      sub.hidden = k !== g;
+      sub.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.s === s));
+    }
     let n = 0;
-    for (const c of cards) { const on = (g === "sve" || c.dataset.grupe.split(" ").includes(g)) && (!s || c.dataset.stil.split(" ").includes(s)); c.hidden = !on; n += on; }
+    for (const c of cards) { const on = uGrupi(c, g) && (!s || imaTag(c, s)); c.hidden = !on; n += on; }
     empty.hidden = n > 0;
     if (!n) {
-      const label = { rodjendani: "dečije rođendane", boarding: "boarding pass i pasoš" }[g] || GRUPE.find(([x]) => x === g)[1].toLowerCase();
+      const label = { rodjendani: "rođendane", boarding: "boarding pass i pasoš" }[g] || GRUPE.find(([x]) => x === g)[1].toLowerCase();
       empty.innerHTML = `<b>Šabloni za ${label} stižu uskoro</b><p>Do tada pogledajte naše gotove pozivnice ili nam pišite, pa ćemo vašu napraviti zajedno.</p><a class="link" href="${STRANA[g]}">Pogledaj pozivnice <span>→</span></a>`;
     }
   }

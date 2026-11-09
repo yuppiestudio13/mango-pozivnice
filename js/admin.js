@@ -188,13 +188,15 @@ dForm.addEventListener("submit", async e => {
 });
 
 /* ---------------- izvoz (CSV koji Excel otvara sa ćirilicom/latinicom kako treba) ---------------- */
+// Tekst kupca koji počinje sa = + - @ Excel bi izvršio kao formulu; dodajemo ' ispred (osim za brojeve telefona).
+const celija = v => { let t = String(v); if (/^[=+\-@\t\r]/.test(t) && !/^\+[\d\s\/-]+$/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
 $("izvoz").onclick = () => {
   const K = [["napravljena", "Poručeno"], ["status", "Status"], ["ime", "Ime"], ["telefon", "Telefon"], ["email", "E-mail"], ["datum_dogadjaja", "Datum događaja"],
     ["sablon", "Šablon"], ["kolicina", "Količina"], ["stampa", "Papir i štampa"], ["folija", "Foliotisak"], ["koverta", "Koverta"], ["dodaci", "Dodaci"],
     ["ukupno", "Ukupno (din)"], ["napomena", "Napomena"], ["beleska", "Beleška"], ["dizajn", "Dizajn"]];
   const cel = (o, k) => k === "status" ? SN[o.status] : k === "napravljena" ? datum(o[k]) : k === "datum_dogadjaja" ? (o[k] ? datum(o[k]) : "") : o[k] ?? "";
   const csv = [K.map(k => k[1]), ...vidljive().map(o => K.map(([k]) => cel(o, k)))]
-    .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+    .map(r => r.map(celija).join(";")).join("\r\n");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }));
   a.download = `mango-${vrsta === "e" ? "elektronske" : "stampane"}-${new Date().toISOString().slice(0, 10)}.csv`;

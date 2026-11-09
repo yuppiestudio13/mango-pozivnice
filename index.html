@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&family=Ms+Madi&family=Baloo+2&family=Pinyon+Script&family=Great+Vibes&family=Parisienne&family=Italianno&family=Allura&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="fontovi/fontovi.css">
-<link rel="stylesheet" href="stil.css?v=16">
+<link rel="stylesheet" href="stil.css?v=17">
 </head>
 <body>
 
@@ -93,17 +93,17 @@
 <section class="stize" id="stize">
   <div class="wrap stize-grid">
     <figure class="stize-foto reveal">
-      <img src="slike/hero-6.jpg" alt="Koverte boje slonovače sa zlatnim monogramom M S, u ruci" loading="lazy" width="956" height="1700">
+      <img id="stFoto" src="slike/hero-6.jpg" alt="Koverte boje slonovače sa zlatnim monogramom M S, u ruci" loading="lazy" width="956" height="1700">
     </figure>
     <div class="stize-copy reveal">
       <div class="eyebrow">Ovako stiže do vas</div>
       <h2 class="h-lg">Pravi papir,<br><em>u vašim rukama</em></h2>
       <p class="lead">Na ekranu birate dizajn i tekst, a na vašu adresu stiže pozivnica koju gosti žele da sačuvaju.</p>
       <ul class="stize-list">
-        <li><b>Debeo, biran papir</b><span>350 g, hrapavi ili sedefasti, glatki ili sa reljefom.</span></li>
-        <li><b>Foliotisak</b><span>Zlato, rose gold, srebro ili crvena, sjaji pod svetlom.</span></li>
-        <li><b>Koverta i voštani pečat</b><span>Koverte u mnogo boja i pečati sa vašim inicijalima.</span></li>
-        <li><b>Spakovano i poslato</b><span>Post Expressom na vašu adresu, u celoj Srbiji.</span></li>
+        <li><button type="button" data-img="slike/hr-pocepana-ivica-simona-milos.jpg" data-alt="Pozivnica na hrapavom papiru sa pocepanom ivicom"><img src="slike/st-papir.jpg" alt="" loading="lazy" width="88" height="88"><b>Debeo, biran papir</b><span>350 g, hrapavi ili sedefasti, glatki ili sa reljefom.</span></button></li>
+        <li><button type="button" data-img="slike/zt-zeleno-zlato-dajana-slavisa.jpg" data-alt="Tamnozelene pozivnice sa zlatnim foliotiskom"><img src="slike/st-folija.jpg" alt="" loading="lazy" width="88" height="88"><b>Foliotisak</b><span>Zlato, rose gold, srebro ili crvena, sjaji pod svetlom.</span></button></li>
+        <li><button type="button" data-img="slike/pr-set-ivana-slobodan-otvoren.jpg" data-alt="Set sa zelenom kovertom i bakarnim voštanim pečatom"><img src="slike/st-koverta.jpg" alt="" loading="lazy" width="88" height="88"><b>Koverta i voštani pečat</b><span>Koverte u mnogo boja i pečati sa vašim inicijalima.</span></button></li>
+        <li><button type="button" data-img="slike/hero-6.jpg" data-alt="Koverte boje slonovače sa zlatnim monogramom M S, u ruci"><img src="slike/st-stize.jpg" alt="" loading="lazy" width="88" height="88"><b>Spakovano i poslato</b><span>Post Expressom na vašu adresu, u celoj Srbiji.</span></button></li>
       </ul>
       <div class="actions">
         <a class="btn" href="radionica.html">Napravi svoju pozivnicu</a>
@@ -379,6 +379,14 @@ const drawer=document.getElementById('drawer');
 
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
 document.querySelectorAll('.reveal').forEach((el,i)=>{el.style.transitionDelay=(i%4)*90+'ms';io.observe(el)});
+/* „Ovako stiže do vas”: stavka iz liste menja veliku fotografiju */
+(()=>{const foto=document.getElementById('stFoto'), btns=[...document.querySelectorAll('.stize-list button')]; if(!foto) return;
+  btns.forEach(b=>{const i=new Image(); b.addEventListener('pointerenter',()=>{if(!i.src) i.src=b.dataset.img;},{once:true});});
+  const pick=b=>{ if(foto.getAttribute('src')===b.dataset.img){btns.forEach(x=>x.classList.toggle('on',x===b));return;}
+    btns.forEach(x=>x.classList.toggle('on',x===b)); foto.classList.add('out');
+    setTimeout(()=>{foto.src=b.dataset.img; foto.alt=b.dataset.alt; const done=()=>foto.classList.remove('out'); foto.complete?done():foto.onload=done;},180); };
+  btns.forEach(b=>{b.addEventListener('click',()=>pick(b)); b.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse') pick(b);}); b.addEventListener('focus',()=>pick(b));});
+})();
 document.querySelectorAll('[role=tablist]').forEach(list=>{
   const tabs=[...list.querySelectorAll('[role=tab]')];
   const pick=t=>tabs.forEach(b=>{const on=b===t;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;document.getElementById(b.getAttribute('aria-controls')).hidden=!on});

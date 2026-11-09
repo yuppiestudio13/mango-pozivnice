@@ -113,9 +113,16 @@ header nav.right{justify-content:flex-end}
 .stize-foto img{width:100%;height:100%;object-fit:cover;object-position:50% 45%}
 .stize-copy .h-lg{margin:12px 0 16px;color:var(--green)}
 .stize-list{list-style:none;padding:0;margin:26px 0 30px;border-top:1px solid var(--line)}
-.stize-list li{display:grid;gap:2px;padding:14px 0;border-bottom:1px solid var(--line)}
-.stize-list b{font-family:var(--serif);font-weight:500;font-size:1.3rem;color:var(--green);line-height:1.2}
-.stize-list span{font-size:.92rem;font-weight:300;color:var(--stone)}
+.stize-list li{border-bottom:1px solid var(--line)}
+.stize-list button{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:56px 1fr;column-gap:16px;row-gap:2px;align-items:center;padding:12px 0;cursor:pointer}
+.stize-list button img{grid-row:1/3;width:56px;height:56px;object-fit:cover;border-radius:4px;opacity:.85;outline:1px solid transparent;outline-offset:3px;transition:opacity .3s,outline-color .3s}
+.stize-list button:hover img,.stize-list button.on img{opacity:1;outline-color:var(--gold)}
+.stize-list button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.stize-list b{font-family:var(--serif);font-weight:500;font-size:1.3rem;color:var(--green);line-height:1.2;align-self:end}
+.stize-list span{font-size:.92rem;font-weight:300;color:var(--stone);align-self:start}
+.stize-foto img{transition:opacity .18s ease}
+.stize-foto img.out{opacity:0}
+@media(prefers-reduced-motion:reduce){.stize-foto img{transition:none}}
 .stize .actions{display:flex;flex-direction:column;align-items:flex-start;gap:20px}
 .stize .actions>*{flex:none;white-space:nowrap}
 @media(max-width:899px){.stize .btn{width:100%;text-align:center}.stize .actions{align-items:center}}

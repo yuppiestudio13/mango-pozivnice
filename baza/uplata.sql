@@ -5,7 +5,7 @@
 -- Podatke za uplatu (primalac, račun…) upisuje Mango u admin.html → "Podaci za uplatu";
 -- čuvaju se u tabeli podesavanja koju vidi samo admin.
 -- E-mail ide preko FormSubmit "_autoresponse" (kupcu), a kopija stiže na mango.pozivnice@gmail.com.
--- Pokreće se jednom u Supabase → SQL Editor.
+-- Pokreće se jednom u Supabase → SQL Editor. Funkciju i pravilo upisa posle zamenjuje baza/epozivnica.sql.
 -- =========================================================
 
 -- broj porudžbine (za svrhu uplate i poziv na broj) i trenutak slanja podataka za uplatu

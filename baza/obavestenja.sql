@@ -21,7 +21,7 @@ begin
     body := jsonb_strip_nulls(jsonb_build_object(
       '_subject', 'Nova porudžbina: ' || coalesce(nullif(new.ime, ''), 'bez imena') || ' · '
                   || case when new.vrsta = 'e' then 'elektronska' else 'štampa' end
-                  || coalesce(' · ' || to_char(new.ukupno, 'FM999G999G999') || ' din', ''),
+                  || coalesce(' · ' || replace(to_char(new.ukupno, 'FM999G999G999'), ',', '.') || ' din', ''),
       '_template', 'table',
       '_captcha', 'false',
       'Vrsta', case when new.vrsta = 'e' then 'Elektronska pozivnica' else 'Štampane pozivnice' end,
@@ -59,8 +59,4 @@ create trigger obavesti_o_narudzbini
   after insert on public.narudzbine
   for each row execute function public.obavesti_o_narudzbini();
 
--- kalkulator takođe upisuje porudžbine (izvor = 'kalkulator')
-drop policy if exists "kupac upisuje" on public.narudzbine;
-create policy "kupac upisuje" on public.narudzbine
-  for insert to anon
-  with check (status = 'nova' and izvor in ('editor', 'kalkulator') and beleska is null);
+-- pravilo "kupac upisuje" (editor i kalkulator) je konačno definisano u baza/epozivnica.sql

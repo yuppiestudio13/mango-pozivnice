@@ -9,6 +9,9 @@ const STATUSI = [
   ["izrada", "U izradi"], ["poslato", "Poslato"], ["otkazana", "Otkazana"],
 ];
 const SN = Object.fromEntries(STATUSI);
+// Elektronske: plaća se ceo iznos, pa je "avans" = "Plaćeno"; "poslato" = pozivnica poslata kupcu.
+const SNE = { ...SN, avans: "Plaćeno", izrada: "U pripremi" };
+const sn = (vr, k) => (vr === "e" ? SNE : SN)[k];
 const KANAL = { whatsapp: "WhatsApp", viber: "Viber", instagram: "Instagram", copy: "kopirana poruka", telefon: "telefon", licno: "lično" };
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const din = n => n == null ? "—" : Math.round(n).toLocaleString("sr-RS") + " din";
@@ -92,7 +95,7 @@ function crtaj() {
     <div><b>${n(["poslato"])}</b><small>Poslato</small></div>
     <div><b>${din(V.filter(aktivna).reduce((a, o) => a + (o.ukupno || 0), 0)).replace(" din", "")}</b><small>Din u toku</small></div>`;
   const cnt = s => s === "sve" ? V.length : s === "aktivne" ? V.filter(aktivna).length : n([s]);
-  $("chips").innerHTML = [["aktivne", "Aktivne"], ...STATUSI, ["sve", "Sve"]]
+  $("chips").innerHTML = [["aktivne", "Aktivne"], ...STATUSI.map(([k]) => [k, sn(vrsta, k)]), ["sve", "Sve"]]
     .map(([k, t]) => `<button data-f="${k}" aria-pressed="${filt === k}">${t} · ${cnt(k)}</button>`).join("");
   const L = vidljive();
   $("list").innerHTML = L.map(red).join("");
@@ -109,7 +112,7 @@ function red(o) {
     <div class="o-l"><div class="o-ime">${esc(o.ime) || "<i>bez imena</i>"}${o.broj ? `<span class="o-br">br. ${+o.broj}</span>` : ""}</div><div class="o-meta">${dog} · poručeno ${pre(o.napravljena)}</div></div>
     <div class="o-cena">${din(o.ukupno)}</div>
     <div class="o-meta o-m">${opis.join(" · ") || "—"}</div>
-    <span class="pill ${o.status}">${SN[o.status]}</span>
+    <span class="pill ${o.status}">${sn(o.vrsta, o.status)}</span>
   </button>
   ${open ? detalji(o) : ""}
 </li>`;
@@ -132,13 +135,13 @@ function detalji(o) {
       <dl class="det" style="margin-top:12px">${polja.filter(p => p[1]).map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
     </div>
     <div class="row">
-      <label>Status<select data-a="status">${STATUSI.map(([k, t]) => `<option value="${k}"${k === o.status ? " selected" : ""}>${t}</option>`).join("")}</select></label>
+      <label>Status<select data-a="status">${STATUSI.map(([k]) => `<option value="${k}"${k === o.status ? " selected" : ""}>${sn(o.vrsta, k)}</option>`).join("")}</select></label>
       <label>Interna beleška<textarea data-a="beleska" rows="3" placeholder="Npr. avans 5.000 din uplaćen 10.11.">${esc(o.beleska)}</textarea></label>
     </div>
-    ${o.vrsta === "stampa" ? uplataInfo(o) : ""}
+    ${uplataInfo(o)}${o.vrsta === "e" ? ePozInfo(o) : ""}
     ${o.poruka ? `<details class="msg full"><summary>Cela poruka kupca</summary><pre>${esc(o.poruka)}</pre></details>` : ""}
     <div class="o-acts full">
-      ${diz ? `<a class="ab solid" href="${esc(diz)}" target="_blank" rel="noopener">Otvori dizajn</a>` : ""}
+      ${diz ? `<a class="ab solid" href="${esc(o.vrsta === "e" ? dizajnZaSlanje(o) : diz)}" target="_blank" rel="noopener">Otvori dizajn</a>` : ""}
       ${o.poruka ? `<button class="ab ghost" data-a="kopiraj">Kopiraj poruku</button>` : ""}
       <button class="ab danger" data-a="obrisi">Obriši</button>
     </div>
@@ -155,10 +158,47 @@ function razlogNe(o) {
 function uplataInfo(o) {
   if (o.uplata_poslata) {
     const t = new Date(o.uplata_poslata);
-    return `<p class="uplata full">✓ Podaci za uplatu avansa poslati ${datum(o.uplata_poslata)} u ${t.toLocaleTimeString("sr-Latn-RS", { hour: "2-digit", minute: "2-digit" })} na ${esc(o.email)}.${demo ? "" : `<button data-a="ponovo">Pošalji ponovo</button>`}</p>`;
+    return `<p class="uplata full">✓ Podaci za uplatu ${o.vrsta === "e" ? "" : "avansa "}poslati ${datum(o.uplata_poslata)} u ${t.toLocaleTimeString("sr-Latn-RS", { hour: "2-digit", minute: "2-digit" })} na ${esc(o.email)}.${demo ? "" : `<button data-a="ponovo">Pošalji ponovo</button>`}</p>`;
   }
-  if (o.status === "nova") return `<p class="uplata full">Kada promenite status u <b>Potvrđena</b>, kupcu automatski stižu podaci za uplatu avansa${emailOk(o.email) ? ` na ${esc(o.email)}` : ""}.${emailOk(o.email) ? "" : " <b>Kupac nije ostavio e-mail.</b>"}</p>`;
+  if (o.status === "nova") return `<p class="uplata full">Kada promenite status u <b>Potvrđena</b>, kupcu automatski stižu podaci za uplatu ${o.vrsta === "e" ? "celog iznosa" : "avansa"}${emailOk(o.email) ? ` na ${esc(o.email)}` : ""}.${emailOk(o.email) ? "" : " <b>Kupac nije ostavio e-mail.</b>"}</p>`;
   return `<p class="uplata ne full">Podaci za uplatu nisu poslati e-mailom: ${esc(razlogNe(o))}${emailOk(o.email) && !demo ? `<button data-a="ponovo">Pošalji sada</button>` : ""}</p>`;
+}
+
+/* ---------------- elektronska pozivnica: pravljenje i slanje kupcu ---------------- */
+// Editor se otvara nevidljivo (iframe) sa ?n=<id>&posalji=1, pravi sliku bez žiga, šalje je u skladište
+// i upisuje link; baza zatim kupcu šalje e-mail. Pozivnice sa fotografijom kupca se šalju ručno iz editora.
+const fotoCeka = new Set();
+function dizajnZaSlanje(o, auto) {
+  const u = new URL(o.dizajn, location.href), q = new URLSearchParams(u.search);
+  q.set("n", o.id); if (auto) q.set("posalji", "1");
+  return `editor.html?${q}${u.hash}`;
+}
+function ePozInfo(o) {
+  if (o.epozivnica_poslata) {
+    const t = new Date(o.epozivnica_poslata);
+    return `<p class="uplata full">✓ E-pozivnica poslata ${datum(o.epozivnica_poslata)} u ${t.toLocaleTimeString("sr-Latn-RS", { hour: "2-digit", minute: "2-digit" })} na ${esc(o.email)}. ${sigurno(o.epozivnica) ? `<a href="${esc(o.epozivnica)}" target="_blank" rel="noopener">Pogledaj</a>` : ""}${demo ? "" : `<button data-a="epoz">Napravi i pošalji ponovo</button>`}</p>`;
+  }
+  if (fotoCeka.has(o.id)) return `<p class="uplata ne full">Ova pozivnica ima fotografiju kupca, pa se ne šalje automatski. Kliknite <b>Otvori dizajn</b>, ubacite fotografiju koju vam je kupac poslao i kliknite zlatno dugme <b>Pošalji e-pozivnicu kupcu</b>.</p>`;
+  return `<p class="uplata full">Kada uplata stigne, izaberite status <b>Plaćeno</b>: pozivnica bez žiga se sama napravi i pošalje kupcu na e-mail.${sigurno(o.dizajn) && !demo ? `<button data-a="epoz">Napravi i pošalji sada</button>` : ""}</p>`;
+}
+function autoPosalji(o) {
+  if (demo) return toast("U primeru se ništa ne šalje.");
+  if (!sigurno(o.dizajn)) return toast("Ova porudžbina nema link do dizajna. Pošaljite pozivnicu ručno.");
+  if (!emailOk(o.email)) return toast("Kupac nema ispravan e-mail.");
+  toast("Pravim e-pozivnicu bez žiga i šaljem je kupcu… (do 30 sekundi)");
+  const f = document.createElement("iframe");
+  f.src = dizajnZaSlanje(o, true); f.title = "slanje e-pozivnice"; f.setAttribute("aria-hidden", "true");
+  f.style.cssText = "position:fixed;left:-12000px;top:0;width:1280px;height:900px;border:0;opacity:0;pointer-events:none";
+  const kraj = async (r) => {
+    clearTimeout(tm); removeEventListener("message", on); f.remove();
+    if (r.ok) { Object.assign(o, r.red || {}); if (!r.red) await ucitaj(); crtaj(); toast(`E-pozivnica je poslata na ${o.email}. Status: Poslato.`); }
+    else if (r.razlog === "foto") { fotoCeka.add(o.id); otvorena = o.id; crtaj(); toast("Pozivnica ima fotografiju kupca: pošaljite je iz editora (uputstvo u porudžbini)."); }
+    else toast("Nije poslato: " + (r.razlog || "nepoznata greška"));
+  };
+  const on = e => { if (e.origin === location.origin && e.data?.mango === "epoz" && e.data.id === o.id) kraj(e.data); };
+  const tm = setTimeout(() => kraj({ ok: false, razlog: "isteklo vreme, pokušajte ponovo." }), 60000);
+  addEventListener("message", on);
+  document.body.append(f);
 }
 
 /* ---------------- podaci za uplatu (podešavanja) ---------------- */
@@ -195,6 +235,7 @@ $("list").addEventListener("click", async e => {
     if (!await izmeni(o, { uplata_poslata: null })) return;
     crtaj(); toast(o.uplata_poslata ? `Podaci za uplatu su ponovo poslati na ${o.email}.` : `Nije poslato: ${razlogNe(o)}`); return;
   }
+  if (el.dataset.a === "epoz") return autoPosalji(o);
   if (el.dataset.a === "kopiraj") { try { await navigator.clipboard.writeText(o.poruka); toast("Poruka je kopirana."); } catch { toast("Kopiranje nije uspelo."); } }
   if (el.dataset.a === "obrisi") {
     if (el.dataset.sure !== "1") { el.dataset.sure = "1"; el.textContent = "Sigurno obrisati?"; setTimeout(() => { if (el.isConnected) { el.dataset.sure = ""; el.textContent = "Obriši"; } }, 4000); return; }
@@ -209,9 +250,10 @@ $("list").addEventListener("change", async e => {
     const bilo = !!o.uplata_poslata;
     if (!await izmeni(o, { status: el.value })) return;
     crtaj();
+    if (o.vrsta === "e" && el.value === "avans" && !o.epozivnica_poslata) return autoPosalji(o);
     toast(!bilo && o.uplata_poslata ? `Potvrđeno. Kupcu je poslat e-mail sa podacima za uplatu (${o.email}).`
       : el.value === "potvrdjena" && o.vrsta === "stampa" && !o.uplata_poslata ? `Potvrđeno, ali e-mail NIJE poslat: ${razlogNe(o)}`
-      : `Status: ${SN[el.value]}.`);
+      : `Status: ${sn(o.vrsta, el.value)}.`);
   }
   if (el.dataset.a === "beleska" && await izmeni(o, { beleska: el.value.trim() || null })) toast("Beleška je sačuvana.");
 });
@@ -248,7 +290,7 @@ $("izvoz").onclick = () => {
   const K = [["broj", "Br."], ["napravljena", "Poručeno"], ["status", "Status"], ["ime", "Ime"], ["telefon", "Telefon"], ["email", "E-mail"], ["datum_dogadjaja", "Datum događaja"],
     ["sablon", "Šablon"], ["kolicina", "Količina"], ["stampa", "Papir i štampa"], ["folija", "Foliotisak"], ["koverta", "Koverta"], ["dodaci", "Dodaci"],
     ["ukupno", "Ukupno (din)"], ["napomena", "Napomena"], ["beleska", "Beleška"], ["dizajn", "Dizajn"]];
-  const cel = (o, k) => k === "status" ? SN[o.status] : k === "napravljena" ? datum(o[k]) : k === "datum_dogadjaja" ? (o[k] ? datum(o[k]) : "") : o[k] ?? "";
+  const cel = (o, k) => k === "status" ? sn(o.vrsta, o.status) : k === "napravljena" ? datum(o[k]) : k === "datum_dogadjaja" ? (o[k] ? datum(o[k]) : "") : o[k] ?? "";
   const csv = [K.map(k => k[1]), ...vidljive().map(o => K.map(([k]) => cel(o, k)))]
     .map(r => r.map(celija).join(";")).join("\r\n");
   const a = document.createElement("a");

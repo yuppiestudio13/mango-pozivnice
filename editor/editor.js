@@ -1398,9 +1398,8 @@ async function exportPNG(wm) {
   document.body.classList.remove("busy");
 }
 // E-pozivnica za kupca koji je platio: sve strane jedna ispod druge, bez žiga, u jednoj slici za Viber/WhatsApp.
-async function exportEPozivnica() {
-  document.body.classList.add("busy");
-  try {
+// Sve strane jedna ispod druge, bez žiga (za Viber/WhatsApp).
+async function ePozivnicaCanvas() {
     const shots = [], px = 1600, pad = 70, gap = 50;
     await eachPage(async () => shots.push(await renderCanvas(px / Math.max(...T.strane.map(s => s.mm[0] * 10)), false)));
     const cv = document.createElement("canvas");
@@ -1415,6 +1414,12 @@ async function exportEPozivnica() {
       ctx.fillStyle = "#fff"; ctx.fillRect(x, y, c.width, c.height); ctx.restore();
       ctx.drawImage(c, x, y); y += c.height + gap;
     }
+    return cv;
+}
+async function exportEPozivnica() {
+  document.body.classList.add("busy");
+  try {
+    const cv = await ePozivnicaCanvas();
     download(cv.toDataURL("image/jpeg", .92), `mango-e-pozivnica-${T.id}.jpg`);
     toast("E-pozivnica bez žiga je preuzeta. Pošaljite je kupcu.");
   } catch (err) { console.error(err); toast("E-pozivnica nije napravljena."); }
@@ -1622,6 +1627,38 @@ let isAdmin = false;
 function setAdmin(on) { isAdmin = on; $("app").classList.toggle("admin", on); }
 $("adminOut").onclick = async () => { await BAZA.adminOdjava(); setAdmin(false); toast("Odjavljeni ste iz režima za štampu."); };
 
+/* ---------------- slanje gotove e-pozivnice kupcu (admin, ?n=<id porudžbine>) ---------------- */
+// Otvara se iz admin.html. Slika ide u Supabase skladište, a baza kupcu šalje e-mail sa linkom.
+let NAR = null;
+const sveFotke = () => T.strane.every((s, i) => !s.foto || okviri(s).every((_, j) => fotoHas(i, j)));
+async function posaljiKupcu(auto) {
+  if (!NAR) return { ok: false, razlog: "Porudžbina nije učitana." };
+  if (NAR.vrsta !== "e") return { ok: false, razlog: "Ovo nije elektronska porudžbina." };
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(NAR.email || "")) return { ok: false, razlog: "Kupac nema ispravan e-mail." };
+  // Fotografija kupca nije u bazi: automatski nikad (mogla bi ostati tuđa fotografija iz ovog pregledača), ručno tek kad je ubačena.
+  if (fotoAny() && (auto || !sveFotke())) return { ok: false, razlog: "foto" };
+  const cv = await ePozivnicaCanvas();
+  const blob = await new Promise(r => cv.toBlob(r, "image/jpeg", .92));
+  NAR = await BAZA.posaljiEPozivnicu(NAR.id, blob);
+  return NAR?.epozivnica_poslata ? { ok: true, red: NAR } : { ok: false, razlog: "E-mail nije poslat (proverite e-mail kupca)." };
+}
+function ePosaljiDugme() {
+  const b = $("ePosalji"); if (!b) return;
+  b.hidden = !(isAdmin && NAR && NAR.vrsta === "e");
+  if (!NAR) return;
+  b.textContent = NAR.epozivnica_poslata ? `Pošalji ponovo kupcu (br. ${NAR.broj})` : `Pošalji e-pozivnicu kupcu: ${NAR.ime || ""} (br. ${NAR.broj})`;
+}
+$("ePosalji").onclick = async e => {
+  const b = e.currentTarget;
+  if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = `Sigurno? Šalje se na ${NAR.email}`; setTimeout(() => { b.dataset.sure = ""; ePosaljiDugme(); }, 5000); return; }
+  b.dataset.sure = ""; document.body.classList.add("busy"); toast("Pravim i šaljem e-pozivnicu…");
+  try {
+    const r = await posaljiKupcu(false);
+    toast(r.ok ? `E-pozivnica je poslata na ${NAR.email}. Porudžbina je označena kao Poslato.` : r.razlog === "foto" ? "Ubacite fotografiju kupca u sve okvire, pa pošaljite." : r.razlog);
+  } catch (err) { console.error(err); toast("Slanje nije uspelo: " + err.message); }
+  document.body.classList.remove("busy"); ePosaljiDugme();
+};
+
 /* ---------------- start ---------------- */
 (async function init() {
   const qs = new URLSearchParams(location.search);
@@ -1629,9 +1666,23 @@ $("adminOut").onclick = async () => { await BAZA.adminOdjava(); setAdmin(false);
   store.del("mango-admin");   // stara prijava lozinkom više ne postoji
   const trazi = qs.get("admin"); qs.delete("admin");
   if (trazi !== null) try { history.replaceState(null, "", location.pathname + (qs.toString() ? "?" + qs : "") + location.hash); } catch {}
+  let gotov; const spremno = new Promise(r => gotov = r);   // dizajn učitan
+  const nId = qs.get("n"), auto = qs.get("posalji") === "1" && window.parent !== window;
+  const javi = poruka => auto && window.parent.postMessage({ mango: "epoz", id: nId, ...poruka }, location.origin);
+  const adminP = trazi === "0" ? Promise.resolve(false) : BAZA.adminProvera();
   if (trazi === "0") BAZA.adminOdjava();
-  else BAZA.adminProvera().then(ok => {
-    if (ok) { setAdmin(true); if (trazi !== null) toast("Prijavljeni ste. Režim za štampu je uključen."); }
+  adminP.then(async ok => {
+    if (ok) {
+      setAdmin(true); if (trazi !== null) toast("Prijavljeni ste. Režim za štampu je uključen.");
+      if (nId) {
+        try { NAR = await BAZA.narudzbina(nId); } catch (err) { console.error(err); }
+        ePosaljiDugme();
+        if (auto) {
+          await spremno; await document.fonts.ready; await new Promise(r => setTimeout(r, 800));
+          try { javi(await posaljiKupcu(true)); } catch (err) { javi({ ok: false, razlog: err.message }); }
+        }
+      }
+    } else if (auto) javi({ ok: false, razlog: "Niste prijavljeni u editoru." });
     else if (trazi !== null) location.href = "admin.html?nazad=" + encodeURIComponent("editor.html" + location.search + location.hash);
   });
   fotoInit();
@@ -1647,5 +1698,6 @@ $("adminOut").onclick = async () => { await BAZA.adminOdjava(); setAdmin(false);
   }
   loadTemplate(t, preset);
   if (preset) commit();
+  gotov();
   document.fonts.ready.then(() => layersEl.querySelectorAll(".L").forEach(el => checkSafe(el, get(el.dataset.id))));
 })();

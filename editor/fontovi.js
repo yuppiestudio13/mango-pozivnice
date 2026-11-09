@@ -205,6 +205,7 @@ window.FONTOVI=[
 ["Play", "masina", 1, "400,700", ""],
 ["Fredoka", "deciji", 0, "300,400,500,600,700", ""],
 ["Baloo 2", "deciji", 0, "400,500,600,700", ""],
+["Gluten", "deciji", 0, "400,500,600,700,800", ""],
 ["Sniglet", "deciji", 0, "400", ""],
 ["Luckiest Guy", "deciji", 0, "400", ""],
 ["Lilita One", "deciji", 0, "400", ""],

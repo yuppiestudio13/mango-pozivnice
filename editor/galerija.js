@@ -72,7 +72,8 @@
     "mg-pastelni": "minimal datum"
   };
   /* Oznaka „Novo” (šabloni dodati 8. 11. 2026); skinuti kad prestanu da budu novi. */
-  const NOVO = new Set(["mg-sukulenti", "mg-sukulenti-datum", "mg-plavo-cvece", "mg-heksagon-datum", "mg-lisce-akvarel", "mg-plavi-akvarel",
+  const NOVO = new Set(["mr-veseli-drugari", "mr-zeka-baloni", "mr-jednorog-cvece", "mr-dino-akvarel", "mr-jednorog-livada", "mr-pastelna-duga", "mr-flamingosi", "mr-jednorog-oblaci", "mr-sarena-duga", "mr-roze-duga",
+    "mg-sukulenti", "mg-sukulenti-datum", "mg-plavo-cvece", "mg-heksagon-datum", "mg-lisce-akvarel", "mg-plavi-akvarel",
     "mg-breskva", "mg-pastelni", "mg-terakota-datum", "mg-terakota-traka", "mg-zlatno-datum", "mg-zlatno-cvece"]);
   const FONT = Object.fromEntries(FONTOVI.map(([n, c, cy, w, i, own]) => [n, { own: !!own, w: w.split(",").map(Number), i: i ? i.split(",").map(Number) : [] }]));
   const grid = document.getElementById("gGrid"), filt = document.getElementById("gFilter"), empty = document.getElementById("gEmpty");

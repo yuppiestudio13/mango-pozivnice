@@ -141,6 +141,8 @@ section{padding:130px 0}
 .cats{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
 @media(max-width:1000px){.cats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){.cats{grid-template-columns:1fr}}
+.cats.c3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:700px){.cats.c3{grid-template-columns:1fr}}
 .cat .tile{aspect-ratio:4/5}
 .cat:hover .tile img{transform:scale(1.04)}
 .cat h3{font-family:var(--serif);font-weight:400;font-size:1.6rem;margin-top:20px;color:var(--green)}

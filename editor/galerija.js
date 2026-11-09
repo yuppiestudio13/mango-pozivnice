@@ -11,15 +11,15 @@
     ["rodjendani", "Rođendani"],
     ["boarding", "Boarding pass"],
   ];
-  /* Kartica „Rođendani” obuhvata i punoletstva i krštenja (podfilteri ispod nje); stari linkovi #krstenja i #punoletstva vode tamo. */
-  const U_KARTICI = { rodjendani: ["rodjendani", "krstenja", "punoletstva"] };
-  const STARO = { krstenja: "rodjendani/krstenja", punoletstva: "rodjendani/punoletstva" };
+  /* Kartica „Rođendani” obuhvata i punoletstva (podfilter ispod nje). Krštenja nemaju svoju karticu (idu uz venčanje ili rođendan); stari link #krstenja vodi na Rođendane. */
+  const U_KARTICI = { rodjendani: ["rodjendani", "punoletstva"] };
+  const STARO = { krstenja: "rodjendani", punoletstva: "rodjendani/punoletstva" };
   const STRANA = { vencanja: "pozivnice-vencanja.html", boarding: "pozivnice-boarding-pass.html", krstenja: "pozivnice-krstenja.html", rodjendani: "pozivnice-rodjendani.html", punoletstva: "pozivnice-punoletstva.html" };
   /* Stil šablona za venčanja (podfilteri ispod „Venčanja”); jedan šablon može biti u više grupa. */
   const STILOVI = [["cvetni", "Cvetni"], ["minimal", "Minimalistički"], ["monogram", "Monogram"], ["datum", "Save the date"], ["cirilica", "Ćirilica"]];
   const PODFILTERI = {
     vencanja: [["", "Svi stilovi"], ...STILOVI],
-    rodjendani: [["", "Svi"], ["decji", "Dečiji"], ["punoletstva", "Punoletstva"], ["krstenja", "Krštenja"]],
+    rodjendani: [["", "Svi"], ["decji", "Dečiji"], ["punoletstva", "Punoletstva"]],
   };
   const STIL = {
     "3-svadba": "cvetni",
@@ -149,7 +149,7 @@
     return b;
   }));
 
-  // podfilteri: stil za venčanja (#vencanja/cvetni), vrsta proslave za rođendane (#rodjendani/krstenja)
+  // podfilteri: stil za venčanja (#vencanja/cvetni), vrsta proslave za rođendane (#rodjendani/punoletstva)
   const subs = {};
   let prev = filt;
   for (const [g, lista] of Object.entries(PODFILTERI)) {

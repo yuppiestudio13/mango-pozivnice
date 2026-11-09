@@ -39,12 +39,13 @@
   const grid=document.getElementById('gGrid');
   if(!grid||!window.FOTO) return;
   const povod=document.body.dataset.povod||'';
-  const list=FOTO.filter(f=>!povod||f[2].split(' ').includes(povod));
+  const uPovodu=(f,id)=>{const p=POVODI.find(x=>x.id===id);return f[2].split(' ').some(g=>(p&&p.obuhvata||[id]).includes(g));};
+  const list=FOTO.filter(f=>!povod||uPovodu(f,povod));
   const napravi=n=>!n?'':n[0]==='#'?['radionica.html'+n,'Slični dizajni']:['editor.html?s='+encodeURIComponent(n),'Napravi sličnu'];
   grid.innerHTML=list.map(([f,a,,n])=>{const g=napravi(n);return `<figure><button type="button" class="g-open" aria-label="Uvećaj: ${a}"><img src="slike/${f}.jpg" alt="${a}" loading="lazy"></button><figcaption>${a}</figcaption>${g?`<a class="g-make" href="${g[0]}">${g[1]} <span>→</span></a>`:''}</figure>`}).join('');
   const cnt=document.getElementById('gCount'); if(cnt){const n=list.length; cnt.textContent=n+(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?' fotografije':' fotografija');}
   const tiles=document.getElementById('gTiles');
-  if(tiles) tiles.innerHTML=POVODI.map(p=>{const n=FOTO.filter(f=>f[2].split(' ').includes(p.id)).length;
+  if(tiles) tiles.innerHTML=POVODI.map(p=>{const n=FOTO.filter(f=>uPovodu(f,p.id)).length;
     return `<a class="cat" href="${p.strana}"><div class="ph tile"><img src="slike/${p.cover}.jpg" alt="${p.naziv}" loading="lazy"></div><h3>${p.naziv}</h3><p>${n} ${n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'fotografije':'fotografija'}</p></a>`}).join('');
 
   const lb=document.getElementById('lb'); if(!lb) return;

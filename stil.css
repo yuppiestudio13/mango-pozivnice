@@ -191,14 +191,17 @@ section{padding:130px 0}
 .sw p{font-size:.9rem;color:#b9c4bb}
 
 /* ---------- collection ---------- */
-.coll{display:grid;grid-template-columns:repeat(3,1fr);gap:48px 26px}
-@media(max-width:900px){.coll{grid-template-columns:repeat(2,1fr);gap:36px 16px}}
-@media(max-width:520px){.coll{grid-template-columns:1fr}}
+.coll-sec{padding-top:72px;padding-bottom:72px}
+.coll{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+@media(max-width:900px){.coll-sec{padding-top:56px;padding-bottom:56px}.coll{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -32px;padding:0 32px 6px;scroll-padding:0 32px;scrollbar-width:none}.coll::-webkit-scrollbar{display:none}.coll .prod{flex:0 0 44%;scroll-snap-align:start}}
+@media(max-width:640px){.coll{margin:0 -18px;padding:0 18px 6px;scroll-padding:0 18px}}
+@media(max-width:520px){.coll .prod{flex-basis:62%}}
 .prod .img{aspect-ratio:4/5}
-.prod{display:flex;flex-direction:column}
+.prod{display:flex;flex-direction:column;min-width:0}
 .prod:hover .img img{transform:scale(1.04)}
-.prod .meta{display:flex;justify-content:space-between;align-items:baseline;padding-top:18px}
-.prod h3{font-family:var(--serif);font-weight:400;font-size:1.5rem;color:var(--green)}
+.prod .meta{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding-top:12px}
+.prod h3{font-family:var(--serif);font-weight:400;font-size:1.25rem;color:var(--green)}
+@media(max-width:520px){.prod h3{font-size:1.1rem}.prod span{font-size:.62rem!important;letter-spacing:.14em!important}}
 .prod span{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--stone)}
 
 /* ---------- seals ---------- */
@@ -720,4 +723,4 @@ header nav .dd-menu a.dd-all{margin-top:6px;border-top:1px solid rgba(201,171,11
 @media(max-width:640px){.g-tiles{grid-template-columns:repeat(2,1fr);gap:14px}.g-tiles .cat h3{font-size:1.2rem}}
 .g-all{margin-bottom:20px}
 .g-all+.g-count{text-align:left}
-.prod-go{display:inline-block;margin-top:6px;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green);border-bottom:1px solid var(--gold);padding-bottom:2px}
+.prod-go{display:inline-block;align-self:flex-start;margin-top:6px;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green);border-bottom:1px solid var(--gold);padding-bottom:2px}

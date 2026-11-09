@@ -253,7 +253,7 @@ header nav a[aria-current="page"]::after{right:0}
 .bp-mosaic[hidden]{display:none}
 .bp-mosaic .ph{display:block;aspect-ratio:1}
 .bp-mosaic .big{grid-column:span 2;grid-row:span 2;aspect-ratio:auto}
-.bp-mosaic img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.bp-mosaic img,.bp-mosaic video{display:block;width:100%;height:100%;object-fit:cover;transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
 .bp-mosaic a:hover img{transform:scale(1.04)}
 .bp-mosaic .big img{position:absolute;inset:0}
 .bp-stub .btn,.bp-stub .link{white-space:nowrap}
@@ -603,6 +603,9 @@ header nav a{white-space:nowrap}
 .g-head{padding:70px 0 30px;text-align:center}
 .g-head .h-xl{color:var(--green);margin:18px 0 16px}
 .g-head .lead{margin:0 auto}
+.g-video{max-width:880px;margin:38px auto 0;aspect-ratio:2/1;overflow:hidden;background:var(--sand)}
+.g-video video{display:block;width:100%;height:100%;object-fit:cover}
+@media(max-width:640px){.g-video{aspect-ratio:4/3;margin-top:28px}}
 .g-body{padding:20px 0 90px}
 .g-filters{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:14px}
 .g-filters a,.g-filters button{font:inherit;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;padding:11px 18px;background:transparent;border:1px solid var(--line);color:var(--stone);cursor:pointer;transition:background .25s,color .25s,border-color .25s}

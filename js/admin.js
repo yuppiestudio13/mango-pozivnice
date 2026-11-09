@@ -18,6 +18,8 @@ const pre = t => { const m = Math.round((Date.now() - new Date(t)) / 6e4); retur
 const broj = t => { let d = String(t || "").replace(/\D/g, ""); if (d.startsWith("00")) d = d.slice(2); else if (d.startsWith("0")) d = "381" + d.slice(1); return d; };
 const sigurno = u => /^(https?:\/\/|editor\.html)/i.test(u || "") ? u : null;
 
+// Posle prijave vrati u editor (samo editor.html na ovom sajtu, nikad tuđa adresa).
+const nazad = () => { const n = new URLSearchParams(location.search).get("nazad"); return n && /^editor\.html(?:[?#]|$)/.test(n) ? n : null; };
 let sb = null, demo = false, sve = [], vrsta = "stampa", filt = "aktivne", otvorena = null;
 function toast(t) { const el = $("toast"); el.textContent = t; el.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("show"), 2800); }
 
@@ -28,6 +30,7 @@ async function init() {
     .catch(() => { document.body.insertAdjacentHTML("beforeend", "<p class='empty'>Nije moguće učitati vezu sa bazom. Proverite internet.</p>"); });
   sb = supabase.createClient(BAZA.url, BAZA.kljuc, { auth: { persistSession: true } });
   const { data } = await sb.auth.getSession();
+  if (data.session && nazad()) { location.href = nazad(); return; }
   if (data.session) pokazi(); else prijava();
 }
 
@@ -37,7 +40,9 @@ function prijava() {
     e.preventDefault(); $("lErr").hidden = true;
     const { error } = await sb.auth.signInWithPassword({ email: $("lEmail").value.trim(), password: $("lPass").value });
     if (error) { $("lErr").hidden = false; return; }
-    $("lPass").value = ""; pokazi();
+    $("lPass").value = "";
+    if (nazad()) { location.href = nazad(); return; }
+    pokazi();
   };
 }
 $("odjava").onclick = async () => { await sb.auth.signOut(); sve = []; prijava(); };
@@ -113,7 +118,7 @@ function detalji(o) {
     ? [["Šablon", o.sablon], ["Količina", o.kolicina && o.kolicina + " kom"], ["Papir i štampa", o.stampa], ["Foliotisak", o.folija], ["Koverta", o.koverta], ["Dodaci", o.dodaci]]
     : [["Šablon", o.sablon]];
   polja.push(["Ukupno", din(o.ukupno)], ["Datum događaja", datum(o.datum_dogadjaja)], ["Telefon", o.telefon], ["E-mail", o.email],
-    ["Poručeno", `${datum(o.napravljena)} ${new Date(o.napravljena).toLocaleTimeString("sr-Latn-RS", { hour: "2-digit", minute: "2-digit" })}${o.kanal ? " · " + (KANAL[o.kanal] || o.kanal) : ""}${o.izvor === "rucno" ? " · uneto ručno" : ""}`],
+    ["Poručeno", `${datum(o.napravljena)} ${new Date(o.napravljena).toLocaleTimeString("sr-Latn-RS", { hour: "2-digit", minute: "2-digit" })}${o.kanal ? " · " + (KANAL[o.kanal] || o.kanal) : ""}${o.izvor === "rucno" ? " · uneto ručno" : o.izvor === "kalkulator" ? " · iz kalkulatora" : ""}`],
     ["Napomena kupca", o.napomena]);
   return `<div class="o-b">
     <div>

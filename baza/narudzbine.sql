@@ -15,11 +15,11 @@
 create table if not exists public.narudzbine (
   id          uuid primary key default gen_random_uuid(),
   napravljena timestamptz not null default now(),
-  otisak      text unique,                 -- isti kupac klikne 2 kanala → ista porudžbina se ne upisuje dvaput
+  otisak      text unique,                 -- isti kupac klikne 2 kanala → ista porudžbina se ne upisuje dvaput (duplikat = 409)
   vrsta       text not null check (vrsta in ('stampa', 'e')),
   status      text not null default 'nova'
               check (status in ('nova', 'potvrdjena', 'avans', 'izrada', 'poslato', 'otkazana')),
-  izvor       text not null default 'editor', -- editor | rucno
+  izvor       text not null default 'editor', -- editor | kalkulator | rucno
   kanal       text,                        -- whatsapp | viber | instagram | copy
   ime         text,
   telefon     text,
@@ -54,7 +54,7 @@ alter table public.narudzbine enable row level security;
 drop policy if exists "kupac upisuje" on public.narudzbine;
 create policy "kupac upisuje" on public.narudzbine
   for insert to anon
-  with check (status = 'nova' and izvor = 'editor' and beleska is null);
+  with check (status = 'nova' and izvor in ('editor', 'kalkulator') and beleska is null);
 
 drop policy if exists "admin cita" on public.narudzbine;
 create policy "admin cita" on public.narudzbine for select to authenticated using (((select auth.jwt()) -> 'app_metadata' ->> 'role') = 'admin');

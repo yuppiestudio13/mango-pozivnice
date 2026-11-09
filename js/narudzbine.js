@@ -36,3 +36,30 @@ window.sacuvajNarudzbinu = async function (red) {
     return r.ok;
   } catch (e) { console.warn("Porudžbina nije upisana:", e); return false; }
 };
+
+/* ---------------- admin prijava (deli je sa admin.html) ----------------
+   admin.html se prijavljuje preko supabase-js, koji sesiju čuva u localStorage pod ključem ispod.
+   Editor tu sesiju samo čita, po potrebi osveži i proveri kod Supabase servera da nalog ima ulogu "admin".
+   Kupac nikad nema ovu sesiju, pa se za njega ne šalje nijedan zahtev. */
+BAZA.kljucSesije = () => `sb-${new URL(BAZA.url).hostname.split(".")[0]}-auth-token`;
+BAZA.adminProvera = async function () {
+  if (!BAZA.spremna()) return false;
+  let s; try { s = JSON.parse(localStorage.getItem(BAZA.kljucSesije())); } catch { return false; }
+  if (!s?.access_token || !s.refresh_token) return false;
+  const h = { apikey: BAZA.kljuc, "Content-Type": "application/json" };
+  try {
+    if (!s.expires_at || s.expires_at * 1000 < Date.now() + 60e3) {
+      const r = await fetch(`${BAZA.url}/auth/v1/token?grant_type=refresh_token`, { method: "POST", headers: h, body: JSON.stringify({ refresh_token: s.refresh_token }) });
+      if (!r.ok) return false;
+      s = await r.json(); s.expires_at = s.expires_at || Math.floor(Date.now() / 1000) + s.expires_in;
+      localStorage.setItem(BAZA.kljucSesije(), JSON.stringify(s));
+    }
+    const r = await fetch(`${BAZA.url}/auth/v1/user`, { headers: { ...h, Authorization: `Bearer ${s.access_token}` } });
+    if (!r.ok) return false;
+    return (await r.json()).app_metadata?.role === "admin";
+  } catch { return false; }
+};
+BAZA.adminOdjava = async function () {
+  let s; try { s = JSON.parse(localStorage.getItem(BAZA.kljucSesije())); localStorage.removeItem(BAZA.kljucSesije()); } catch {}
+  if (s?.access_token) try { await fetch(`${BAZA.url}/auth/v1/logout`, { method: "POST", headers: { apikey: BAZA.kljuc, Authorization: `Bearer ${s.access_token}` } }); } catch {}
+};

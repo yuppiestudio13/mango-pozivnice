@@ -651,7 +651,70 @@ function renderCfg() {
   $("cSealF").hidden = !pr.ex.includes("pecat") || pasos;
   if (document.activeElement !== $("cSeal")) $("cSeal").value = pr.pb;
   renderSum();
+  renderMock();
 }
+
+/* ---------------- prikaz odštampane pozivnice ---------------- */
+// Pozivnica „na stolu”: kolor štampa (canvas), preko nje tekstura papira (350g gladak, hrapavi, sedefasti)
+// i folija kao poseban sloj (maska iz renderCanvas "folija") sa metalnim prelivom koji prati svetlo.
+// Svetlo se pomera prstom/mišem, a dok niko ne dira pozivnica se sama blago njiše.
+const MOCK_PAP = { "350": "350g papir · gladak, mat", hrap: "Hrapavi papir · izražena tekstura", sedef: "Sedefasti papir · biserni sjaj" };
+let mockKey = "", mockRun = 0, mockT = 0, mockAnim = 0, mockTouch = 0;
+function renderMock() {
+  const card = $("cMockCard"); if (!card || !pr || !dlg.open) return;
+  const fol = isPasos() || pr.st === "fol", pap = fol ? "350" : pr.pap;
+  card.dataset.pap = pap;
+  $("cMockName").textContent = (isPasos() ? "Pasoš · 350g papir" : MOCK_PAP[pap]) + (fol && foil ? ` + foliotisak, ${FOLIJE[foil].naziv.toLowerCase()}` : ", digitalna štampa");
+  if (fol && foil) card.style.setProperty("--foil", FOLIJE[foil].sjaj);
+  pages[pi] = layers;
+  const key = JSON.stringify([T.id, pi, fol && foil ? 1 : 0, layers.map(L => [L.text, !!L.fo, L.color, L.font, L.x, L.y, L.size]), tint]);
+  if (!mockAnim) mockAnim = requestAnimationFrame(mockLoop);
+  if (key === mockKey) return;
+  mockKey = key;
+  clearTimeout(mockT);
+  mockT = setTimeout(async () => {
+    const run = ++mockRun;
+    try {
+      card.style.aspectRatio = `${W()}/${H()}`; card.style.setProperty("--ar", (W() / H()).toFixed(4));
+      const scale = 640 / Math.max(W(), H());
+      const base = await renderCanvas(scale, "blag", fol && foil ? "stampa" : "kompozit");
+      let maska = null;
+      if (fol && foil) {
+        const m = await renderCanvas(scale, false, "folija"), c = m.getContext("2d"), d = c.getImageData(0, 0, m.width, m.height), px = d.data;
+        let any = false;
+        for (let i = 0; i < px.length; i += 4) { const a = 255 - px[i]; px[i] = px[i + 1] = px[i + 2] = 255; px[i + 3] = a; if (a > 40) any = true; }
+        c.putImageData(d, 0, 0);
+        maska = any ? m.toDataURL("image/png") : null;
+      }
+      if (run !== mockRun) return;
+      base.className = "m-base"; base.setAttribute("aria-hidden", "true");
+      const parts = [base, Object.assign(document.createElement("i"), { className: "m-tex" }), Object.assign(document.createElement("i"), { className: "m-pearl" })];
+      if (maska) {
+        const w = Object.assign(document.createElement("i"), { className: "m-foilw" }), f = Object.assign(document.createElement("i"), { className: "m-foil" });
+        f.style.maskImage = f.style.webkitMaskImage = `url(${maska})`;
+        w.append(f); parts.push(w);
+      }
+      parts.push(Object.assign(document.createElement("i"), { className: "m-light" }));
+      card.replaceChildren(...parts);
+    } catch (err) { console.error(err); mockKey = ""; }
+  }, 120);
+}
+// x, y = položaj svetla 0..1; nagib kartice prati svetlo.
+function mockLight(x, y) {
+  const c = $("cMockCard"); if (!c) return;
+  c.style.setProperty("--lx", x.toFixed(3)); c.style.setProperty("--ly", y.toFixed(3));
+}
+function mockLoop(t) {
+  if (!dlg.open || $("cfg").hidden) { mockAnim = 0; return; }
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches && t - mockTouch > 2500)
+    mockLight(.5 + Math.sin(t / 1900) * .38, .45 + Math.sin(t / 2700 + 1) * .22);
+  mockAnim = requestAnimationFrame(mockLoop);
+}
+$("cMock").addEventListener("pointermove", e => {
+  const r = $("cMockCard").getBoundingClientRect();
+  mockTouch = performance.now();
+  mockLight(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)));
+});
 function renderSum() {
   const C = cena();
   $("sWhat").textContent = `${T.naziv} · ${C.q} kom${fmt ? " · " + FORMATI[fmt].naziv : ""}`;
@@ -1433,6 +1496,7 @@ function openOrder(kind) {
   const d = store.get("mango-ed:kontakt");
   if (d) ["oName", "oPhone", "oEmail"].forEach(k => { if (!$(k).value && d[k]) $(k).value = d[k]; });
   dlg.showModal();
+  renderMock();
 }
 function syncKind() {
   const e = dlg.querySelector("input[name=kind]:checked").value === "e";
@@ -1442,7 +1506,7 @@ function syncKind() {
   $("orderTitle").textContent = e ? "Elektronska pozivnica" : "Pošaljite nam svoj dizajn";
   $("oEmail").required = e;
 }
-dlg.addEventListener("change", e => { if (e.target.name === "kind") syncKind(); });
+dlg.addEventListener("change", e => { if (e.target.name === "kind") { syncKind(); renderMock(); } });
 dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 async function orderMessage() {
   const v = id => $(id).value.trim();

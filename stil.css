@@ -183,11 +183,11 @@ section{padding:130px 0}
 .paper .wrap{position:relative}
 .paper .h-lg{color:var(--ivory)}
 .paper .lead{color:#b9c4bb}
-.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:26px}
-@media(max-width:1000px){.swatches{grid-template-columns:repeat(2,1fr)}}
+.swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:22px}
+@media(max-width:1000px){.swatches{grid-template-columns:repeat(2,1fr)}.sw-zt{grid-column:1/-1}.sw.sw-zt .chip{aspect-ratio:2/1}}
 .sw .chip{aspect-ratio:1;box-shadow:0 30px 50px -20px rgba(0,0,0,.6);transition:transform .6s}
 .sw:hover .chip{transform:translateY(-6px)}
-.sw h4{font-family:var(--serif);font-weight:400;font-size:1.45rem;margin-top:22px;color:var(--gold-3)}
+.sw h4{font-family:var(--serif);font-weight:400;font-size:1.35rem;margin-top:20px;color:var(--gold-3)}
 .sw p{font-size:.9rem;color:#b9c4bb}
 
 /* ---------- collection ---------- */

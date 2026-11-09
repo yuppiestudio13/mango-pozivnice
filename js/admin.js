@@ -22,14 +22,14 @@ let sb = null, demo = false, sve = [], vrsta = "stampa", filt = "aktivne", otvor
 function toast(t) { const el = $("toast"); el.textContent = t; el.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("show"), 2800); }
 
 /* ---------------- start i prijava ---------------- */
-(async function init() {
+async function init() {
   if (!BAZA.spremna()) { demo = true; sve = primer(); $("demo").hidden = false; return pokazi(); }
   await new Promise((ok, err) => { const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"; s.onload = ok; s.onerror = err; document.head.append(s); })
     .catch(() => { document.body.insertAdjacentHTML("beforeend", "<p class='empty'>Nije moguće učitati vezu sa bazom. Proverite internet.</p>"); });
   sb = supabase.createClient(BAZA.url, BAZA.kljuc, { auth: { persistSession: true } });
   const { data } = await sb.auth.getSession();
   if (data.session) pokazi(); else prijava();
-})();
+}
 
 function prijava() {
   $("app").hidden = true; $("odjava").hidden = true; $("prijava").hidden = false; $("lEmail").focus();
@@ -215,3 +215,5 @@ function primer() {
     P(6, { vrsta: "e", status: "poslato", napravljena: t(8), kanal: "instagram", ime: "Primer: Luka Savić", email: "luka@primer.rs", datum_dogadjaja: za(12), sablon: "Džungla sa fotografijom", ukupno: 2000 }),
   ];
 }
+
+init();

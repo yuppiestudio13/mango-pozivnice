@@ -112,3 +112,12 @@ dialog::backdrop{background:rgba(35,37,31,.45)}
   .o-l{order:0} .o-m{order:1} .o-cena{order:2} .pill{order:3}
 }
 @media(max-width:719px){ .sum{grid-template-columns:repeat(2,1fr)} .sum b{font-size:1.3rem} }
+.pill{align-self:start;margin-top:2px}
+.sum b,.o-ime,.tabs button{font-variant-numeric:lining-nums}
+@media(max-width:719px){
+  .acts{flex-wrap:nowrap}
+  .acts .ab{padding:0 10px;font-size:.64rem;letter-spacing:.1em}
+  .acts #dodaj{flex:1}
+}
+@media(min-width:720px){ .pill{align-self:center;margin:0} }
+dialog{margin:auto}

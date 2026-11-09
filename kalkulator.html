@@ -166,7 +166,7 @@ const CONFIG = {
 };
 
 /* šabloni dolaze iz sabloni/sabloni.js (isti kao u editoru) */
-const TEMPLATES = (window.SABLONI||[]).map(s=>({ id:s.id, name:s.naziv, cat:s.kategorija }));
+const TEMPLATES = (window.SABLONI||[]).map(s=>({ id:s.id, name:s.naziv, cat:s.kategorija, pasos:!!s.folija }));   // folija na šablonu = boarding pass / pasoš
 TEMPLATES.push({ id:"po-meri", name:"Još biram / po meri", cat:"" });
 
 const $ = id => document.getElementById(id);
@@ -194,6 +194,16 @@ $("tplSelect").innerHTML = TEMPLATES.map(t=>`<option value="${t.id}">${t.name}${
 const curFormat = () => CONFIG.formats.find(x=>x.id===state.format);
 const kovOk = x => x.group!=="kov" || curFormat().kov.includes(x.id);
 const imaKov = () => CONFIG.extras.some(o=>o.group==="kov" && state.extras.has(o.id));
+// Šablon određuje papir: boarding pass / pasoš ide samo na svoj papir (i svoj format), ostali šabloni nikad;
+// „Još biram / po meri” može sve.
+function uskladiPapir(){
+  const t = curTpl(), meri = t.id==="po-meri";
+  if(t.pasos) state.paper = "pasos";
+  else if(state.paper==="pasos") state.paper = "350";
+  CONFIG.papers.forEach(p=>{ const el = $(`paper-${p.id}`), ok = meri || (p.id==="pasos")===!!t.pasos; el.closest(".choice").hidden = el.disabled = !ok; el.checked = p.id===state.paper; });
+  if(state.qty<minQ()) state.qty = minQ();
+  syncInputs();
+}
 let bioPasos = false, fmtPrePasosa = "125";
 function refreshExtras(){
   // boarding pass / pasoš: bez koverte i ostalih dodataka, samo akrilni aviončić i naše vezivanje (i obrnuto)
@@ -252,7 +262,7 @@ document.addEventListener("change", e=>{
       CONFIG.extras.filter(o=>o.needs===x.id).forEach(o=>state.extras.delete(o.id));
     }
   }
-  if(t.id==="tplSelect") state.tpl = t.value;
+  if(t.id==="tplSelect"){ state.tpl = t.value; uskladiPapir(); }
   refreshExtras(); update();
 });
 $("qtyRange").oninput = e=>{ state.qty=+e.target.value; $("qtyNum").value=state.qty; update(); };
@@ -314,7 +324,7 @@ document.querySelector(".k-send").onclick = async e=>{
   if(b.dataset.ch==="instagram"){ await copy(txt); toast("Poruka je kopirana, nalepite je u DM"); setTimeout(()=>window.open(`https://ig.me/m/${CONFIG.instagram}`,"_blank"),700); }
 };
 
-syncInputs(); refreshExtras(); update();
+syncInputs(); uskladiPapir(); refreshExtras(); update();
 </script>
 <script>
 const drawer=document.getElementById('drawer');

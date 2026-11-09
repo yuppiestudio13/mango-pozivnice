@@ -370,6 +370,8 @@ header nav a[aria-current="page"]::after{right:0}
 .duo{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;align-items:end}
 .duo .ph:first-child{aspect-ratio:4/5}
 .duo .ph:last-child{aspect-ratio:3/4;margin-bottom:-40px}
+.duo figure.ph{margin:0}
+.duo figcaption{position:absolute;left:0;right:0;bottom:0;padding:30px 14px 12px;background:linear-gradient(transparent,rgba(16,32,23,.6));color:var(--ivory);font-size:.64rem;letter-spacing:.2em;text-transform:uppercase}
 @media(max-width:900px){.duo .ph:last-child{margin-bottom:0}}
 
 /* ---------- mosaic ---------- */

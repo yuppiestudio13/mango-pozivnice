@@ -32,8 +32,8 @@ window.CENOVNIK = {
     { id: "kbl",    name: "Blindruk na koverti",    note: "opciono, utisnut ili istisnut, naplaćuje se posebno: kliše 4800 din jednom + 40 din po koverti", price: 40, klise: 4800, uzKov: true },
     { id: "pecat",  name: "Voštani pečat",          note: "boja i motiv po izboru", price: 30 },
     { id: "paus",   name: "Paus papir omot",        note: "providni omot oko pozivnice, ide umesto koverte", price: 50, bezKov: true },
-    { id: "avion",  name: "Akrilni zlatni aviončić", note: "samo uz boarding pass / pasoš", price: 30, pasos: true },
-    { id: "vez",    name: "Naše vezivanje",         note: "uz aviončić, samo za boarding pass / pasoš", price: 20, needs: "avion", pasos: true },
+    { id: "avion",  name: "Akrilni zlatni aviončić", note: "Dobijate zlatne akrilne aviončiće i konopčiće, a pozivnice povezujete sami. Samo uz boarding pass / pasoš.", price: 30, pasos: true },
+    { id: "vez",    name: "Naše vezivanje",         note: "Stižu vam gotove pozivnice, već povezane i ukrašene zlatnim aviončićem, spremne za deljenje. Ide uz aviončić.", price: 20, needs: "avion", pasos: true },
   ],
   fixed: [                // jednokratni troškovi, bez obzira na količinu
     { name: "Grafička priprema i provera", note: "pregledamo dizajn, doteramo ga za štampu i šaljemo vam na uvid", price: 1000 },

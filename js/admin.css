@@ -121,3 +121,10 @@ dialog::backdrop{background:rgba(35,37,31,.45)}
 }
 @media(min-width:720px){ .pill{align-self:center;margin:0} }
 dialog{margin:auto}
+#uForm{padding:22px 18px;display:grid;gap:14px}
+#uForm h2{font-family:var(--serif);font-weight:500;font-size:1.8rem}
+.hint{font-size:.86rem;color:var(--stone)}
+.o-br{font-family:var(--sans);font-size:.72rem;color:var(--stone);font-weight:400;margin-left:6px;vertical-align:middle}
+.uplata{font-size:.84rem;padding:8px 10px;background:#eef2ea;border-left:2px solid var(--green-3)}
+.uplata.ne{background:#fbf1ee;border-left-color:#9b3b2e}
+.uplata button{background:none;border:0;text-decoration:underline;cursor:pointer;font-size:.84rem;padding:0;margin-left:6px;color:var(--green)}

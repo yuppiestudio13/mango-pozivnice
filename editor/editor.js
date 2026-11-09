@@ -1535,7 +1535,7 @@ function syncKind() {
   dlg.classList.toggle("wide", !e);
   $("ePrice").innerHTML = ePozHtml();
   $("orderTitle").textContent = e ? "Elektronska pozivnica" : "Pošaljite nam svoj dizajn";
-  $("oEmail").required = e;
+  $("oEmail").required = true;   // štampa: na e-mail stižu podaci za uplatu avansa; elektronska: sama pozivnica
 }
 dlg.addEventListener("change", e => { if (e.target.name === "kind") { syncKind(); renderMock(); } });
 dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
@@ -1604,7 +1604,7 @@ async function copy(txt) { try { await navigator.clipboard.writeText(txt); retur
 $("send").onclick = async e => {
   const b = e.target.closest("button"); if (!b) return;
   const isE = dlg.querySelector("input[name=kind]:checked").value === "e";
-  if (isE && !$("oEmail").checkValidity() || isE && !$("oEmail").value) { $("oEmail").focus(); toast("Upišite e-mail na koji šaljemo pozivnicu."); return; }
+  if (!$("oEmail").value.trim() || !$("oEmail").checkValidity()) { $("oEmail").focus(); toast(isE ? "Upišite e-mail na koji šaljemo pozivnicu." : "Upišite e-mail: na njega vam po potvrdi stižu podaci za uplatu avansa."); return; }
   if (!isE && pr.q < minQty()) { pr.q = minQty(); renderCfg(); commitSoon(); }
   if (!isE && !isPasos() && pr.st === "fol" && !foilTexts().length) { toast("Izabrali ste foliotisak, a nijedan tekst nije označen za foliju. Označite bar jedan tekst."); $("cTexts").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
   const txt = await orderMessage(), enc = encodeURIComponent(txt);

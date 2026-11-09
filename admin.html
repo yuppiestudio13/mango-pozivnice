@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="js/admin.css?v=2">
+<link rel="stylesheet" href="js/admin.css?v=3">
 </head>
 <body>
 
@@ -53,6 +53,7 @@
 
   <div class="acts">
     <button class="ab solid" id="dodaj">+ Dodaj ručno</button>
+    <button class="ab ghost" id="uplataBtn">Podaci za uplatu</button>
     <button class="ab ghost" id="izvoz">Izvoz u Excel</button>
     <button class="ab ghost" id="osvezi">Osveži</button>
   </div>
@@ -91,9 +92,28 @@
   </form>
 </dialog>
 
+<!-- podaci za uplatu avansa -->
+<dialog id="uDlg">
+  <form id="uForm" method="dialog">
+    <h2>Podaci za uplatu</h2>
+    <p class="hint">Kada štampanu porudžbinu označite kao <b>Potvrđena</b>, kupcu automatski stiže e-mail: konačna cena, avans 50% sa ovim podacima za uplatu i ostatak pouzećem. Vidi ih samo admin.</p>
+    <div class="grid">
+      <label class="full">Primalac (ime i prezime ili naziv)<input name="primalac" required maxlength="200"></label>
+      <label class="full">Broj računa<input name="racun" required maxlength="60" inputmode="numeric" placeholder="xxx-xxxxxxxxxxxxx-xx"></label>
+      <label>Banka (nije obavezno)<input name="banka" maxlength="100"></label>
+      <label>Adresa primaoca (nije obavezno)<input name="adresa" maxlength="200"></label>
+      <label class="full">Dodatna rečenica u e-mailu (nije obavezno)<textarea name="napomena" rows="2" maxlength="500" placeholder="Npr. Molimo vas da nam pošaljete potvrdu o uplati na Instagram."></textarea></label>
+    </div>
+    <div class="dlg-b">
+      <button class="ab ghost" value="cancel" formnovalidate>Odustani</button>
+      <button class="ab solid" value="ok">Sačuvaj</button>
+    </div>
+  </form>
+</dialog>
+
 <div class="toast" id="toast" role="status"></div>
 
 <script src="js/narudzbine.js?v=3"></script>
-<script src="js/admin.js?v=4"></script>
+<script src="js/admin.js?v=5"></script>
 </body>
 </html>

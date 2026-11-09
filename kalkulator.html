@@ -109,10 +109,11 @@
     <div class="k-order-in">
       <div class="eyebrow">Poslednji korak</div>
       <h2 class="h-lg">Pošaljite <em>porudžbinu</em></h2>
-      <p class="lead">Popunite podatke i pošaljite nam poruku jednim klikom. Javićemo vam se sa pripremom na uvid. Polja sa <span class="obav">*</span> su obavezna.</p>
+      <p class="lead">Popunite podatke i pošaljite nam poruku jednim klikom. Javićemo vam se sa pripremom na uvid, a po potvrdi stižu vam na e-mail podaci za uplatu avansa. Polja sa <span class="obav">*</span> su obavezna.</p>
       <div class="fields">
         <div class="field"><label for="oName">Ime i prezime <span class="obav">*</span></label><input id="oName" required autocomplete="name" placeholder="Ana Petrović"></div>
         <div class="field"><label for="oPhone">Telefon <span class="obav">*</span></label><input id="oPhone" required type="tel" autocomplete="tel" placeholder="06x xxx xxxx"></div>
+        <div class="field"><label for="oEmail">E-mail <span class="obav">*</span></label><input id="oEmail" type="email" required autocomplete="email" placeholder="ana@primer.rs"></div>
         <div class="field"><label for="oWho">Imena na pozivnici <span class="obav">*</span></label><input id="oWho" required placeholder="Ana i Marko"></div>
         <div class="field"><label for="oDate">Datum događaja</label><input id="oDate" type="date"></div>
         <div class="field full"><label for="oText">Tekst pozivnice <span class="obav">*</span></label><textarea id="oText" required rows="5" placeholder="Npr. Sa radošću vas pozivamo na naše venčanje, u subotu 12. juna u 17 h, crkva Sv. Marka, svečanost u restoranu Lav. Uz to i napomene: željene boje, rok…"></textarea></div>
@@ -309,16 +310,17 @@ ${c.d ? `Popust: ${c.d.pct}%\n` : ""}UKUPNO: ${fmt(c.total)} (${fmt(c.per)}/kom)
 
 Ime: ${v("oName")||"—"}
 Telefon: ${v("oPhone")||"—"}
+E-mail: ${v("oEmail")||"—"}
 Na pozivnici: ${v("oWho")||"—"}
 Datum: ${date}
 Tekst pozivnice i napomena: ${v("oText")||"—"}`;
 }
-["oName","oPhone","oWho","oDate","oText"].forEach(id=>$(id).addEventListener("input",update));
+["oName","oPhone","oEmail","oWho","oDate","oText"].forEach(id=>$(id).addEventListener("input",update));
 
 // Obavezna polja: bez imena, telefona, imena na pozivnici i teksta ne šaljemo ponudu.
-const OBAVEZNO = { oName: "ime i prezime", oPhone: "telefon", oWho: "imena na pozivnici", oText: "tekst pozivnice" };
+const OBAVEZNO = { oName: "ime i prezime", oPhone: "telefon", oEmail: "e-mail", oWho: "imena na pozivnici", oText: "tekst pozivnice" };
 function popunjeno(){
-  const fali = Object.keys(OBAVEZNO).filter(id => !$(id).value.trim() || (id==="oPhone" && $(id).value.replace(/\D/g,"").length < 6));
+  const fali = Object.keys(OBAVEZNO).filter(id => !$(id).value.trim() || (id==="oPhone" && $(id).value.replace(/\D/g,"").length < 6) || (id==="oEmail" && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($(id).value.trim())));
   Object.keys(OBAVEZNO).forEach(id => $(id).closest(".field").classList.toggle("fali", fali.includes(id)));
   if(!fali.length) return true;
   toast("Popunite: " + fali.map(id=>OBAVEZNO[id]).join(", ") + ".");
@@ -333,7 +335,7 @@ function porudzbinaUBazu(poruka, kanal){
   const nap = [v("oWho") && `Imena na pozivnici: ${v("oWho")}`, v("oText") && `Tekst pozivnice: ${v("oText")}`].filter(Boolean).join("\n") || null;
   sacuvajNarudzbinu({
     vrsta: "stampa", izvor: "kalkulator", kanal,
-    ime: v("oName"), telefon: v("oPhone"), datum_dogadjaja: v("oDate"), napomena: nap,
+    ime: v("oName"), telefon: v("oPhone"), email: v("oEmail"), datum_dogadjaja: v("oDate"), napomena: nap,
     sablon: t.name, kolicina: c.qty, stampa: `${c.p.name}, format ${c.f.name}`,
     dodaci: c.ex.map(x=>x.name).join(", ") || null, ukupno: Math.round(c.total), poruka,
   });

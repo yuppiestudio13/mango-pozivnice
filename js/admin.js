@@ -20,6 +20,7 @@ const sigurno = u => /^(https?:\/\/|editor\.html)/i.test(u || "") ? u : null;
 
 // Posle prijave vrati u editor (samo editor.html na ovom sajtu, nikad tuđa adresa).
 const nazad = () => { const n = new URLSearchParams(location.search).get("nazad"); return n && /^editor\.html(?:[?#]|$)/.test(n) ? n : null; };
+let podesavanja = null;
 let sb = null, demo = false, sve = [], vrsta = "stampa", filt = "aktivne", otvorena = null;
 function toast(t) { const el = $("toast"); el.textContent = t; el.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("show"), 2800); }
 
@@ -56,6 +57,8 @@ async function ucitaj() {
   const { data, error } = await sb.from("narudzbine").select("*").order("napravljena", { ascending: false }).limit(2000);
   if (error) { toast("Greška pri učitavanju: " + error.message); if (/JWT|auth/i.test(error.message)) prijava(); return; }
   sve = data;
+  const p = await sb.from("podesavanja").select("*").eq("id", 1).maybeSingle();
+  podesavanja = p.data || null;
 }
 $("osvezi").onclick = async () => { if (!demo) await ucitaj(); crtaj(); toast("Spisak je osvežen."); };
 
@@ -75,7 +78,7 @@ function vidljive() {
   const q = $("q").value.trim().toLowerCase();
   let L = sve.filter(o => o.vrsta === vrsta);
   if (filt === "aktivne") L = L.filter(aktivna); else if (filt !== "sve") L = L.filter(o => o.status === filt);
-  if (q) L = L.filter(o => [o.ime, o.telefon, o.email, o.sablon, o.napomena, o.beleska].some(x => (x || "").toLowerCase().includes(q)));
+  if (q) L = L.filter(o => [o.ime, o.telefon, o.email, o.sablon, o.napomena, o.beleska, o.broj && "br. " + o.broj, o.broj && String(o.broj)].some(x => (x || "").toLowerCase().includes(q)));
   if ($("sort").value === "dogadjaj") L = [...L].sort((a, b) => (a.datum_dogadjaja || "9999").localeCompare(b.datum_dogadjaja || "9999"));
   return L;
 }
@@ -103,7 +106,7 @@ function red(o) {
   const open = otvorena === o.id;
   return `<li class="o ${o.status}" data-id="${o.id}">
   <button class="o-h" data-a="toggle" aria-expanded="${open}">
-    <div class="o-l"><div class="o-ime">${esc(o.ime) || "<i>bez imena</i>"}</div><div class="o-meta">${dog} · poručeno ${pre(o.napravljena)}</div></div>
+    <div class="o-l"><div class="o-ime">${esc(o.ime) || "<i>bez imena</i>"}${o.broj ? `<span class="o-br">br. ${+o.broj}</span>` : ""}</div><div class="o-meta">${dog} · poručeno ${pre(o.napravljena)}</div></div>
     <div class="o-cena">${din(o.ukupno)}</div>
     <div class="o-meta o-m">${opis.join(" · ") || "—"}</div>
     <span class="pill ${o.status}">${SN[o.status]}</span>
@@ -132,6 +135,7 @@ function detalji(o) {
       <label>Status<select data-a="status">${STATUSI.map(([k, t]) => `<option value="${k}"${k === o.status ? " selected" : ""}>${t}</option>`).join("")}</select></label>
       <label>Interna beleška<textarea data-a="beleska" rows="3" placeholder="Npr. avans 5.000 din uplaćen 10.11.">${esc(o.beleska)}</textarea></label>
     </div>
+    ${o.vrsta === "stampa" ? uplataInfo(o) : ""}
     ${o.poruka ? `<details class="msg full"><summary>Cela poruka kupca</summary><pre>${esc(o.poruka)}</pre></details>` : ""}
     <div class="o-acts full">
       ${diz ? `<a class="ab solid" href="${esc(diz)}" target="_blank" rel="noopener">Otvori dizajn</a>` : ""}
@@ -141,11 +145,45 @@ function detalji(o) {
   </div>`;
 }
 
+// Podaci za uplatu: da li su poslati kupcu i zašto nisu.
+const emailOk = e => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e || "");
+function razlogNe(o) {
+  if (!emailOk(o.email)) return "kupac nema ispravan e-mail. Pošaljite mu podatke porukom ili upišite e-mail.";
+  if (!podesavanja?.racun || !podesavanja?.primalac) return "prvo upišite Podatke za uplatu (dugme iznad spiska).";
+  return "pokušajte ponovo.";
+}
+function uplataInfo(o) {
+  if (o.uplata_poslata) {
+    const t = new Date(o.uplata_poslata);
+    return `<p class="uplata full">✓ Podaci za uplatu avansa poslati ${datum(o.uplata_poslata)} u ${t.toLocaleTimeString("sr-Latn-RS", { hour: "2-digit", minute: "2-digit" })} na ${esc(o.email)}.${demo ? "" : `<button data-a="ponovo">Pošalji ponovo</button>`}</p>`;
+  }
+  if (o.status === "nova") return `<p class="uplata full">Kada promenite status u <b>Potvrđena</b>, kupcu automatski stižu podaci za uplatu avansa${emailOk(o.email) ? ` na ${esc(o.email)}` : ""}.${emailOk(o.email) ? "" : " <b>Kupac nije ostavio e-mail.</b>"}</p>`;
+  return `<p class="uplata ne full">Podaci za uplatu nisu poslati e-mailom: ${esc(razlogNe(o))}${emailOk(o.email) && !demo ? `<button data-a="ponovo">Pošalji sada</button>` : ""}</p>`;
+}
+
+/* ---------------- podaci za uplatu (podešavanja) ---------------- */
+const uDlg = $("uDlg"), uForm = $("uForm");
+$("uplataBtn").onclick = () => {
+  uForm.reset();
+  for (const k of ["primalac", "racun", "banka", "adresa", "napomena"]) uForm[k].value = podesavanja?.[k] || "";
+  uDlg.showModal();
+};
+uForm.addEventListener("submit", async e => {
+  if (e.submitter?.value !== "ok") return;
+  e.preventDefault();
+  const f = Object.fromEntries([...new FormData(uForm)].map(([k, v]) => [k, v.trim() || null]));
+  if (demo) { podesavanja = f; uDlg.close(); return toast("Sačuvano (primer)."); }
+  const { data, error } = await sb.from("podesavanja").upsert({ id: 1, ...f, azurirano: new Date().toISOString() }).select().single();
+  if (error) return toast("Nije sačuvano: " + error.message);
+  podesavanja = data; uDlg.close(); crtaj(); toast("Podaci za uplatu su sačuvani.");
+});
+
 /* ---------------- izmene ---------------- */
 async function izmeni(o, polja) {
   if (!demo) {
-    const { error } = await sb.from("narudzbine").update(polja).eq("id", o.id);
+    const { data, error } = await sb.from("narudzbine").update(polja).eq("id", o.id).select().single();
     if (error) { toast("Nije sačuvano: " + error.message); return false; }
+    Object.assign(o, data); return true;
   }
   Object.assign(o, polja); return true;
 }
@@ -153,6 +191,10 @@ $("list").addEventListener("click", async e => {
   const el = e.target.closest("[data-a]"), li = e.target.closest("li.o"); if (!el || !li) return;
   const o = sve.find(x => String(x.id) === li.dataset.id);
   if (el.dataset.a === "toggle") { otvorena = otvorena === o.id ? null : o.id; crtaj(); return; }
+  if (el.dataset.a === "ponovo") {
+    if (!await izmeni(o, { uplata_poslata: null })) return;
+    crtaj(); toast(o.uplata_poslata ? `Podaci za uplatu su ponovo poslati na ${o.email}.` : `Nije poslato: ${razlogNe(o)}`); return;
+  }
   if (el.dataset.a === "kopiraj") { try { await navigator.clipboard.writeText(o.poruka); toast("Poruka je kopirana."); } catch { toast("Kopiranje nije uspelo."); } }
   if (el.dataset.a === "obrisi") {
     if (el.dataset.sure !== "1") { el.dataset.sure = "1"; el.textContent = "Sigurno obrisati?"; setTimeout(() => { if (el.isConnected) { el.dataset.sure = ""; el.textContent = "Obriši"; } }, 4000); return; }
@@ -163,7 +205,14 @@ $("list").addEventListener("click", async e => {
 $("list").addEventListener("change", async e => {
   const el = e.target.closest("[data-a]"), li = e.target.closest("li.o"); if (!el || !li) return;
   const o = sve.find(x => String(x.id) === li.dataset.id);
-  if (el.dataset.a === "status" && await izmeni(o, { status: el.value })) { crtaj(); toast(`Status: ${SN[el.value]}.`); }
+  if (el.dataset.a === "status") {
+    const bilo = !!o.uplata_poslata;
+    if (!await izmeni(o, { status: el.value })) return;
+    crtaj();
+    toast(!bilo && o.uplata_poslata ? `Potvrđeno. Kupcu je poslat e-mail sa podacima za uplatu (${o.email}).`
+      : el.value === "potvrdjena" && o.vrsta === "stampa" && !o.uplata_poslata ? `Potvrđeno, ali e-mail NIJE poslat: ${razlogNe(o)}`
+      : `Status: ${SN[el.value]}.`);
+  }
   if (el.dataset.a === "beleska" && await izmeni(o, { beleska: el.value.trim() || null })) toast("Beleška je sačuvana.");
 });
 
@@ -196,7 +245,7 @@ dForm.addEventListener("submit", async e => {
 // Tekst kupca koji počinje sa = + - @ Excel bi izvršio kao formulu; dodajemo ' ispred (osim za brojeve telefona).
 const celija = v => { let t = String(v); if (/^[=+\-@\t\r]/.test(t) && !/^\+[\d\s\/-]+$/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
 $("izvoz").onclick = () => {
-  const K = [["napravljena", "Poručeno"], ["status", "Status"], ["ime", "Ime"], ["telefon", "Telefon"], ["email", "E-mail"], ["datum_dogadjaja", "Datum događaja"],
+  const K = [["broj", "Br."], ["napravljena", "Poručeno"], ["status", "Status"], ["ime", "Ime"], ["telefon", "Telefon"], ["email", "E-mail"], ["datum_dogadjaja", "Datum događaja"],
     ["sablon", "Šablon"], ["kolicina", "Količina"], ["stampa", "Papir i štampa"], ["folija", "Foliotisak"], ["koverta", "Koverta"], ["dodaci", "Dodaci"],
     ["ukupno", "Ukupno (din)"], ["napomena", "Napomena"], ["beleska", "Beleška"], ["dizajn", "Dizajn"]];
   const cel = (o, k) => k === "status" ? SN[o.status] : k === "napravljena" ? datum(o[k]) : k === "datum_dogadjaja" ? (o[k] ? datum(o[k]) : "") : o[k] ?? "";

@@ -150,7 +150,7 @@
   </div>
 </footer>
 
-<script src="js/cenovnik.js?v=6"></script>
+<script src="js/cenovnik.js?v=7"></script>
 <script src="sabloni/sabloni.js?v=16"></script>
 <script src="sabloni/uvoz.js?v=8"></script>
 <script src="sabloni/uvoz-magnific.js?v=5"></script>
@@ -186,7 +186,7 @@ function opts(el, list, type, name){
       <em>${o.price ? (type==="checkbox"?"+":"") + o.price + " din" : "uključeno"}</em></label>
     </div>`).join("");
 }
-opts("formats", CONFIG.formats, "radio", "format");
+opts("formats", CONFIG.formats.filter(f=>f.kalk!==false), "radio", "format");
 opts("papers", CONFIG.papers, "radio", "paper");
 opts("extras", CONFIG.extras, "checkbox", "extra");
 $("tplSelect").innerHTML = TEMPLATES.map(t=>`<option value="${t.id}">${t.name}${t.cat?" · "+t.cat:""}</option>`).join("");

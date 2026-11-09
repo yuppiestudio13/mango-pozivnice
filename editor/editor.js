@@ -541,7 +541,7 @@ const CEN = window.CENOVNIK;
 const papir = id => CEN.papers.find(x => x.id === id);
 const dodatak = id => CEN.extras.find(x => x.id === id);
 const PAPIRI = ["350", "hrap", "sedef"];
-const OSTALO = ["paus", "pecat", "avion", "vez"];
+const OSTALO = ["mat", "kzt", "kbl", "paus", "pecat", "avion", "vez"];
 const isPasos = () => !!baseOf().folija;   // pasoš/boarding: uvek 350g, mat štampa i foliotisak
 const din = n => Math.round(n).toLocaleString("sr-RS") + " din";
 let pr = null;
@@ -566,7 +566,9 @@ function kovList() {
 // Pasoš pozivnice se ne pakuju u koverte; uz njih ide samo akrilni aviončić (i naše vezivanje).
 function fixKov() { if (isPasos()) { pr.kov = ""; return; } if (pr.kov === null || (pr.kov && !kovList().includes(pr.kov))) pr.kov = kovList()[0] || ""; }
 const SAMO_PASOS = ["avion", "vez"];
-const exOk = id => isPasos() ? SAMO_PASOS.includes(id) && (id !== "vez" || pr.ex.includes("avion")) : !SAMO_PASOS.includes(id);
+// Dodatna mat štampa: samo digitalna štampa na 350g; zlatotisak/blindruk na koverti: samo kad ima koverte.
+const exOk = id => isPasos() ? SAMO_PASOS.includes(id) && (id !== "vez" || pr.ex.includes("avion"))
+  : !SAMO_PASOS.includes(id) && (id !== "mat" || (pr.st === "dig" && pr.pap === "350")) && (!dodatak(id).uzKov || !!pr.kov);
 // Dvostrana štampa: šablon ima prednju i zadnju stranu iste veličine.
 const dvostrana = () => !isPasos() && T.strane.filter(s => s.mm[0] === T.strane[0].mm[0] && s.mm[1] === T.strane[0].mm[1]).length > 1;
 const curPapir = () => isPasos() ? papir("pasos") : pr.st === "fol" ? papir("folio") : papir(pr.pap);
@@ -578,6 +580,7 @@ function cena() {
   if (dvostrana() && P.duplex) rows.push({ n: "Dvostrana štampa", u: P.duplex, t: P.duplex * q });
   if (pr.kov) { const K = dodatak(pr.kov); rows.push({ n: K.name, u: K.price, t: K.price * q }); }
   for (const id of OSTALO) if (pr.ex.includes(id) && exOk(id)) { const X = dodatak(id); rows.push({ n: X.name, u: X.price, t: X.price * q }); }
+  for (const id of OSTALO) if (pr.ex.includes(id) && exOk(id) && dodatak(id).klise) rows.push({ n: `Kliše: ${dodatak(id).name.toLowerCase()}`, t: dodatak(id).klise });
   for (const F of CEN.fixed || []) rows.push({ n: F.name, t: F.price });
   const sub = rows.reduce((a, r) => a + r.t, 0), D = (CEN.discounts || []).filter(d => q >= d.from).sort((a, b) => b.from - a.from)[0];
   const disc = D ? sub * D.pct / 100 : 0;
@@ -644,9 +647,9 @@ function renderCfg() {
     kovs.map(id => { const K = dodatak(id); return ch("radio", "ckov", id, pr.kov === id, K.name, K.note, perKom(K.price)); }).join("");
   $("cKovColorF").hidden = !pr.kov || pasos;
   if (document.activeElement !== $("cKovColor")) $("cKovColor").value = pr.kb;
-  $("cExtra").innerHTML = OSTALO.filter(id => SAMO_PASOS.includes(id) === pasos).map(id => {
-    const X = dodatak(id), dis = !exOk(id) && id === "vez";
-    return ch("checkbox", "cex", id, pr.ex.includes(id) && exOk(id), X.name, dis ? "Uz akrilni aviončić" : X.note, `+${X.price} din/kom`, dis);
+  $("cExtra").innerHTML = OSTALO.filter(id => SAMO_PASOS.includes(id) === pasos && (id !== "mat" || (pr.st === "dig" && pr.pap === "350"))).map(id => {
+    const X = dodatak(id), dis = !exOk(id) && (id === "vez" || X.uzKov);
+    return ch("checkbox", "cex", id, pr.ex.includes(id) && exOk(id), X.name, dis ? (X.uzKov ? "Samo uz kovertu" : "Uz akrilni aviončić") : X.note, `+${X.price} din/kom`, dis);
   }).join("");
   $("cSealF").hidden = !pr.ex.includes("pecat") || pasos;
   if (document.activeElement !== $("cSeal")) $("cSeal").value = pr.pb;
@@ -748,10 +751,11 @@ $("cfg").addEventListener("change", e => {
   const t = e.target;
   if (t.name === "cpap" && !isPasos() && pr.st !== "fol") pr.pap = t.value;
   else if (t.name === "cst") return setStampa(t.value);
-  else if (t.name === "ckov") pr.kov = t.value;
+  else if (t.name === "ckov") { pr.kov = t.value; if (pr.kov) pr.ex = pr.ex.filter(x => !dodatak(x)?.bezKov); }   // koverta isključuje paus omot
   else if (t.name === "cex") {
     pr.ex = pr.ex.filter(x => x !== t.value);
     if (t.checked) pr.ex.push(t.value);
+    if (t.checked && dodatak(t.value).bezKov) pr.kov = "";   // paus omot ide umesto koverte
     if (t.value === "avion" && !t.checked) pr.ex = pr.ex.filter(x => x !== "vez");
   } else if (t.matches("#cTexts input")) {
     pages[pi] = layers;

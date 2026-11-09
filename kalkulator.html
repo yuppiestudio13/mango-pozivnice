@@ -150,7 +150,7 @@
   </div>
 </footer>
 
-<script src="js/cenovnik.js?v=4"></script>
+<script src="js/cenovnik.js?v=5"></script>
 <script src="sabloni/sabloni.js?v=16"></script>
 <script src="sabloni/uvoz.js?v=7"></script>
 <script src="sabloni/uvoz-magnific.js?v=5"></script>
@@ -193,11 +193,23 @@ $("tplSelect").innerHTML = TEMPLATES.map(t=>`<option value="${t.id}">${t.name}${
 
 const curFormat = () => CONFIG.formats.find(x=>x.id===state.format);
 const kovOk = x => x.group!=="kov" || curFormat().kov.includes(x.id);
+const imaKov = () => CONFIG.extras.some(o=>o.group==="kov" && state.extras.has(o.id));
 function refreshExtras(){
   CONFIG.extras.forEach(x=>{
     const ok = kovOk(x), box = $(`extra-${x.id}`);
-    if(!ok && state.extras.has(x.id)){ state.extras.delete(x.id); state.extras.add(curFormat().kov[0]); }
+    if(!ok && state.extras.has(x.id)){ state.extras.delete(x.id); if(!state.extras.has("paus")) state.extras.add(curFormat().kov[0]); }
     box.disabled = !ok; box.closest(".choice").hidden = !ok;
+  });
+  // dodatna mat štampa samo uz izabrani papir; zlatotisak/blindruk na koverti samo kad ima koverte
+  CONFIG.extras.filter(x=>x.papir).forEach(x=>{
+    const ok = state.paper===x.papir, box = $(`extra-${x.id}`);
+    if(!ok) state.extras.delete(x.id);
+    box.disabled = !ok; box.closest(".choice").hidden = !ok;
+  });
+  CONFIG.extras.filter(x=>x.uzKov).forEach(x=>{
+    const ok = imaKov(), box = $(`extra-${x.id}`), sm = box.closest(".choice").querySelector("small");
+    if(!ok) state.extras.delete(x.id);
+    box.disabled = !ok; sm.textContent = ok ? x.note : "samo uz kovertu";
   });
   const d = curPaper().duplex, box = $("extra-dvo"), lab = document.querySelector('label[for="extra-dvo"] em');
   if(!d) state.extras.delete("dvo");
@@ -222,6 +234,9 @@ document.addEventListener("change", e=>{
       state.extras.add(x.id);
       if(x.group) CONFIG.extras.filter(o=>o.group===x.group&&o.id!==x.id).forEach(o=>state.extras.delete(o.id));
       if(x.needs) state.extras.add(x.needs);
+      // paus omot ide umesto koverte, i obrnuto
+      if(x.bezKov) CONFIG.extras.filter(o=>o.group==="kov"||o.uzKov).forEach(o=>state.extras.delete(o.id));
+      if(x.group==="kov") CONFIG.extras.filter(o=>o.bezKov).forEach(o=>state.extras.delete(o.id));
     } else {
       state.extras.delete(x.id);
       CONFIG.extras.filter(o=>o.needs===x.id).forEach(o=>state.extras.delete(o.id));
@@ -241,6 +256,7 @@ function calc(){
   const rows = [[`${p.name} × ${qty}`, p.price*qty]];
   if(f.price) rows.push([`Format ${f.name}`, f.price*qty]);
   ex.forEach(x=>rows.push([x.name, exPrice(x)*qty]));
+  ex.filter(x=>x.klise).forEach(x=>rows.push([`Kliše: ${x.name.toLowerCase()} (jednom)`, x.klise]));
   (CONFIG.fixed||[]).forEach(x=>rows.push([x.name, x.price]));
   const sub = rows.reduce((s,r)=>s+r[1],0);
   const d = CONFIG.discounts.find(d=>qty>=d.from), disc = d ? sub*d.pct/100 : 0, total = sub-disc;

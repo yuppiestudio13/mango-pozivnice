@@ -136,7 +136,8 @@
           <div class="choices">
             <div class="choice"><input type="checkbox" name="Koverta" id="ex-kov" value="Koverta 13 × 17 cm" data-price="40"><label for="ex-kov"><b>Koverta 13 × 17 cm</b><small>odgovara formatu 12,5 × 16,5</small><em>+40 din</em></label></div>
             <div class="choice"><input type="checkbox" name="Voštani pečat" id="ex-pecat" value="Da" data-price="30"><label for="ex-pecat"><b>Voštani pečat</b><small>boja po izboru</small><em>+30 din</em></label></div>
-            <div class="choice"><input type="checkbox" name="Paus papir omot" id="ex-paus" value="Da" data-price="50"><label for="ex-paus"><b>Paus papir, omot</b><small>providni omot oko pozivnice</small><em>+50 din</em></label></div>
+            <div class="choice"><input type="checkbox" name="Paus papir omot" id="ex-paus" value="Da" data-price="50"><label for="ex-paus"><b>Paus papir, omot</b><small>providni omot oko pozivnice, ide umesto koverte</small><em>+50 din</em></label></div>
+            <div class="choice" id="matChoice"><input type="checkbox" name="Dodatna mat štampa" id="ex-mat" value="Da" data-price="20"><label for="ex-mat"><b>Dodatna mat štampa</b><small>samo na 350g papiru</small><em>+20 din</em></label></div>
           </div>
           <div class="fields">
             <div class="field hide" id="kovColorF"><label for="kovColor">Boja koverte</label>
@@ -251,6 +252,9 @@ function ui(){
   $('chkBack').classList.toggle('hide', !isDuplex());
   $('kovColorF').classList.toggle('hide', !$('ex-kov').checked);
   $('sealColorF').classList.toggle('hide', !$('ex-pecat').checked);
+  // dodatna mat štampa: samo štampa u boji na 350g papiru
+  const matOk = !isFoil() && $('pa-350').checked;
+  $('matChoice').classList.toggle('hide', !matOk); if(!matOk) $('ex-mat').checked = false;
 }
 
 function calc(){
@@ -259,7 +263,7 @@ function calc(){
   if(isFoil()) rows.push([`Foliotisak, ${f.querySelector('[name="Boja folije"]:checked').value}`, ORDER.foil]);
   else { const p = f.querySelector('[name="Papir"]:checked'); rows.push([p.value, +p.dataset.price]); }
   if(isDuplex()) rows.push(['Dvostrana štampa', isFoil() ? ORDER.duplex.folio : ORDER.duplex.obicna]);
-  ['ex-kov','ex-pecat','ex-paus'].forEach(id=>{ const x=$(id); if(x.checked) rows.push([x.closest('.choice').querySelector('b').textContent, +x.dataset.price]); });
+  ['ex-kov','ex-pecat','ex-paus','ex-mat'].forEach(id=>{ const x=$(id); if(x.checked) rows.push([x.closest('.choice').querySelector('b').textContent, +x.dataset.price]); });
   const perPiece = rows.reduce((s,r)=>s+r[1],0);
   const total = perPiece*qty;
   return { qty, rows, perPiece, total };
@@ -314,6 +318,9 @@ async function check(input, out, key){
   ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev, ()=>drop.classList.remove('over')));
 });
 
+// paus omot ide umesto koverte, i obrnuto
+$('ex-paus').addEventListener('change', e=>{ if(e.target.checked) $('ex-kov').checked = false; });
+$('ex-kov').addEventListener('change', e=>{ if(e.target.checked) $('ex-paus').checked = false; });
 f.addEventListener('input', render); f.addEventListener('change', render);
 
 f.addEventListener('submit', e=>{

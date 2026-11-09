@@ -624,9 +624,9 @@ header nav a{white-space:nowrap}
 .g-head{padding:70px 0 30px;text-align:center}
 .g-head .h-xl{color:var(--green);margin:18px 0 16px}
 .g-head .lead{margin:0 auto}
-.g-video{max-width:880px;margin:38px auto 0;aspect-ratio:2/1;overflow:hidden;background:var(--sand)}
+.g-video{max-width:680px;margin:38px auto 0;aspect-ratio:4/3;overflow:hidden;background:var(--sand)}
 .g-video video{display:block;width:100%;height:100%;object-fit:cover}
-@media(max-width:640px){.g-video{aspect-ratio:4/3;margin-top:28px}}
+@media(max-width:640px){.g-video{margin-top:28px}}
 .g-body{padding:20px 0 90px}
 .g-filters{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:14px}
 .g-filters a,.g-filters button{font:inherit;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;padding:11px 18px;background:transparent;border:1px solid var(--line);color:var(--stone);cursor:pointer;transition:background .25s,color .25s,border-color .25s}

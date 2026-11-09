@@ -726,3 +726,7 @@ header nav .dd-menu a.dd-all{margin-top:6px;border-top:1px solid rgba(201,171,11
 .g-all{margin-bottom:20px}
 .g-all+.g-count{text-align:left}
 .prod-go{display:inline-block;align-self:flex-start;margin-top:6px;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green);border-bottom:1px solid var(--gold);padding-bottom:2px}
+/* kalkulator: obavezna polja */
+.obav{color:var(--gold)}
+.field.fali input,.field.fali textarea{border-color:#9b3b2e;background:#fbf1ee}
+.field.fali label{color:#9b3b2e}

@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="stil.css?v=25">
+<link rel="stylesheet" href="stil.css?v=28">
 </head>
 <body>
 
@@ -109,13 +109,13 @@
     <div class="k-order-in">
       <div class="eyebrow">Poslednji korak</div>
       <h2 class="h-lg">Pošaljite <em>porudžbinu</em></h2>
-      <p class="lead">Popunite podatke i pošaljite nam poruku jednim klikom. Javićemo vam se sa pripremom na uvid.</p>
+      <p class="lead">Popunite podatke i pošaljite nam poruku jednim klikom. Javićemo vam se sa pripremom na uvid. Polja sa <span class="obav">*</span> su obavezna.</p>
       <div class="fields">
-        <div class="field"><label for="oName">Ime i prezime</label><input id="oName" autocomplete="name" placeholder="Ana Petrović"></div>
-        <div class="field"><label for="oPhone">Telefon</label><input id="oPhone" type="tel" autocomplete="tel" placeholder="06x xxx xxxx"></div>
-        <div class="field"><label for="oWho">Imena na pozivnici</label><input id="oWho" placeholder="Ana i Marko"></div>
+        <div class="field"><label for="oName">Ime i prezime <span class="obav">*</span></label><input id="oName" required autocomplete="name" placeholder="Ana Petrović"></div>
+        <div class="field"><label for="oPhone">Telefon <span class="obav">*</span></label><input id="oPhone" required type="tel" autocomplete="tel" placeholder="06x xxx xxxx"></div>
+        <div class="field"><label for="oWho">Imena na pozivnici <span class="obav">*</span></label><input id="oWho" required placeholder="Ana i Marko"></div>
         <div class="field"><label for="oDate">Datum događaja</label><input id="oDate" type="date"></div>
-        <div class="field full"><label for="oText">Tekst pozivnice i napomena</label><textarea id="oText" placeholder="Mesto, vreme, poseban tekst, željene boje…"></textarea></div>
+        <div class="field full"><label for="oText">Tekst pozivnice <span class="obav">*</span></label><textarea id="oText" required rows="5" placeholder="Npr. Sa radošću vas pozivamo na naše venčanje, u subotu 12. juna u 17 h, crkva Sv. Marka, svečanost u restoranu Lav. Uz to i napomene: željene boje, rok…"></textarea></div>
       </div>
       <div class="k-send">
         <button type="button" data-ch="viber">Viber</button>
@@ -311,15 +311,26 @@ Ime: ${v("oName")||"—"}
 Telefon: ${v("oPhone")||"—"}
 Na pozivnici: ${v("oWho")||"—"}
 Datum: ${date}
-Napomena: ${v("oText")||"—"}`;
+Tekst pozivnice i napomena: ${v("oText")||"—"}`;
 }
 ["oName","oPhone","oWho","oDate","oText"].forEach(id=>$(id).addEventListener("input",update));
 
+// Obavezna polja: bez imena, telefona, imena na pozivnici i teksta ne šaljemo ponudu.
+const OBAVEZNO = { oName: "ime i prezime", oPhone: "telefon", oWho: "imena na pozivnici", oText: "tekst pozivnice" };
+function popunjeno(){
+  const fali = Object.keys(OBAVEZNO).filter(id => !$(id).value.trim() || (id==="oPhone" && $(id).value.replace(/\D/g,"").length < 6));
+  Object.keys(OBAVEZNO).forEach(id => $(id).closest(".field").classList.toggle("fali", fali.includes(id)));
+  if(!fali.length) return true;
+  toast("Popunite: " + fali.map(id=>OBAVEZNO[id]).join(", ") + ".");
+  $(fali[0]).focus(); $(fali[0]).scrollIntoView({ behavior:"smooth", block:"center" });
+  return false;
+}
+Object.keys(OBAVEZNO).forEach(id => $(id).addEventListener("input", () => $(id).value.trim() && $(id).closest(".field").classList.remove("fali")));
 // Ista porudžbina ide i u bazu (js/narudzbine.js), da je Mango vidi u admin.html.
 function porudzbinaUBazu(poruka, kanal){
   if(!window.sacuvajNarudzbinu) return;
   const c = calc(), t = curTpl(), v = id => $(id).value.trim() || null;
-  const nap = [v("oWho") && `Na pozivnici: ${v("oWho")}`, v("oText")].filter(Boolean).join("\n") || null;
+  const nap = [v("oWho") && `Imena na pozivnici: ${v("oWho")}`, v("oText") && `Tekst pozivnice: ${v("oText")}`].filter(Boolean).join("\n") || null;
   sacuvajNarudzbinu({
     vrsta: "stampa", izvor: "kalkulator", kanal,
     ime: v("oName"), telefon: v("oPhone"), datum_dogadjaja: v("oDate"), napomena: nap,
@@ -331,6 +342,7 @@ function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("show
 async function copy(txt){ try{ await navigator.clipboard.writeText(txt); return true; }catch{ return false; } }
 document.querySelector(".k-send").onclick = async e=>{
   const b = e.target.closest("button"); if(!b) return;
+  if(!popunjeno()) return;
   const txt = message(), enc = encodeURIComponent(txt);
   porudzbinaUBazu(txt, b.dataset.ch);
   if(b.dataset.ch==="whatsapp") window.open(`https://wa.me/${CONFIG.phone}?text=${enc}`,"_blank");

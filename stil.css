@@ -637,8 +637,8 @@ header nav .dd-menu a.dd-all{margin-top:6px;border-top:1px solid rgba(201,171,11
 .drawer a.d-sub{font-family:var(--sans);font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;padding:9px 0 9px 22px;border-bottom:0;color:#cfd8d0}
 
 /* ---------- pozivnice: pločice povoda ---------- */
-.g-tiles{grid-template-columns:repeat(5,1fr);margin:36px 0 90px}
-@media(max-width:1100px){.g-tiles{grid-template-columns:repeat(3,1fr)}}
+.g-tiles{grid-template-columns:repeat(4,1fr);margin:36px 0 90px}
+@media(max-width:1100px){.g-tiles{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:640px){.g-tiles{grid-template-columns:repeat(2,1fr);gap:14px}.g-tiles .cat h3{font-size:1.2rem}}
 .g-all{margin-bottom:20px}
 .g-all+.g-count{text-align:left}

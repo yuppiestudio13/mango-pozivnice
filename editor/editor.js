@@ -664,11 +664,13 @@ function renderMock() {
   const card = $("cMockCard"); if (!card || !pr || !dlg.open) return;
   const fol = isPasos() || pr.st === "fol", pap = fol ? "350" : pr.pap;
   card.dataset.pap = pap;
+  const zi = $("cMock").querySelector(".m-zoom-in"); if (zi) zi.dataset.pap = pap;
   $("cMockName").textContent = (isPasos() ? "Pasoš · 350g papir" : MOCK_PAP[pap]) + (fol && foil ? ` + foliotisak, ${FOLIJE[foil].naziv.toLowerCase()}` : ", digitalna štampa");
-  if (fol && foil) card.style.setProperty("--foil", FOLIJE[foil].sjaj);
+  if (fol && foil) $("cMock").style.setProperty("--foil", FOLIJE[foil].sjaj);
   pages[pi] = layers;
   const key = JSON.stringify([T.id, pi, fol && foil ? 1 : 0, layers.map(L => [L.text, !!L.fo, L.color, L.font, L.x, L.y, L.size]), tint]);
   if (!mockAnim) mockAnim = requestAnimationFrame(mockLoop);
+  mockSize();
   if (key === mockKey) return;
   mockKey = key;
   clearTimeout(mockT);
@@ -676,8 +678,10 @@ function renderMock() {
     const run = ++mockRun;
     try {
       card.style.aspectRatio = `${W()}/${H()}`; card.style.setProperty("--ar", (W() / H()).toFixed(4));
-      const scale = 640 / Math.max(W(), H());
+      const scale = 640 / Math.max(W(), H()), zs = 1300 / Math.max(W(), H());
       const base = await renderCanvas(scale, "blag", fol && foil ? "stampa" : "kompozit");
+      // lupa prikazuje samo mali isečak, pa je oštrija i bez žiga
+      const zbase = await renderCanvas(zs, false, fol && foil ? "stampa" : "kompozit");
       let maska = null;
       if (fol && foil) {
         const m = await renderCanvas(scale, false, "folija"), c = m.getContext("2d"), d = c.getImageData(0, 0, m.width, m.height), px = d.data;
@@ -688,7 +692,7 @@ function renderMock() {
       }
       if (run !== mockRun) return;
       base.className = "m-base"; base.setAttribute("aria-hidden", "true");
-      const parts = [base, Object.assign(document.createElement("i"), { className: "m-tex" }), Object.assign(document.createElement("i"), { className: "m-pearl" })];
+      const parts = [base, ...["m-tex", "m-tex2", "m-pearl"].map(c => Object.assign(document.createElement("i"), { className: c }))];
       if (maska) {
         const w = Object.assign(document.createElement("i"), { className: "m-foilw" }), f = Object.assign(document.createElement("i"), { className: "m-foil" });
         f.style.maskImage = f.style.webkitMaskImage = `url(${maska})`;
@@ -696,14 +700,31 @@ function renderMock() {
       }
       parts.push(Object.assign(document.createElement("i"), { className: "m-light" }));
       card.replaceChildren(...parts);
+      // lupa: iste slojeve prikazujemo uvećane 3×, centrirane na mestu svetla
+      const zin = Object.assign(document.createElement("div"), { className: "m-zoom-in" });
+      zin.dataset.pap = card.dataset.pap;
+      for (const el of parts) {
+        if (el === base) { zbase.className = "m-base"; zin.append(zbase); }
+        else zin.append(el.cloneNode(true));
+      }
+      let z = $("cMock").querySelector(".m-zoom");
+      if (!z) { z = Object.assign(document.createElement("div"), { className: "m-zoom" }); z.setAttribute("aria-hidden", "true"); z.innerHTML = '<span class="m-zoom-l">Izbliza</span>'; card.parentNode.append(z); }
+      z.querySelector(".m-zoom-in")?.remove(); z.prepend(zin);
+      mockSize();
     } catch (err) { console.error(err); mockKey = ""; }
   }, 120);
 }
 // x, y = položaj svetla 0..1; nagib kartice prati svetlo.
 function mockLight(x, y) {
-  const c = $("cMockCard"); if (!c) return;
-  c.style.setProperty("--lx", x.toFixed(3)); c.style.setProperty("--ly", y.toFixed(3));
+  const m = $("cMock"); if (!m) return;
+  m.style.setProperty("--lx", x.toFixed(3)); m.style.setProperty("--ly", y.toFixed(3));
 }
+// Lupi treba veličina kartice u pikselima (za pomeranje uvećanog prikaza).
+function mockSize() {
+  const c = $("cMockCard"), m = $("cMock"); if (!c || !c.offsetWidth) return;
+  m.style.setProperty("--cw", c.offsetWidth + "px"); m.style.setProperty("--ch", c.offsetHeight + "px");
+}
+addEventListener("resize", () => { if (dlg.open) mockSize(); });
 function mockLoop(t) {
   if (!dlg.open || $("cfg").hidden) { mockAnim = 0; return; }
   if (!matchMedia("(prefers-reduced-motion: reduce)").matches && t - mockTouch > 2500)

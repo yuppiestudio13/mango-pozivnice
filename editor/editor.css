@@ -420,31 +420,45 @@ dialog.ed-order.wide{width:min(1060px,calc(100vw - 32px))}
 .foil-note.warn{color:#a2442f}
 
 /* ---- prikaz odštampane pozivnice (porudžbina, korak Papir) ---- */
-.mock{margin:0 0 14px}
-.mock-stage{display:grid;place-items:center;padding:26px 18px 30px;background:#ece5d8 radial-gradient(120% 90% at 50% 20%,#f6f1e7 0%,#e7dfcf 70%,#dcd2bf 100%);perspective:900px;overflow:hidden;touch-action:pan-y}
-.mock-card{--lx:.5;--ly:.45;--ar:.76;--mh:300px;position:relative;width:min(100%,calc(var(--mh) * var(--ar)));aspect-ratio:3/4;background:#fbf8f2;overflow:hidden;
+/* --lx/--ly = položaj svetla (0..1), --cw/--ch = veličina kartice za lupu */
+.mock{--lx:.5;--ly:.45;--cw:240px;--ch:320px;--zr:132px;margin:0 0 14px}
+.mock-stage{position:relative;display:flex;align-items:center;justify-content:center;gap:16px;padding:26px 18px 30px;background:#ece5d8 radial-gradient(120% 90% at 50% 20%,#f6f1e7 0%,#e7dfcf 70%,#dcd2bf 100%);perspective:900px;overflow:hidden;touch-action:pan-y}
+.mock-card{--ar:.76;--mh:300px;position:relative;flex:none;width:min(calc(100% - var(--zr) - 16px),calc(var(--mh) * var(--ar)));aspect-ratio:3/4;background:#fbf8f2;overflow:hidden;
   transform:rotateY(calc((var(--lx) - .5) * 12deg)) rotateX(calc((.5 - var(--ly)) * 9deg));
   box-shadow:0 0 0 .5px rgba(60,45,30,.12),0 1px 1px rgba(60,45,30,.18),calc((.5 - var(--lx)) * 22px) calc((.5 - var(--ly)) * 16px + 16px) 30px -12px rgba(50,35,20,.45)}
-.mock-card>*{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.mock-card .m-base{display:block}
+.mock-card>*,.m-zoom-in>*{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.mock-card .m-base,.m-zoom-in .m-base{display:block}
 /* tekstura papira */
 .m-tex{mix-blend-mode:multiply;opacity:.3;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .4 0 0 0 0 .33 0 0 0 -.9 .6'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E") 0 0/220px}
-.mock-card[data-pap=hrap] .m-tex{mix-blend-mode:overlay;opacity:1;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='h'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.07' numOctaves='4' seed='7' stitchTiles='stitch'/%3E%3CfeDiffuseLighting surfaceScale='3.2' lighting-color='%23a3a3a3'%3E%3CfeDistantLight azimuth='225' elevation='52'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23h)'/%3E%3C/svg%3E") 0 0/260px}
-/* sedefasti: biserni preliv koji se menja sa svetlom */
-.m-pearl{display:none;mix-blend-mode:soft-light;opacity:.95;
-  background:linear-gradient(115deg,#ffd3e6 0%,#cdeeff 18%,#fff0c2 34%,#e3d6ff 50%,#cff9e4 66%,#ffd8cc 82%,#d6e4ff 100%) 0 0/320% 320%;
+[data-pap=hrap] .m-tex{mix-blend-mode:overlay;opacity:.6;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='h'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.09' numOctaves='5' seed='7' stitchTiles='stitch'/%3E%3CfeDiffuseLighting surfaceScale='4.5' lighting-color='%23a6a6a6'%3E%3CfeDistantLight azimuth='225' elevation='48'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23h)'/%3E%3C/svg%3E") 0 0/130px}
+[data-pap=hrap] .m-light{opacity:.35}
+.m-tex2{display:none;mix-blend-mode:multiply;opacity:.32;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='h'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.09' numOctaves='5' seed='7' stitchTiles='stitch'/%3E%3CfeDiffuseLighting surfaceScale='4.5' lighting-color='%23fff'%3E%3CfeDistantLight azimuth='225' elevation='48'/%3E%3C/feDiffuseLighting%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='1.3' intercept='.04'/%3E%3CfeFuncG type='linear' slope='1.3' intercept='.03'/%3E%3CfeFuncB type='linear' slope='1.3' intercept='.01'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23h)'/%3E%3C/svg%3E") 0 0/130px}
+[data-pap=hrap] .m-tex2{display:block}
+/* sedefasti: biserni preliv koji se menja sa svetlom + sitne svetlucave čestice */
+.m-pearl{display:none;mix-blend-mode:soft-light;opacity:1;
+  background:linear-gradient(115deg,#ffc8df 0%,#bfe8ff 18%,#ffeab0 34%,#dccaff 50%,#c2f7dd 66%,#ffcdbd 82%,#c9dcff 100%) 0 0/320% 320%;
   background-position:calc(var(--lx) * 100%) calc(var(--ly) * 100%)}
-.mock-card[data-pap=sedef] .m-pearl{display:block}
-.mock-card[data-pap=sedef] .m-tex{opacity:.3}
+[data-pap=sedef] .m-pearl{display:block}
+/* na svetlim delovima: blag pastelni preliv (multiply), pomera se suprotno od svetla */
+[data-pap=sedef] .m-tex2{display:block;mix-blend-mode:multiply;opacity:.8;
+  background:linear-gradient(125deg,#fbe9f2 0%,#e6f4fb 20%,#fbf4df 38%,#efe8fb 56%,#e4f7ee 74%,#fbe9e2 100%) 0 0/280% 280%;
+  background-position:calc((1 - var(--lx)) * 100%) calc(var(--ly) * 100%)}
+[data-pap=sedef] .m-tex{mix-blend-mode:screen;opacity:calc(.25 + var(--lx) * .5);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.6' numOctaves='1' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 9 0 0 0 -6.2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23s)'/%3E%3C/svg%3E") 0 0/160px}
+[data-pap=sedef] .m-light{opacity:1;mix-blend-mode:overlay}
 /* folija: metalni preliv kroz masku, sa odsjajem i blagim utiskom u papir */
 .m-foilw{filter:drop-shadow(0 .6px .3px rgba(40,25,10,.4))}
 .m-foil{position:absolute;inset:0;background:var(--foil) 0 0/300% 300%;background-position:calc(var(--lx) * 100%) calc(var(--ly) * 100%);-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .m-foil::after{content:"";position:absolute;inset:0;mix-blend-mode:screen;background:linear-gradient(112deg,transparent 38%,rgba(255,255,255,.9) 49%,transparent 60%) 0 0/300% 300%;background-position:calc((1 - var(--lx)) * 100%) calc((1 - var(--ly)) * 100%)}
-/* svetlo preko cele pozivnice: mat papir slabo, sedef jače */
+/* svetlo preko cele pozivnice */
 .m-light{mix-blend-mode:soft-light;opacity:.55;background:radial-gradient(circle at calc(var(--lx) * 100%) calc(var(--ly) * 100%),rgba(255,255,255,.75),transparent 60%)}
-.mock-card[data-pap=sedef] .m-light{opacity:1;mix-blend-mode:overlay}
-.mock-card[data-pap=hrap] .m-light{opacity:.35}
+/* lupa: deo pozivnice uvećan 3×, prati svetlo */
+.m-zoom{position:relative;flex:none;width:var(--zr);height:var(--zr);border-radius:50%;overflow:hidden;background:#fbf8f2;pointer-events:none;
+  box-shadow:0 0 0 3px #fbf8f2,0 0 0 4px rgba(60,45,30,.18),0 10px 24px -8px rgba(50,35,20,.5)}
+.m-zoom-in{position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);transform-origin:0 0;
+  transform:translate(calc(var(--zr) / 2 - var(--lx) * var(--cw) * 3),calc(var(--zr) / 2 - var(--ly) * var(--ch) * 3)) scale(3)}
+.m-zoom-l{position:absolute;left:50%;bottom:9px;z-index:2;transform:translateX(-50%);padding:2px 8px;background:rgba(251,248,242,.88);font-size:.54rem;letter-spacing:.18em;text-transform:uppercase;color:var(--stone)}
 .mock figcaption{margin-top:10px;font-size:.74rem;line-height:1.45;color:var(--stone)}
 .mock figcaption b{display:block;font-weight:500;font-size:.84rem;color:var(--ink)}
-@media(min-width:861px){.mock-card{--mh:340px}}
+@media(min-width:861px){.mock{--zr:170px}.mock-card{--mh:340px}}
+@media(max-width:560px){.mock{--zr:96px}.mock-stage{gap:12px;padding:22px 12px 26px}.mock-card{width:min(calc(100% - var(--zr) - 12px),calc(var(--mh) * var(--ar)))}}
 @media(prefers-reduced-motion:reduce){.mock-card{transform:none}}

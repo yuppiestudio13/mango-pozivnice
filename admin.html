@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mango · Porudžbine</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="js/admin.css?v=1">
+</head>
+<body>
+
+<header class="ah">
+  <a class="brand" href="index.html"><b>MANGO</b><small>porudžbine</small></a>
+  <div class="ah-r">
+    <a class="ab ghost" href="editor.html">Editor</a>
+    <button class="ab ghost" id="odjava" hidden>Odjava</button>
+  </div>
+</header>
+
+<!-- prijava -->
+<main id="prijava" class="login" hidden>
+  <form id="loginForm" class="card">
+    <p class="eyebrow">Samo za Mango</p>
+    <h1>Prijava</h1>
+    <label>E-mail<input id="lEmail" type="email" autocomplete="username" required></label>
+    <label>Lozinka<input id="lPass" type="password" autocomplete="current-password" required></label>
+    <p class="err" id="lErr" hidden>Pogrešan e-mail ili lozinka.</p>
+    <button class="ab solid" type="submit">Prijavi se</button>
+  </form>
+</main>
+
+<main id="app" hidden>
+  <p class="demo" id="demo" hidden><b>Primer prikaza.</b> Baza još nije povezana, pa su ovo izmišljene porudžbine da vidite kako će izgledati. Prave porudžbine stižu ovde čim povežemo Supabase.</p>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-v="stampa" aria-selected="true">Štampane <span id="nS">0</span></button>
+    <button role="tab" data-v="e" aria-selected="false">Elektronske <span id="nE">0</span></button>
+  </nav>
+
+  <section class="sum" id="sum"></section>
+
+  <div class="tools">
+    <input type="search" id="q" placeholder="Pretraži ime, telefon, šablon…" aria-label="Pretraga">
+    <select id="sort" aria-label="Redosled">
+      <option value="nove">Najnovije prvo</option>
+      <option value="dogadjaj">Po datumu događaja</option>
+    </select>
+  </div>
+  <div class="chips" id="chips"></div>
+
+  <div class="acts">
+    <button class="ab solid" id="dodaj">+ Dodaj ručno</button>
+    <button class="ab ghost" id="izvoz">Izvoz u Excel</button>
+    <button class="ab ghost" id="osvezi">Osveži</button>
+  </div>
+
+  <ul class="list" id="list"></ul>
+  <p class="empty" id="empty" hidden>Nema porudžbina za ovaj izbor.</p>
+</main>
+
+<!-- ručni unos -->
+<dialog id="dlg">
+  <form id="dForm" method="dialog">
+    <h2>Nova porudžbina</h2>
+    <div class="seg">
+      <label><input type="radio" name="vrsta" value="stampa" checked> Štampane</label>
+      <label><input type="radio" name="vrsta" value="e"> Elektronska</label>
+    </div>
+    <div class="grid">
+      <label class="full">Ime i prezime<input name="ime" required maxlength="200"></label>
+      <label>Telefon<input name="telefon" type="tel" maxlength="60"></label>
+      <label>E-mail<input name="email" type="email" maxlength="200"></label>
+      <label>Datum događaja<input name="datum_dogadjaja" type="date"></label>
+      <label>Šablon / dizajn<input name="sablon" maxlength="200"></label>
+      <label class="st">Količina<input name="kolicina" type="number" min="0" inputmode="numeric"></label>
+      <label class="st">Papir i štampa<input name="stampa" maxlength="200"></label>
+      <label class="st">Koverta<input name="koverta" maxlength="200"></label>
+      <label class="st">Dodaci<input name="dodaci" maxlength="300"></label>
+      <label>Ukupno (din)<input name="ukupno" type="number" min="0" inputmode="numeric"></label>
+      <label>Kanal<select name="kanal"><option value="instagram">Instagram</option><option value="viber">Viber</option><option value="whatsapp">WhatsApp</option><option value="telefon">Telefon</option><option value="licno">Lično</option></select></label>
+      <label class="full">Link do dizajna (ako postoji)<input name="dizajn" type="url"></label>
+      <label class="full">Napomena<textarea name="napomena" rows="3"></textarea></label>
+    </div>
+    <div class="dlg-b">
+      <button class="ab ghost" value="cancel" formnovalidate>Odustani</button>
+      <button class="ab solid" value="ok">Sačuvaj</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="js/narudzbine.js?v=1"></script>
+<script src="js/admin.js?v=1"></script>
+</body>
+</html>

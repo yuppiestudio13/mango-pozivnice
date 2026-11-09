@@ -1581,6 +1581,25 @@ ${fotoPoruka()}Moj dizajn: ${await designLink()}`;
 const fotoPoruka = () => !fotoAny() ? "" : T.strane.some((s, k) => fotoHas(k))
   ? "Fotografija: šaljem je odmah posle ove poruke (u linku je samo njen položaj).\n\n"
   : "Fotografija: nisam je dodao/la, šaljem je posle ove poruke.\n\n";
+// Ista porudžbina ide i u bazu (js/narudzbine.js), da je Mango vidi u admin.html. Ne čeka se odgovor.
+async function narudzbinaUBazu(poruka, kanal, isE) {
+  if (!window.sacuvajNarudzbinu) return;
+  const v = id => $(id).value.trim() || null, C = isE ? null : cena();
+  const ost = isE ? [] : OSTALO.filter(id => pr.ex.includes(id) && exOk(id)).map(id => dodatak(id).name + (id === "pecat" && pr.pb.trim() ? ` (${pr.pb.trim()})` : ""));
+  sacuvajNarudzbinu({
+    vrsta: isE ? "e" : "stampa", kanal,
+    ime: v("oName"), telefon: v("oPhone"), email: v("oEmail"), datum_dogadjaja: v("oDate"), napomena: v("oNote"),
+    sablon: T.naziv + (vrsta ? " · " + (T.base || T).vrste.find(x => x.id === vrsta).naziv : "") + (fmt ? " · " + FORMATI[fmt].naziv : ""),
+    sablon_id: (T.base || T).id,
+    kolicina: C ? C.q : null,
+    stampa: isE ? null : stampaNaziv() + (dvostrana() ? ", dvostrana" : ""),
+    folija: isE || !(isPasos() || pr.st === "fol") ? null : FOLIJE[foil].naziv + (isPasos() ? "" : ": " + foilTexts().join(", ")),
+    koverta: isE ? null : isPasos() ? "bez koverte (pasoš)" : pr.kov ? dodatak(pr.kov).name + (pr.kb.trim() ? `, ${pr.kb.trim()}` : "") : "bez koverte",
+    dodaci: ost.join(", ") || null,
+    ukupno: Math.round(isE ? ePoz().cena || 0 : C.total),
+    dizajn: await designLink(), poruka,
+  });
+}
 async function copy(txt) { try { await navigator.clipboard.writeText(txt); return true; } catch { return false; } }
 $("send").onclick = async e => {
   const b = e.target.closest("button"); if (!b) return;
@@ -1589,6 +1608,7 @@ $("send").onclick = async e => {
   if (!isE && pr.q < minQty()) { pr.q = minQty(); renderCfg(); commitSoon(); }
   if (!isE && !isPasos() && pr.st === "fol" && !foilTexts().length) { toast("Izabrali ste foliotisak, a nijedan tekst nije označen za foliju. Označite bar jedan tekst."); $("cTexts").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
   const txt = await orderMessage(), enc = encodeURIComponent(txt);
+  narudzbinaUBazu(txt, b.dataset.ch, isE);
   if (b.dataset.ch === "whatsapp") window.open(`https://wa.me/${CONFIG.phone}?text=${enc}`, "_blank");
   if (b.dataset.ch === "viber") { await copy(txt); location.href = `viber://forward?text=${enc}`; toast("Poruka je kopirana i otvara se Viber."); }
   if (b.dataset.ch === "instagram") { await copy(txt); toast("Poruka je kopirana. Nalepite je u DM."); setTimeout(() => window.open(`https://ig.me/m/${CONFIG.instagram}`, "_blank"), 700); }

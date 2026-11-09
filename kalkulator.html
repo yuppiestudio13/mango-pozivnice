@@ -150,7 +150,7 @@
   </div>
 </footer>
 
-<script src="js/cenovnik.js?v=5"></script>
+<script src="js/cenovnik.js?v=6"></script>
 <script src="sabloni/sabloni.js?v=16"></script>
 <script src="sabloni/uvoz.js?v=8"></script>
 <script src="sabloni/uvoz-magnific.js?v=5"></script>
@@ -194,10 +194,16 @@ $("tplSelect").innerHTML = TEMPLATES.map(t=>`<option value="${t.id}">${t.name}${
 const curFormat = () => CONFIG.formats.find(x=>x.id===state.format);
 const kovOk = x => x.group!=="kov" || curFormat().kov.includes(x.id);
 const imaKov = () => CONFIG.extras.some(o=>o.group==="kov" && state.extras.has(o.id));
+let bioPasos = false;
 function refreshExtras(){
+  // boarding pass / pasoš: bez koverte i ostalih dodataka, samo akrilni aviončić i naše vezivanje (i obrnuto)
+  const pas = state.paper==="pasos";
+  const pasOk = x => x.id==="dvo" || !!x.pasos===pas;
+  if(bioPasos && !pas && !imaKov() && !state.extras.has("paus")) state.extras.add(curFormat().kov[0]);
+  bioPasos = pas;
   CONFIG.extras.forEach(x=>{
-    const ok = kovOk(x), box = $(`extra-${x.id}`);
-    if(!ok && state.extras.has(x.id)){ state.extras.delete(x.id); if(!state.extras.has("paus")) state.extras.add(curFormat().kov[0]); }
+    const ok = kovOk(x) && pasOk(x), box = $(`extra-${x.id}`);
+    if(!ok && state.extras.has(x.id)){ state.extras.delete(x.id); if(x.group==="kov" && !pas && !state.extras.has("paus")) state.extras.add(curFormat().kov[0]); }
     box.disabled = !ok; box.closest(".choice").hidden = !ok;
   });
   // dodatna mat štampa samo uz izabrani papir; zlatotisak/blindruk na koverti samo kad ima koverte
@@ -206,7 +212,7 @@ function refreshExtras(){
     if(!ok) state.extras.delete(x.id);
     box.disabled = !ok; box.closest(".choice").hidden = !ok;
   });
-  CONFIG.extras.filter(x=>x.uzKov).forEach(x=>{
+  CONFIG.extras.filter(x=>x.uzKov && !pas).forEach(x=>{
     const ok = imaKov(), box = $(`extra-${x.id}`), sm = box.closest(".choice").querySelector("small");
     if(!ok) state.extras.delete(x.id);
     box.disabled = !ok; sm.textContent = ok ? x.note : "samo uz kovertu";

@@ -564,11 +564,17 @@ function kovList() {
   return f ? f.kov : CEN.extras.filter(x => x.group === "kov").map(x => x.id);
 }
 // Pasoš pozivnice se ne pakuju u koverte; uz njih ide samo akrilni aviončić (i naše vezivanje).
-function fixKov() { if (isPasos()) { pr.kov = ""; return; } if (pr.kov === null || (pr.kov && !kovList().includes(pr.kov))) pr.kov = kovList()[0] || ""; }
+// Paus omot ide umesto koverte: ako je izabran, podrazumevana koverta je „bez koverte”; uz izabranu kovertu nema pausa.
+const imaPaus = () => pr.ex.some(x => dodatak(x)?.bezKov);
+function fixKov() {
+  if (isPasos()) { pr.kov = ""; return; }
+  if (pr.kov === null || (pr.kov && !kovList().includes(pr.kov))) pr.kov = imaPaus() ? "" : kovList()[0] || "";
+  if (pr.kov) pr.ex = pr.ex.filter(x => !dodatak(x)?.bezKov);
+}
 const SAMO_PASOS = ["avion", "vez"];
 // Dodatna mat štampa: samo digitalna štampa na 350g; zlatotisak/blindruk na koverti: samo kad ima koverte.
 const exOk = id => isPasos() ? SAMO_PASOS.includes(id) && (id !== "vez" || pr.ex.includes("avion"))
-  : !SAMO_PASOS.includes(id) && (id !== "mat" || (pr.st === "dig" && pr.pap === "350")) && (!dodatak(id).uzKov || !!pr.kov);
+  : !SAMO_PASOS.includes(id) && (id !== "mat" || (pr.st === "dig" && pr.pap === "350")) && (!dodatak(id).uzKov || !!pr.kov) && (!dodatak(id).bezKov || !pr.kov);
 // Dvostrana štampa: šablon ima prednju i zadnju stranu iste veličine.
 const dvostrana = () => !isPasos() && T.strane.filter(s => s.mm[0] === T.strane[0].mm[0] && s.mm[1] === T.strane[0].mm[1]).length > 1;
 const curPapir = () => isPasos() ? papir("pasos") : pr.st === "fol" ? papir("folio") : papir(pr.pap);
@@ -755,7 +761,7 @@ $("cfg").addEventListener("change", e => {
   else if (t.name === "cex") {
     pr.ex = pr.ex.filter(x => x !== t.value);
     if (t.checked) pr.ex.push(t.value);
-    if (t.checked && dodatak(t.value).bezKov) pr.kov = "";   // paus omot ide umesto koverte
+    if (t.checked && dodatak(t.value).bezKov) pr.kov = "", pr.ex = pr.ex.filter(x => !dodatak(x)?.uzKov);   // paus omot ide umesto koverte
     if (t.value === "avion" && !t.checked) pr.ex = pr.ex.filter(x => x !== "vez");
   } else if (t.matches("#cTexts input")) {
     pages[pi] = layers;

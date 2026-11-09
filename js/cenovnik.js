@@ -18,7 +18,7 @@ window.CENOVNIK = {
     { id: "pasos", name: "Boarding pass / pasoš", note: "350g papir + mat štampa + foliotisak", price: 200, duplex: null, minQty: 40 },
   ],
   // group = može samo jedno iz grupe; needs = ide samo uz drugi dodatak; papir = samo uz taj papir (digitalna štampa);
-  // uzKov = samo kad je izabrana koverta; bezKov = isključuje kovertu (i obrnuto); klise = jednokratna izrada klišea
+  // pasos = samo uz boarding pass / pasoš (uz njih ne idu ostali dodaci); uzKov = samo kad je izabrana koverta; bezKov = isključuje kovertu (i obrnuto); klise = jednokratna izrada klišea
   extras: [
     { id: "dvo",    name: "Dvostrana štampa",       note: "+20 din, uz foliotisak +30 din", price: 20 },
     { id: "mat",    name: "Dodatna mat štampa",     note: "samo na 350g papiru", price: 20, papir: "350" },
@@ -31,8 +31,8 @@ window.CENOVNIK = {
     { id: "kbl",    name: "Blindruk na koverti",    note: "opciono, utisnut ili istisnut, naplaćuje se posebno: kliše 4800 din jednom + 40 din po koverti", price: 40, klise: 4800, uzKov: true },
     { id: "pecat",  name: "Voštani pečat",          note: "boja i motiv po izboru", price: 30 },
     { id: "paus",   name: "Paus papir omot",        note: "providni omot oko pozivnice, ide umesto koverte", price: 50, bezKov: true },
-    { id: "avion",  name: "Akrilni zlatni aviončić", note: "za pasoš i boarding",  price: 30 },
-    { id: "vez",    name: "Naše vezivanje",         note: "uz aviončić",           price: 20, needs: "avion" },
+    { id: "avion",  name: "Akrilni zlatni aviončić", note: "samo uz boarding pass / pasoš", price: 30, pasos: true },
+    { id: "vez",    name: "Naše vezivanje",         note: "uz aviončić, samo za boarding pass / pasoš", price: 20, needs: "avion", pasos: true },
   ],
   fixed: [                // jednokratni troškovi, bez obzira na količinu
     { name: "Grafička priprema i provera", note: "pregledamo dizajn, doteramo ga za štampu i šaljemo vam na uvid", price: 1000 },
